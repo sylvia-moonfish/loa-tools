@@ -1,30 +1,46 @@
+import { json } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
 
+import type { LoaderFunction } from "@remix-run/node";
+
+import { i18n } from "~/i18n.server";
 import { useOptionalUser } from "~/utils";
+
+export const loader: LoaderFunction = async ({ request }) => {
+  return json({
+    i18n: await i18n.getTranslations(request, ["common", "index"]),
+  });
+};
 
 export default function Index() {
   const user = useOptionalUser();
+
+  let indexT = useTranslation("index").t;
+  let commonT = useTranslation("common").t;
+
   return (
-    <main className="relative min-h-screen bg-gray-900 sm:flex sm:items-center sm:justify-center">
+    <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
       <div className="relative sm:pb-16 sm:pt-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
             <div className="absolute inset-0">
-              {/*<img
+              <img
                 className="h-full w-full object-cover"
                 src="https://user-images.githubusercontent.com/1500684/158276320-c46b661b-8eff-4a4d-82c6-cf296c987a12.jpg"
                 alt="BB King playing blues on his Les Paul guitar"
-              />*/}
+              />
               <div className="absolute inset-0 bg-[color:rgba(27,167,254,0.5)] mix-blend-multiply" />
             </div>
             <div className="lg:pb-18 relative px-4 pt-16 pb-8 sm:px-6 sm:pt-24 sm:pb-14 lg:px-8 lg:pt-32">
               <h1 className="text-center text-6xl font-extrabold tracking-tight sm:text-8xl lg:text-9xl">
                 <span className="block uppercase text-blue-500 drop-shadow-md">
-                  Hello, World!
+                  Blues Stack {indexT("test")} {commonT("test")}
                 </span>
               </h1>
               <p className="mx-auto mt-6 max-w-lg text-center text-xl text-white sm:max-w-3xl">
-                Description string
+                Check the README.md file for instructions on how to get this
+                project deployed.
               </p>
               <div className="mx-auto mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-center">
                 {user ? (
@@ -51,18 +67,18 @@ export default function Index() {
                   </div>
                 )}
               </div>
-              {/*<a href="https://remix.run">
+              <a href="https://remix.run">
                 <img
                   src="https://user-images.githubusercontent.com/1500684/158298926-e45dafff-3544-4b69-96d6-d3bcc33fc76a.svg"
                   alt="Remix"
                   className="mx-auto mt-16 w-full max-w-[12rem] md:max-w-[16rem]"
                 />
-                </a>*/}
+              </a>
             </div>
           </div>
         </div>
 
-        {/*<div className="mx-auto max-w-7xl py-2 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl py-2 px-4 sm:px-6 lg:px-8">
           <div className="mt-6 flex flex-wrap justify-center gap-8">
             {[
               {
@@ -130,7 +146,7 @@ export default function Index() {
               </a>
             ))}
           </div>
-            </div>*/}
+        </div>
       </div>
     </main>
   );

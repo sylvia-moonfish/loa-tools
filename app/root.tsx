@@ -1,7 +1,5 @@
 import { json } from "@remix-run/node";
 import {
-  Form,
-  Link,
   Links,
   LiveReload,
   Meta,
@@ -10,6 +8,8 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "@remix-run/react";
+import { useTranslation } from "react-i18next";
+import { useSetupTranslations } from "remix-i18next";
 
 import type {
   LinksFunction,
@@ -17,60 +17,56 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 
-import fontsStylesheetUrl from "~/styles/fonts.css";
-import tailwindStylesheetUrl from "~/styles/tailwind.css";
-import { getUser } from "~/session.server";
+import tailwindStylesheetUrl from "./styles/tailwind.css";
+import { i18n } from "~/i18n.server";
+import { getUser } from "./session.server";
 
-export const links: LinksFunction = () => [
-  { href: fontsStylesheetUrl, rel: "stylesheet" },
-  { href: tailwindStylesheetUrl, rel: "stylesheet" },
-];
-
-type LoaderData = {
-  user: Awaited<ReturnType<typeof getUser>>;
+export const links: LinksFunction = () => {
+  return [{ rel: "stylesheet", href: tailwindStylesheetUrl }];
 };
-
-export const loader: LoaderFunction = async ({ request }) =>
-  json<LoaderData>({ user: await getUser(request) });
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Lost Ark Tools",
+  title: "Remix Notes",
   viewport: "width=device-width,initial-scale=1",
 });
 
-export default function Root() {
-  const data = useLoaderData() as LoaderData;
+type LoaderData = {
+  i18n: Awaited<ReturnType<typeof i18n.getTranslations>>;
+  locale: string;
+  user: Awaited<ReturnType<typeof getUser>>;
+};
 
-  console.log(data);
+export const loader: LoaderFunction = async ({ request }) => {
+  return json<LoaderData>({
+    i18n: await i18n.getTranslations(request, ["common", "index"]),
+    locale: await i18n.getLocale(request), // get server-side locale on the loader so it can reach client.
+    user: await getUser(request),
+  });
+};
+
+export default function App() {
+  const data = useLoaderData<LoaderData>();
+  useSetupTranslations(data.locale); // set-up translation on the root level.
+
+  // let's see if i can use this right after set-up...
+  let commonT = useTranslation("common").t;
+
+  // TODO: create common layout here with translation above.
+  // TODO: make language selector dropdown on the common layout?
 
   return (
-    <html className="h-full">
+    <html lang="en" className="h-full">
       <head>
-        <Links></Links>
-        <Meta></Meta>
+        <Meta />
+        <Links />
       </head>
       <body className="h-full">
-        <LiveReload></LiveReload>
-        <header className="flex items-center justify-between bg-gray-900 p-4 text-white">
-          <h1 className="text-3xl font-bold">
-            <Link to="/">LA-T 로아툴즈</Link>
-          </h1>
-          <div className="float-right flex items-center justify-between">
-            <p className="mr-4">TEST</p>
-            <Form action="/logout" method="post">
-              <button
-                className="rounded-md bg-indigo-600 py-2 px-4 text-indigo-100 hover:bg-indigo-700 active:bg-indigo-500"
-                type="submit"
-              >
-                Logout
-              </button>
-            </Form>
-          </div>
-        </header>
-        <Outlet></Outlet>
-        <Scripts></Scripts>
-        <ScrollRestoration></ScrollRestoration>
+        <div>{commonT("test")}</div>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
       </body>
     </html>
   );
