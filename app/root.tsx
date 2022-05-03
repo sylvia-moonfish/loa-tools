@@ -123,7 +123,7 @@ export default function App() {
               <div>{t("partyFinder")}</div>
             </Link>
           </div>
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end pr-28">
             <div className="relative flex items-center justify-center">
               <div
                 className={`flex h-[2.5rem] w-[7.5rem] cursor-pointer items-center justify-center rounded-2xl bg-loa-button transition`}
