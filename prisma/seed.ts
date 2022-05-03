@@ -1,44 +1,110 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function seed() {
-  const email = "rachel@remix.run";
+  const regionMap = [
+    {
+      regionName: "North America West",
+      serverNames: [
+        "Mari",
+        "Valtan",
+        "Enviska",
+        "Akkan",
+        "Bergstrom",
+        "Shandi",
+        "Rohendel",
+      ],
+    },
+    {
+      regionName: "North America East",
+      serverNames: [
+        "Azena",
+        "Una",
+        "Regulus",
+        "Avesta",
+        "Galatur",
+        "Karta",
+        "Ladon",
+        "Kharmine",
+        "Elzowin",
+        "Sasha",
+        "Adrinne",
+        "Aldebaran",
+        "Zosma",
+        "Vykas",
+        "Danube",
+      ],
+    },
+    {
+      regionName: "Europe Central",
+      serverNames: [
+        "Neria",
+        "Kadan",
+        "Trixion",
+        "Calvasus",
+        "Thirain",
+        "Zinnervale",
+        "Asta",
+        "Wei",
+        "Slen",
+        "Sceptrum",
+        "Procyon",
+        "Beatrice",
+        "Inanna",
+        "Thaemine",
+        "Sirius",
+        "Antares",
+        "Brelshaza",
+        "Nineveh",
+        "Mokoko",
+      ],
+    },
+    {
+      regionName: "Europe West",
+      serverNames: [
+        "Rethramis",
+        "Tortoyk",
+        "Moonkeep",
+        "Stonehearth",
+        "Shadespire",
+        "Tragon",
+        "Petrania",
+        "Punika",
+      ],
+    },
+    {
+      regionName: "South America",
+      serverNames: [
+        "Kazeros",
+        "Agaton",
+        "Gienah",
+        "Arcturus",
+        "Yorn",
+        "Feiton",
+        "Vern",
+        "Kurzan",
+        "Prideholme",
+      ],
+    },
+  ];
 
-  // cleanup the existing database
-  await prisma.user.delete({ where: { email } }).catch(() => {
-    // no worries if it doesn't exist yet
-  });
-
-  const hashedPassword = await bcrypt.hash("racheliscool", 10);
-
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: {
-        create: {
-          hash: hashedPassword,
-        },
+  for (let i = 0; i < regionMap.length; i++) {
+    let region = await prisma.region.create({
+      data: {
+        name: regionMap[i].regionName,
       },
-    },
-  });
+    });
 
-  await prisma.note.create({
-    data: {
-      title: "My first note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
-
-  await prisma.note.create({
-    data: {
-      title: "My second note",
-      body: "Hello, world!",
-      userId: user.id,
-    },
-  });
+    for (let j = 0; j < regionMap[i].serverNames.length; j++) {
+      await prisma.server.create({
+        data: {
+          name: regionMap[i].serverNames[j],
+          regionId: region.id,
+        },
+      });
+    }
+  }
 
   console.log(`Database has been seeded. 🌱`);
 }

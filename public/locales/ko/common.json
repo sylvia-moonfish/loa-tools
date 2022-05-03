@@ -1,3 +1,11 @@
 {
-  "test": "테스트 스트링."
+  "login": "로그인",
+  "logout": "로그아웃",
+  "shortTitle": "로아툴즈",
+  "longTitle": "로아툴즈",
+  "email": "이메일",
+  "password": "비밀번호",
+  "noPrimaryCharacter": "(캐릭터 없음)",
+  "charactersPageTitle": "캐릭터 목록",
+  "addCharacter": "캐릭터 추가"
 }

@@ -90,8 +90,8 @@ Prior to your first deployment, you'll need to do a few things:
 - Create two apps on Fly, one for staging and one for production:
 
   ```sh
-  fly create loa-tools-9ca0
-  fly create loa-tools-9ca0-staging
+  fly create loa-tools-f849
+  fly create loa-tools-f849-staging
   ```
 
 - Initialize Git.
@@ -111,14 +111,14 @@ Prior to your first deployment, you'll need to do a few things:
 - Add a `SESSION_SECRET` to your fly app secrets, to do this you can run the following commands:
 
   ```sh
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-9ca0
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-9ca0-staging
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-f849
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-f849-staging
   ```
 
   > **Note:** When creating the staging secret, you may get a warning from the Fly CLI that looks like this:
   >
   > ```
-  > WARN app flag 'loa-tools-9ca0-staging' does not match app name in config file 'loa-tools-9ca0'
+  > WARN app flag 'loa-tools-f849-staging' does not match app name in config file 'loa-tools-f849'
   > ```
   >
   > This simply means that the current directory contains a config that references the production app we created in the first step. Ignore this warning and proceed to create the secret.
@@ -128,11 +128,11 @@ Prior to your first deployment, you'll need to do a few things:
 - Create a database for both your staging and production environments. Run the following:
 
   ```sh
-  fly postgres create --name loa-tools-9ca0-db
-  fly postgres attach --postgres-app loa-tools-9ca0-db --app loa-tools-9ca0
+  fly postgres create --name loa-tools-f849-db
+  fly postgres attach --postgres-app loa-tools-f849-db --app loa-tools-f849
 
-  fly postgres create --name loa-tools-9ca0-staging-db
-  fly postgres attach --postgres-app loa-tools-9ca0-staging-db --app loa-tools-9ca0-staging
+  fly postgres create --name loa-tools-f849-staging-db
+  fly postgres attach --postgres-app loa-tools-f849-staging-db --app loa-tools-f849-staging
   ```
 
   > **Note:** You'll get the same warning for the same reason when attaching the staging database that you did in the `fly set secret` step above. No worries. Proceed!

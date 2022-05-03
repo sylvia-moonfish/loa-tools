@@ -1,4 +1,4 @@
-app = "loa-tools-9ca0"
+app = "loa-tools"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = [ ]

@@ -1,3 +1,11 @@
 {
-  "test": "This is a test string."
+  "login": "Log In",
+  "logout": "Logout",
+  "shortTitle": "LA-Tools",
+  "longTitle": "Lost Ark Tools",
+  "email": "Email",
+  "password": "Password",
+  "noPrimaryCharacter": "(no character)",
+  "charactersPageTitle": "Characters",
+  "addCharacter": "Add New Character"
 }

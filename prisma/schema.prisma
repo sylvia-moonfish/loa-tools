@@ -8,31 +8,74 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password Password?
-  notes    Note[]
+  discordId            String @unique
+  discordUsername      String
+  discordDiscriminator String
+  discordAvatarHash    String
+
+  characters Character[]
 }
 
-model Password {
-  hash String
+model Region {
+  id   String @id @default(cuid())
+  name String
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+  servers Server[]
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+model Server {
+  id   String @id @default(cuid())
+  name String
+
+  region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  regionId String
+
+  characters Character[]
+}
+
+model Character {
+  id        String  @id @default(cuid())
+  name      String
+  isPrimary Boolean
+  job       Job
+  itemLevel Float
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
+
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  serverId String
+}
+
+enum Job {
+  GUNLANCER
+  BERSERKER
+  PALADIN
+
+  STRIKER
+
+  WARDANCER
+  SCRAPPER
+  SOULFIST
+  GLAIVIER
+
+  DEADEYE
+  ARTILLERIST
+  SHARPSHOOTER
+
+  GUNSLINGER
+
+  BARD
+  SORCERESS
+
+  DEATHBLADE
+  SHADOWHUNTER
 }

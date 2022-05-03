@@ -1,7 +1,6 @@
+import type { User } from "~/models/user.server";
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
-
-import type { User } from "~/models/user.server";
 
 /**
  * This base hook is used in other hooks to quickly search for specific data
@@ -26,22 +25,30 @@ function isUser(user: any): user is User {
 
 export function useOptionalUser(): User | undefined {
   const data = useMatchesData("root");
-  if (!data || !isUser(data.user)) {
-    return undefined;
-  }
+
+  if (!data || !isUser(data.user)) return undefined;
+
   return data.user;
 }
 
 export function useUser(): User {
   const maybeUser = useOptionalUser();
-  if (!maybeUser) {
+
+  if (!maybeUser)
     throw new Error(
       "No user found in root loader, but user is required by useUser. If user is optional, try useOptionalUser instead."
     );
-  }
+
   return maybeUser;
 }
 
-export function validateEmail(email: unknown): email is string {
-  return typeof email === "string" && email.length > 3 && email.includes("@");
+export function getLanguageTextFromLocale(locale: string): string | undefined {
+  switch (locale) {
+    case "en":
+      return "English";
+    case "ko":
+      return "한국어";
+    default:
+      return undefined;
+  }
 }
