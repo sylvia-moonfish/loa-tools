@@ -38,8 +38,8 @@ export default function Index() {
 
   return (
     <div className="flex w-full flex-col items-center justify-center gap-8">
-      <h1 className="text-9xl font-bold text-indigo-500">{t("longTitle")}</h1>
-      <div>뭐 쓸지 몰라서 임시로 써 놓은 글.</div>
+      <h1 className="text-indigo-500 text-9xl font-bold">{t("longTitle")}</h1>
+      <div>뉴욕 최고 디자이너가 디자인한 사이트.</div>
     </div>
   );
 }

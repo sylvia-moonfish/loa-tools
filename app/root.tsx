@@ -3,7 +3,7 @@ import type {
   LoaderFunction,
   MetaFunction,
 } from "@remix-run/node";
-import { ChevronDownIcon } from "@heroicons/react/solid";
+import { ChevronDownIcon, ViewGridIcon } from "@heroicons/react/solid";
 import { json } from "@remix-run/node";
 import {
   Form,
@@ -101,39 +101,40 @@ export default function App() {
         <Links />
       </head>
       <body
-        className="flex min-h-screen select-none flex-col whitespace-nowrap bg-gray-900 text-gray-100"
+        className="flex min-h-screen select-none flex-col whitespace-nowrap bg-loa-body text-loa-white"
         onClick={() => {
           setOpenLanguageDropdown(false);
         }}
       >
-        <header className="sticky top-0 left-0 right-0 grid grid-cols-3 items-stretch justify-between">
-          <div className="flex items-stretch justify-start px-8 py-4">
+        <header className="sticky top-0 left-0 right-0 grid h-20 grid-cols-3 items-center justify-between border-b-2 border-loa-panel-border bg-loa-panel">
+          <div className="pl-28">
             <Link to="/">
-              <h1 className="text-3xl font-bold uppercase transition hover:text-indigo-600 active:text-indigo-800">
+              <h1 className="text-lg font-black uppercase transition">
                 {t("shortTitle")}
               </h1>
             </Link>
           </div>
-          <div className="flex items-stretch justify-center">
+          <div className="flex items-center justify-center">
             <Link
-              className="flex items-center justify-center transition hover:bg-indigo-600 active:bg-indigo-800"
+              className="flex items-center justify-center gap-2.5 transition"
               to="/"
             >
-              <span className="px-8 py-4">Menu Stuff</span>
+              <ViewGridIcon className="h-6 w-6" />
+              <div>{t("partyFinder")}</div>
             </Link>
           </div>
-          <div className="flex items-stretch justify-end">
-            <div className="relative flex items-stretch">
+          <div className="flex items-center justify-end">
+            <div className="relative flex items-center justify-center">
               <div
-                className={`${
-                  openLanguageDropdown ? "bg-indigo-500" : ""
-                } flex cursor-pointer items-center justify-center gap-2 px-8 py-4 transition hover:bg-indigo-600 active:bg-indigo-800`}
+                className={`flex h-[2.5rem] w-[7.5rem] cursor-pointer items-center justify-center rounded-2xl bg-loa-button transition`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setOpenLanguageDropdown(!openLanguageDropdown);
                 }}
               >
-                <div>{getLanguageTextFromLocale(data.locale)}</div>
+                <div className="w-[4.25rem] overflow-hidden text-ellipsis">
+                  {getLanguageTextFromLocale(data.locale)}
+                </div>
                 <div>
                   <ChevronDownIcon className="h-5 w-5" />
                 </div>
@@ -141,7 +142,7 @@ export default function App() {
               <div
                 className={`${
                   openLanguageDropdown ? "scale-y-100" : "scale-y-0"
-                } absolute top-2/4 left-2/4 flex origin-top -translate-x-2/4 flex-col items-stretch overflow-hidden rounded-md bg-gray-800 shadow-2xl transition`}
+                } absolute top-2/4 left-2/4 flex origin-top -translate-x-2/4 flex-col items-stretch overflow-hidden rounded-md bg-loa-panel shadow-2xl transition`}
               >
                 {supportedLanguages.map((language, index) => (
                   <Form
@@ -157,7 +158,7 @@ export default function App() {
                     />
                     <input name="pathname" type="hidden" value={pathname} />
                     <button
-                      className="px-8 py-4 text-center transition hover:bg-indigo-600 active:bg-indigo-800"
+                      className="hover:bg-indigo-600 active:bg-indigo-800 px-8 py-4 text-center transition"
                       type="submit"
                     >
                       {language.text}
@@ -169,7 +170,7 @@ export default function App() {
             {data.user ? (
               <div className="flex items-stretch justify-center">
                 <Link
-                  className="flex items-center justify-center px-8 py-4 transition hover:bg-indigo-600 active:bg-indigo-800"
+                  className="hover:bg-indigo-600 active:bg-indigo-800 flex items-center justify-center px-8 py-4 transition"
                   to="/characters"
                 >
                   {data.primaryCharacter
@@ -182,7 +183,7 @@ export default function App() {
                   method="post"
                 >
                   <button
-                    className="flex items-center justify-center px-8 py-4 transition hover:bg-indigo-600 active:bg-indigo-800"
+                    className="hover:bg-indigo-600 active:bg-indigo-800 flex items-center justify-center px-8 py-4 transition"
                     type="submit"
                   >
                     {t("logout")}
@@ -191,7 +192,7 @@ export default function App() {
               </div>
             ) : (
               <Link
-                className="flex items-center justify-center transition hover:bg-indigo-600 active:bg-indigo-800"
+                className="hover:bg-indigo-600 active:bg-indigo-800 flex items-center justify-center transition"
                 to={`/login?redirectTo=${pathname}`}
               >
                 <span className="px-8 py-4">{t("login")}</span>

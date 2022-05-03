@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function seed() {
-  const regionMap = [
+  /*const regionMap = [
     {
       regionName: "North America West",
       serverNames: [
@@ -104,7 +104,7 @@ async function seed() {
         },
       });
     }
-  }
+  }*/
 
   console.log(`Database has been seeded. 🌱`);
 }
