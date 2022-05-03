@@ -28,7 +28,7 @@ export const loader: LoaderFunction = async ({ request }) => {
             client_secret: process.env.DISCORD_CLIENT_SECRET,
             grant_type: "authorization_code",
             code,
-            redirect_uri: `${url.protocol}//${url.host}/discord/redirect`,
+            redirect_uri: `${process.env.HOST_URL}/discord/redirect`,
           }),
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",

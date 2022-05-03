@@ -20,7 +20,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     redirectTo: `https://discord.com/api/oauth2/authorize?${new URLSearchParams(
       [
         ["client_id", process.env.DISCORD_CLIENT_ID],
-        ["redirect_uri", `${url.protocol}//${url.host}/discord/redirect`],
+        ["redirect_uri", `${process.env.HOST_URL}/discord/redirect`],
         ["response_type", "code"],
         ["scope", "identify"],
         ["state", session.state],
