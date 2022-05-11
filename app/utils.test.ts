@@ -1,5 +1,5 @@
-import { getLanguageTextFromLocale } from "~/utils";
+import { generateRandomString } from "~/utils.server";
 
-test("getLanguageTextFromLocale", () => {
-  expect(getLanguageTextFromLocale("en")).toBe("English");
+test("generateRandomString", () => {
+  expect(typeof generateRandomString(1)).toBe("string");
 });

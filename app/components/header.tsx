@@ -89,6 +89,7 @@ export default function Header(props: {
             <Dropdown
               button={
                 <img
+                  alt="discord avatar"
                   className="h-[2.5rem] w-[2.5rem] cursor-pointer rounded-full"
                   src={`https://cdn.discordapp.com/avatars/${
                     props.user.discordId
