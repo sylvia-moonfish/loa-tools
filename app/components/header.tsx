@@ -30,14 +30,16 @@ export default function Header(props: {
             className="flex items-center justify-center gap-[0.625rem]"
             to="/tools/party-finder"
           >
-            <span className="material-icons text-[1.5rem]">today</span>
+            <span className="material-icons-round text-[1.5rem]">
+              grid_view
+            </span>
             <div>{t("partyFinderPageTitle", { ns: "root" })}</div>
           </Link>
           <Link
             className="flex items-center justify-center gap-[0.625rem]"
             to="/"
           >
-            <span className="material-icons text-[1.5rem]">info</span>
+            <span className="material-icons text-[1.5rem]">help</span>
             <div>{t("helpPageTitle", { ns: "root" })}</div>
           </Link>
         </div>
@@ -131,7 +133,7 @@ export default function Header(props: {
             />
           ) : (
             <Link
-              className="py-[1.25rem] px-[1.5rem]"
+              className="rounded-[0.9375rem] bg-loa-button-border py-[0.625rem] px-[1.375rem] leading-[1.25rem]"
               to={`/login?${new URLSearchParams({
                 redirectTo: props.pathname,
               })}`}
