@@ -1,6 +1,0 @@
-{
-  "emailInvalid": "이메일 주소가 올바르지 않습니다.",
-  "passwordRequired": "비밀번호를 입력해주세요.",
-  "passwordTooShort": "비밀번호가 너무 짧습니다.",
-  "credentialInvalid": "이메일이 존재하지 않거나 비밀번호가 올바르지 않습니다."
-}

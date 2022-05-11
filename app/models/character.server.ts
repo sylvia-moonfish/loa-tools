@@ -1,5 +1,4 @@
-import type { Character, User } from "@prisma/client";
-
+import type { Character, Server, User } from "@prisma/client";
 import { prisma } from "~/db.server";
 
 export type { Character } from "@prisma/client";
@@ -31,6 +30,29 @@ export function getCharacters({ userId }: { userId: User["id"] }) {
           region: true,
         },
       },
+    },
+  });
+}
+
+export function addCharacter({
+  name,
+  isPrimary,
+  job,
+  itemLevel,
+  userId,
+  serverId,
+}: Pick<Character, "name" | "isPrimary" | "job" | "itemLevel"> & {
+  userId: User["id"];
+  serverId: Server["id"];
+}) {
+  return prisma.character.create({
+    data: {
+      name,
+      isPrimary,
+      job,
+      itemLevel,
+      userId: userId,
+      serverId: serverId,
     },
   });
 }

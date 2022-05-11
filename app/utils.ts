@@ -41,14 +41,3 @@ export function useUser(): User {
 
   return maybeUser;
 }
-
-export function getLanguageTextFromLocale(locale: string): string | undefined {
-  switch (locale) {
-    case "en":
-      return "English";
-    case "ko":
-      return "한국어";
-    default:
-      return undefined;
-  }
-}

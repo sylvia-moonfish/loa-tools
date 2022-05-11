@@ -1,13 +1,13 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { getSession, getUser, saveSession } from "~/session.server";
+import { getSession, getUserFromRequest, saveSession } from "~/session.server";
 import { generateRandomString } from "~/utils.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirectTo") || "/";
 
-  if (!process.env.DISCORD_CLIENT_ID || (await getUser(request)))
+  if (!process.env.DISCORD_CLIENT_ID || (await getUserFromRequest(request)))
     return redirect(redirectTo);
 
   const session = await getSession(request);
@@ -18,13 +18,13 @@ export const loader: LoaderFunction = async ({ request }) => {
     request,
     session,
     redirectTo: `https://discord.com/api/oauth2/authorize?${new URLSearchParams(
-      [
-        ["client_id", process.env.DISCORD_CLIENT_ID],
-        ["redirect_uri", `${process.env.HOST_URL}/discord/redirect`],
-        ["response_type", "code"],
-        ["scope", "identify"],
-        ["state", session.state],
-      ]
+      {
+        client_id: process.env.DISCORD_CLIENT_ID,
+        redirect_uri: `${process.env.HOST_URL}/discord/redirect`,
+        response_type: "code",
+        scope: "identify",
+        state: session.state,
+      }
     )}`,
   });
 };

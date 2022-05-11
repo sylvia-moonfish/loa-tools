@@ -1,15 +1,16 @@
 import type { User } from "@prisma/client";
-
 import { prisma } from "~/db.server";
 
 export type { User } from "@prisma/client";
 
-export async function getUserById(id: User["id"]) {
-  return prisma.user.findUnique({ where: { id } });
+export async function getUser({ id }: Pick<User, "id">) {
+  return prisma.user.findFirst({ where: { id } });
 }
 
-export async function getUserByDiscordId(discordId: User["discordId"]) {
-  return prisma.user.findUnique({ where: { discordId } });
+export async function getUserByDiscordId({
+  discordId,
+}: Pick<User, "discordId">) {
+  return prisma.user.findFirst({ where: { discordId } });
 }
 
 export async function upsertUser({
@@ -17,12 +18,10 @@ export async function upsertUser({
   discordUsername,
   discordDiscriminator,
   discordAvatarHash,
-}: {
-  discordId: User["discordId"];
-  discordUsername: User["discordUsername"];
-  discordDiscriminator: User["discordDiscriminator"];
-  discordAvatarHash: User["discordAvatarHash"];
-}) {
+}: Pick<
+  User,
+  "discordId" | "discordUsername" | "discordDiscriminator" | "discordAvatarHash"
+>) {
   return prisma.user.upsert({
     where: {
       discordId,

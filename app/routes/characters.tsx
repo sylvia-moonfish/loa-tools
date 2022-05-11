@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function CharactersPage() {
   return (
-    <div className="flex flex-grow flex-col gap-8 pt-8">
+    <div className="flex flex-grow flex-col pt-8">
       <Outlet context={useOutletContext()} />
     </div>
   );

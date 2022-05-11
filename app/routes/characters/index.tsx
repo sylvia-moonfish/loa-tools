@@ -1,6 +1,5 @@
 import type { LoaderFunction } from "@remix-run/node";
 import type { RootContext } from "~/root";
-import { PlusIcon } from "@heroicons/react/solid";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import * as React from "react";
@@ -33,16 +32,15 @@ export default function CharactersIndexPage() {
 
   return (
     <>
-      <div className="flex w-full justify-end">
+      <div className="mx-auto flex w-full max-w-xl justify-end">
         <Link
-          className="flex items-center justify-center gap-2 rounded-md bg-indigo-700 py-2 px-4 transition hover:bg-indigo-600 active:bg-indigo-800"
+          className="bg-indigo-700 hover:bg-indigo-600 active:bg-indigo-800 flex items-center justify-center gap-2 rounded-md py-2 px-4 transition"
           to="/characters/add"
         >
-          <PlusIcon className="h-5 w-5" />
           <span>{t("addCharacter")}</span>
         </Link>
       </div>
-      {data.characters.forEach((character, index) => {
+      {data.characters.map((character, index) => {
         return <div key={index}>{JSON.stringify(character)}</div>;
       })}
     </>

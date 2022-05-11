@@ -3,13 +3,11 @@ import type { RootContext } from "~/root";
 import { json } from "@remix-run/node";
 import { useOutletContext } from "@remix-run/react";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 import { i18n } from "~/i18n.server";
+import { requireUser } from "~/session.server";
 
 export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
-  return {
-    title: data.title,
-  };
+  return { title: data.title };
 };
 
 export const handle = {
@@ -22,26 +20,19 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, "root");
+  const user = requireUser(request);
 
   return json<LoaderData>({
-    title: t("longTitle"),
+    title: `${t("partyFinderPageTitle")} | ${t("shortTitle")}`,
   });
 };
 
-export default function Index() {
+export default function ToolsPartyFinderPage() {
   const { setPathname } = useOutletContext<RootContext>();
-  const { t } = useTranslation();
 
   React.useEffect(() => {
-    setPathname("/");
+    setPathname("/tools/party-finder");
   });
 
-  return (
-    <div className="flex w-full flex-col items-center justify-center gap-8">
-      <h1 className="text-indigo-500 text-9xl font-bold">
-        {t("longTitle", { ns: "root" })}
-      </h1>
-      <div>뉴욕 최고 디자이너가 디자인한 사이트.</div>
-    </div>
-  );
+  return <div className="mx-auto w-[76.25rem]"></div>;
 }
