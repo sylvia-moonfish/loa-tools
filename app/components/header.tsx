@@ -27,7 +27,11 @@ export default function Header(props: {
         </div>
         <div className="flex items-center justify-center gap-[2.6875rem]">
           <Link
-            className="flex items-center justify-center gap-[0.625rem]"
+            className={`${
+              props.pathname !== "/tools/party-finder"
+                ? "text-loa-inactive "
+                : ""
+            }flex items-center justify-center gap-[0.625rem]`}
             to="/tools/party-finder"
           >
             <span className="material-icons-round text-[1.5rem]">
@@ -36,7 +40,9 @@ export default function Header(props: {
             <div>{t("partyFinderPageTitle", { ns: "root" })}</div>
           </Link>
           <Link
-            className="flex items-center justify-center gap-[0.625rem]"
+            className={`${
+              props.pathname !== "/help" ? "text-loa-inactive " : ""
+            }flex items-center justify-center gap-[0.625rem]`}
             to="/"
           >
             <span className="material-icons text-[1.5rem]">help</span>

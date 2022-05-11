@@ -20,7 +20,7 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, "root");
-  const user = requireUser(request);
+  const user = await requireUser(request);
 
   return json<LoaderData>({
     title: `${t("partyFinderPageTitle")} | ${t("shortTitle")}`,
