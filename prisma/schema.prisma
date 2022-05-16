@@ -22,14 +22,22 @@ model User {
 }
 
 model Region {
-    id   String @id @default(cuid())
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     name String @unique
 
     servers Server[]
 }
 
 model Server {
-    id   String @id @default(cuid())
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     name String @unique
 
     region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
@@ -39,14 +47,15 @@ model Server {
 }
 
 model Character {
-    id        String  @id @default(cuid())
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     name      String
     isPrimary Boolean
     job       Job
     itemLevel Float
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
     user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
     userId String
@@ -78,4 +87,50 @@ enum Job {
 
     DEATHBLADE
     SHADOWHUNTER
+}
+
+model Content {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    contentId       Int             @unique
+    contentCategory ContentCategory
+    contentType     ContentType?
+    level           Int
+    groupSize       Int
+    imgSrc          String
+
+    contentNames ContentName[]
+}
+
+model ContentName {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    name   String
+    locale String
+
+    content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentId String
+}
+
+enum ContentCategory {
+    DUNGEONS
+    CHAOS_RUINS
+    TOWERS
+    RAIDS
+    ABYSS_DUNGEONS
+}
+
+enum ContentType {
+    DAILY
+    WEEKLY
+    ABYSS
+    COMMON
+    CHALLENGE
+    COMMANDERS
 }

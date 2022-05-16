@@ -1,5 +1,6 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
 import { prisma } from "~/db.server";
 
 export const loader: LoaderFunction = async () => {
@@ -134,3 +135,10 @@ export const loader: LoaderFunction = async () => {
     })
   );
 };
+
+export default function SeedRegionPage() {
+  const data = useLoaderData();
+  console.log(data);
+
+  return <div />;
+}

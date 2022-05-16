@@ -12,6 +12,7 @@ module.exports = {
       "loa-button-border": "#4447e2",
       "loa-white": "#ffffff",
       "loa-red": "#e24444",
+      "loa-button-gray": "#4b4b62",
     },
     extend: {
       fontFamily: {

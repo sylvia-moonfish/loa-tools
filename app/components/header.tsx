@@ -34,7 +34,7 @@ export default function Header(props: {
             }flex items-center justify-center gap-[0.625rem]`}
             to="/tools/party-finder"
           >
-            <span className="material-icons-round text-[1.5rem]">
+            <span className="material-symbols-rounded filled-icon text-[1.5rem]">
               grid_view
             </span>
             <div>{t("partyFinderPageTitle", { ns: "root" })}</div>
@@ -45,7 +45,9 @@ export default function Header(props: {
             }flex items-center justify-center gap-[0.625rem]`}
             to="/"
           >
-            <span className="material-icons text-[1.5rem]">help</span>
+            <span className="material-symbols-outlined filled-icon text-[1.5rem]">
+              help
+            </span>
             <div>{t("helpPageTitle", { ns: "root" })}</div>
           </Link>
         </div>
@@ -56,7 +58,7 @@ export default function Header(props: {
                 <div className="w-[4.25rem] overflow-hidden text-ellipsis">
                   {t(props.currentLocale, { ns: "locale" })}
                 </div>
-                <span className="material-icons text-[0.75rem]">
+                <span className="material-symbols-outlined text-[1.25rem]">
                   expand_more
                 </span>
               </div>
@@ -65,7 +67,7 @@ export default function Header(props: {
             horizontalPanelAnchor="center"
             origin="origin-top"
             panel={
-              <div className="mt-[0.6875rem] flex flex-col rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel px-[1.25rem]">
+              <div className="mt-[0.6875rem] flex w-[7.5rem] flex-col items-center rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
                 {props.supportedLocales.map((locale, index) => {
                   return (
                     <Form action="/change-language" key={index} method="post">
@@ -80,7 +82,7 @@ export default function Header(props: {
                           index !== 0
                             ? "border-t-[0.0625rem] border-loa-button "
                             : ""
-                        }py-[1.375rem] leading-[1.25rem]`}
+                        }w-[6.25rem] overflow-hidden text-ellipsis py-[1.375rem] leading-[1.25rem]`}
                         type="submit"
                       >
                         {t(locale, { ns: "locale" })}
@@ -117,7 +119,9 @@ export default function Header(props: {
                     className="flex items-center justify-start gap-[0.625rem] py-[1.375rem] px-[1.25rem]"
                     to="/characters"
                   >
-                    <span className="material-icons text-[1.5rem]">group</span>
+                    <span className="material-symbols-outlined filled-icon text-[1.5rem]">
+                      person
+                    </span>
                     <div>{t("myRoster", { ns: "components\\header" })}</div>
                   </Link>
                   <hr className="mx-[1.25rem] border-loa-button" />
@@ -126,7 +130,7 @@ export default function Header(props: {
                       className="flex items-center justify-start gap-[0.625rem] py-[1.375rem] px-[1.25rem] text-loa-red"
                       type="submit"
                     >
-                      <span className="material-icons text-[1.5rem]">
+                      <span className="material-symbols-outlined text-[1.5rem]">
                         logout
                       </span>
                       <div>{t("logout", { ns: "components\\header" })}</div>

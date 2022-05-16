@@ -1,6 +1,6 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { RootContext } from "~/root";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useOutletContext } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,8 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
+  return redirect("/tools/party-finder");
+
   const t = await i18n.getFixedT(request, "root");
 
   return json<LoaderData>({

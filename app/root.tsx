@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
 import Header, { handle as HeaderHandle } from "~/components/header";
 import fontsStylesheetUrl from "~/styles/fonts.css";
+import materialSymbolsStylesheetUrl from "~/styles/material-symbols.css";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
 import { initOptions } from "~/i18n.config";
 import { i18n } from "~/i18n.server";
@@ -26,7 +27,10 @@ import { getUserFromRequest } from "~/session.server";
 export const links: LinksFunction = () => {
   return [
     { href: fontsStylesheetUrl, rel: "stylesheet" },
-    { href: "/material-icons/iconfont/material-icons.css", rel: "stylesheet" },
+    {
+      href: materialSymbolsStylesheetUrl,
+      rel: "stylesheet",
+    },
     { href: tailwindStylesheetUrl, rel: "stylesheet" },
   ];
 };
