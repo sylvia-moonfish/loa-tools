@@ -14,7 +14,7 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
 };
 
 export const handle = {
-  i18n: ["root", "routes\\tools\\party-finder"],
+  i18n: ["dictionary\\job", "routes\\tools\\party-finder"],
 };
 
 type LoaderData = {
@@ -65,10 +65,10 @@ export default function ToolsPartyFinderPage() {
               {Object.values(Job).map((job, index) => {
                 return (
                   <div
-                    className="rounded-[0.9375rem] bg-loa-panel py-[0.8125rem] px-[1.25rem] text-[0.875rem] font-[500]"
+                    className="rounded-[0.9375rem] bg-loa-panel py-[0.3125rem] px-[0.75rem] text-[0.75rem] font-[500]"
                     key={index}
                   >
-                    {job}
+                    {t(job, { ns: "dictionary\\job" })}
                   </div>
                 );
               })}

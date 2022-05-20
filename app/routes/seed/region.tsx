@@ -140,5 +140,11 @@ export default function SeedRegionPage() {
   const data = useLoaderData();
   console.log(data);
 
-  return <div />;
+  return (
+    <textarea
+      className="h-full-screen w-full cursor-default bg-loa-body"
+      readOnly={true}
+      value={JSON.stringify(data, null, 4)}
+    />
+  );
 }

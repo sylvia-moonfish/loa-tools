@@ -8,7 +8,7 @@ import { getCharacters } from "~/models/character.server";
 import { requireUser } from "~/session.server";
 
 export const handle = {
-  i18n: ["common"],
+  i18n: [],
 };
 
 type LoaderData = { characters: Awaited<ReturnType<typeof getCharacters>> };

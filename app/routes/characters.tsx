@@ -8,7 +8,7 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
 };
 
 export const handle = {
-  i18n: ["common"],
+  i18n: [],
 };
 
 type LoaderData = {
@@ -16,7 +16,7 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const t = await i18n.getFixedT(request, "common");
+  const t = await i18n.getFixedT(request, "root");
 
   return json<LoaderData>({
     title: `${t("charactersPageTitle")} | ${t("shortTitle")}`,

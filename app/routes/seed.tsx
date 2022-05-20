@@ -10,9 +10,5 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function SeedPage() {
-  return (
-    <div>
-      <Outlet />
-    </div>
-  );
+  return <Outlet />;
 }

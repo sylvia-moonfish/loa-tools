@@ -1,4 +1,4 @@
-import type { LoaderFunction } from "@remix-run/node";
+/*import type { LoaderFunction } from "@remix-run/node";
 import { ContentCategory, ContentType } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -241,5 +241,10 @@ export default function Dungeon() {
   const data = useLoaderData();
   console.log(data);
 
+  return <div />;
+}
+*/
+
+export default function DungeonPage() {
   return <div />;
 }

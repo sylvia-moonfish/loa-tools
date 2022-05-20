@@ -1,12 +1,6 @@
 -- CreateEnum
 CREATE TYPE "Job" AS ENUM ('GUNLANCER', 'BERSERKER', 'PALADIN', 'STRIKER', 'WARDANCER', 'SCRAPPER', 'SOULFIST', 'GLAIVIER', 'DEADEYE', 'ARTILLERIST', 'SHARPSHOOTER', 'GUNSLINGER', 'BARD', 'SORCERESS', 'DEATHBLADE', 'SHADOWHUNTER');
 
--- CreateEnum
-CREATE TYPE "ContentCategory" AS ENUM ('DUNGEONS', 'CHAOS_RUINS', 'TOWERS', 'RAIDS', 'ABYSS_DUNGEONS');
-
--- CreateEnum
-CREATE TYPE "ContentType" AS ENUM ('DAILY', 'WEEKLY', 'ABYSS', 'COMMON', 'CHALLENGE', 'COMMANDERS');
-
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -57,30 +51,63 @@ CREATE TABLE "Character" (
 );
 
 -- CreateTable
+CREATE TABLE "ContentType" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ContentType_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContentGroup" (
+    "id" TEXT NOT NULL,
+    "order" INTEGER NOT NULL,
+    "contentTypeId" TEXT NOT NULL,
+
+    CONSTRAINT "ContentGroup_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Content" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "contentId" INTEGER NOT NULL,
-    "contentCategory" "ContentCategory" NOT NULL,
-    "contentType" "ContentType",
+    "order" INTEGER NOT NULL,
+    "tier" INTEGER NOT NULL,
     "level" INTEGER NOT NULL,
     "groupSize" INTEGER NOT NULL,
-    "imgSrc" TEXT NOT NULL,
+    "requireFullParty" BOOLEAN NOT NULL,
+    "iconSrc" TEXT,
+    "bannerSrc" TEXT,
+    "contentDifficultyId" TEXT,
+    "contentGroupId" TEXT NOT NULL,
 
     CONSTRAINT "Content_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ContentName" (
+CREATE TABLE "ContentDifficulty" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "name" TEXT NOT NULL,
-    "locale" TEXT NOT NULL,
-    "contentId" TEXT NOT NULL,
 
-    CONSTRAINT "ContentName_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ContentDifficulty_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "LocalizedText" (
+    "id" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "text" TEXT NOT NULL,
+    "locale" TEXT NOT NULL,
+    "contentTypeId" TEXT,
+    "contentGroupId" TEXT,
+    "contentId" TEXT,
+    "contentDifficultyId" TEXT,
+
+    CONSTRAINT "LocalizedText_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -93,7 +120,10 @@ CREATE UNIQUE INDEX "Region_name_key" ON "Region"("name");
 CREATE UNIQUE INDEX "Server_name_key" ON "Server"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Content_contentId_key" ON "Content"("contentId");
+CREATE UNIQUE INDEX "ContentGroup_order_contentTypeId_key" ON "ContentGroup"("order", "contentTypeId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Content_order_contentGroupId_key" ON "Content"("order", "contentGroupId");
 
 -- AddForeignKey
 ALTER TABLE "Server" ADD CONSTRAINT "Server_regionId_fkey" FOREIGN KEY ("regionId") REFERENCES "Region"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -105,4 +135,22 @@ ALTER TABLE "Character" ADD CONSTRAINT "Character_userId_fkey" FOREIGN KEY ("use
 ALTER TABLE "Character" ADD CONSTRAINT "Character_serverId_fkey" FOREIGN KEY ("serverId") REFERENCES "Server"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ContentName" ADD CONSTRAINT "ContentName_contentId_fkey" FOREIGN KEY ("contentId") REFERENCES "Content"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "ContentGroup" ADD CONSTRAINT "ContentGroup_contentTypeId_fkey" FOREIGN KEY ("contentTypeId") REFERENCES "ContentType"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Content" ADD CONSTRAINT "Content_contentGroupId_fkey" FOREIGN KEY ("contentGroupId") REFERENCES "ContentGroup"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Content" ADD CONSTRAINT "Content_contentDifficultyId_fkey" FOREIGN KEY ("contentDifficultyId") REFERENCES "ContentDifficulty"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LocalizedText" ADD CONSTRAINT "LocalizedText_contentTypeId_fkey" FOREIGN KEY ("contentTypeId") REFERENCES "ContentType"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LocalizedText" ADD CONSTRAINT "LocalizedText_contentGroupId_fkey" FOREIGN KEY ("contentGroupId") REFERENCES "ContentGroup"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LocalizedText" ADD CONSTRAINT "LocalizedText_contentId_fkey" FOREIGN KEY ("contentId") REFERENCES "Content"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "LocalizedText" ADD CONSTRAINT "LocalizedText_contentDifficultyId_fkey" FOREIGN KEY ("contentDifficultyId") REFERENCES "ContentDifficulty"("id") ON DELETE SET NULL ON UPDATE CASCADE;

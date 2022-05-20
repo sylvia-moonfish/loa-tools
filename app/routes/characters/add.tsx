@@ -17,7 +17,7 @@ import { getServer } from "~/models/server.server";
 import { requireUser } from "~/session.server";
 
 export const handle = {
-  i18n: ["common"],
+  i18n: ["dictionary\\job"],
 };
 
 type ActionData = {
@@ -121,7 +121,7 @@ export default function CharactersAddPage() {
         {Object.values(Job).map((job, index) => {
           return (
             <option key={index} value={job}>
-              {t(job)}
+              {t(job, { ns: "dictionary\\job" })}
             </option>
           );
         })}

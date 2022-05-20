@@ -89,48 +89,80 @@ enum Job {
     SHADOWHUNTER
 }
 
+model ContentType {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    contentGroups ContentGroup[]
+    name          LocalizedText[]
+}
+
+model ContentGroup {
+    id String @id @default(cuid())
+
+    order Int
+
+    contentType   ContentType @relation(fields: [contentTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentTypeId String
+
+    contents Content[]
+    name     LocalizedText[]
+
+    @@unique([order, contentTypeId])
+}
+
 model Content {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    contentId       Int             @unique
-    contentCategory ContentCategory
-    contentType     ContentType?
-    level           Int
-    groupSize       Int
-    imgSrc          String
+    order            Int
+    tier             Int
+    level            Int
+    groupSize        Int
+    requireFullParty Boolean
+    iconSrc          String?
+    bannerSrc        String?
 
-    contentNames ContentName[]
+    contentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentDifficultyId String?
+
+    contentGroup   ContentGroup @relation(fields: [contentGroupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentGroupId String
+
+    name LocalizedText[]
+
+    @@unique([order, contentGroupId])
 }
 
-model ContentName {
+model ContentDifficulty {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    name   String
+    contents Content[]
+    name     LocalizedText[]
+}
+
+model LocalizedText {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    text   String
     locale String
 
-    content   Content @relation(fields: [contentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentId String
-}
-
-enum ContentCategory {
-    DUNGEONS
-    CHAOS_RUINS
-    TOWERS
-    RAIDS
-    ABYSS_DUNGEONS
-}
-
-enum ContentType {
-    DAILY
-    WEEKLY
-    ABYSS
-    COMMON
-    CHALLENGE
-    COMMANDERS
+    ContentType         ContentType?       @relation(fields: [contentTypeId], references: [id])
+    contentTypeId       String?
+    ContentGroup        ContentGroup?      @relation(fields: [contentGroupId], references: [id])
+    contentGroupId      String?
+    Content             Content?           @relation(fields: [contentId], references: [id])
+    contentId           String?
+    ContentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id])
+    contentDifficultyId String?
 }

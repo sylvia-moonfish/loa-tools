@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import Dropdown from "~/components/dropdown";
 
 export const handle = {
-  i18n: ["components\\header", "locale"],
+  i18n: ["components\\header", "dictionary\\locale"],
 };
 
 export default function Header(props: {
@@ -56,7 +56,7 @@ export default function Header(props: {
             button={
               <div className="flex h-[2.5rem] w-[7.5rem] cursor-pointer items-center justify-center rounded-[0.9375rem] bg-loa-button">
                 <div className="w-[4.25rem] overflow-hidden text-ellipsis">
-                  {t(props.currentLocale, { ns: "locale" })}
+                  {t(props.currentLocale, { ns: "dictionary\\locale" })}
                 </div>
                 <span className="material-symbols-outlined text-[1.25rem]">
                   expand_more
@@ -85,7 +85,7 @@ export default function Header(props: {
                         }w-[6.25rem] overflow-hidden text-ellipsis py-[1.375rem] leading-[1.25rem]`}
                         type="submit"
                       >
-                        {t(locale, { ns: "locale" })}
+                        {t(locale, { ns: "dictionary\\locale" })}
                       </button>
                     </Form>
                   );

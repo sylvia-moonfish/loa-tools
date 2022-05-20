@@ -13,7 +13,7 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
 };
 
 export const handle = {
-  i18n: ["root"],
+  i18n: [],
 };
 
 type LoaderData = {
