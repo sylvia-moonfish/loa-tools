@@ -41,7 +41,7 @@ export default function ToolsPartyFinderPage() {
   return (
     <div className="mx-auto mt-[2.5rem] flex w-[76.25rem] flex-col">
       <GoToTopButton />
-      <div className="mt-[2.5rem] flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-[0.5625rem]">
           <div className="text-[1.625rem]">
             {t("title", { ns: "routes\\tools\\party-finder" })}
@@ -61,7 +61,7 @@ export default function ToolsPartyFinderPage() {
             <div className="text-[1.25rem]">
               {t("filterByJobs", { ns: "routes\\tools\\party-finder" })}
             </div>
-            <div className="flex flex-wrap gap-[1rem]">
+            <div className="flex flex-wrap gap-[0.625rem]">
               {Object.values(Job).map((job, index) => {
                 return (
                   <div

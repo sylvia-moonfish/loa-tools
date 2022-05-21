@@ -17,12 +17,12 @@ export default function Header(props: {
 
   return (
     <header className="sticky top-0 left-0 right-0 min-w-[76.25rem] border-b-2 border-loa-panel-border bg-loa-panel">
-      <div className="mx-auto grid h-20 w-[76.25rem] grid-cols-3 gap-[0.625rem]">
+      <div className="mx-auto grid h-20 w-[76.25rem] grid-cols-3">
         <div className="flex items-center justify-start">
           <Link to="/">
-            <h1 className="text-[1.125rem] font-black uppercase">
+            <div className="text-[1.125rem] font-[900] uppercase leading-[1.25rem]">
               {t("shortTitle", { ns: "root" })}
-            </h1>
+            </div>
           </Link>
         </div>
         <div className="flex items-center justify-center gap-[2.6875rem]">
@@ -37,7 +37,9 @@ export default function Header(props: {
             <span className="material-symbols-rounded filled-icon text-[1.5rem]">
               grid_view
             </span>
-            <div>{t("partyFinderPageTitle", { ns: "root" })}</div>
+            <div className="text-[1.125rem] font-[400] leading-[1.25rem]">
+              {t("partyFinderPageTitle", { ns: "root" })}
+            </div>
           </Link>
           <Link
             className={`${
@@ -48,14 +50,16 @@ export default function Header(props: {
             <span className="material-symbols-outlined filled-icon text-[1.5rem]">
               help
             </span>
-            <div>{t("helpPageTitle", { ns: "root" })}</div>
+            <div className="text-[1.125rem] font-[400] leading-[1.25rem]">
+              {t("helpPageTitle", { ns: "root" })}
+            </div>
           </Link>
         </div>
         <div className="flex items-center justify-end gap-[0.625rem]">
           <Dropdown
             button={
               <div className="flex h-[2.5rem] w-[7.5rem] cursor-pointer items-center justify-center rounded-[0.9375rem] bg-loa-button">
-                <div className="w-[4.25rem] overflow-hidden text-ellipsis">
+                <div className="w-[4.25rem] text-ellipsis text-[1rem] font-[400] leading-[1.25rem]">
                   {t(props.currentLocale, { ns: "dictionary\\locale" })}
                 </div>
                 <span className="material-symbols-outlined text-[1.25rem]">
@@ -77,12 +81,11 @@ export default function Header(props: {
                         type="hidden"
                         value={props.pathname}
                       />
+                      {index !== 0 && (
+                        <hr className="mx-[0.625rem] border-loa-button" />
+                      )}
                       <button
-                        className={`${
-                          index !== 0
-                            ? "border-t-[0.0625rem] border-loa-button "
-                            : ""
-                        }w-[6.25rem] overflow-hidden text-ellipsis py-[1.375rem] leading-[1.25rem]`}
+                        className="w-[6.25rem] overflow-hidden text-ellipsis py-[1.375rem] text-[1rem] font-[500] leading-[1.25rem]"
                         type="submit"
                       >
                         {t(locale, { ns: "dictionary\\locale" })}
@@ -122,7 +125,9 @@ export default function Header(props: {
                     <span className="material-symbols-outlined filled-icon text-[1.5rem]">
                       person
                     </span>
-                    <div>{t("myRoster", { ns: "components\\header" })}</div>
+                    <div className="text-[1rem] font-[500] leading-[1.25rem]">
+                      {t("myRoster", { ns: "components\\header" })}
+                    </div>
                   </Link>
                   <hr className="mx-[1.25rem] border-loa-button" />
                   <Form action="/logout" method="post">
@@ -133,7 +138,9 @@ export default function Header(props: {
                       <span className="material-symbols-outlined text-[1.5rem]">
                         logout
                       </span>
-                      <div>{t("logout", { ns: "components\\header" })}</div>
+                      <div className="text-[1rem] font-[500] leading-[1.25rem]">
+                        {t("logout", { ns: "components\\header" })}
+                      </div>
                     </button>
                   </Form>
                 </div>
@@ -143,7 +150,7 @@ export default function Header(props: {
             />
           ) : (
             <Link
-              className="rounded-[0.9375rem] bg-loa-button-border py-[0.625rem] px-[1.375rem] leading-[1.25rem]"
+              className="rounded-[0.9375rem] bg-loa-button-border py-[0.625rem] px-[1.375rem] text-[1rem] font-[400] leading-[1.25rem]"
               to={`/login?${new URLSearchParams({
                 redirectTo: props.pathname,
               })}`}
