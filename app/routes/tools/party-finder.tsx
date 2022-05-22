@@ -151,9 +151,7 @@ export default function ToolsPartyFinderPage() {
               </div>
               <div className="grid grid-cols-2">
                 <div className="flex cursor-pointer items-center gap-[0.8125rem]">
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                   <div className="overflow-hidden text-ellipsis text-[0.875rem] font-[500]">
                     {t("objectivePractice", {
                       ns: "routes\\tools\\party-finder",
@@ -161,9 +159,7 @@ export default function ToolsPartyFinderPage() {
                   </div>
                 </div>
                 <div className="flex cursor-pointer items-center gap-[0.8125rem]">
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                   <div className="overflow-hidden text-ellipsis text-[0.875rem] font-[500]">
                     {t("objectiveFarm", { ns: "routes\\tools\\party-finder" })}
                   </div>
@@ -181,56 +177,44 @@ export default function ToolsPartyFinderPage() {
                   <div className="text-[0.875rem] font-[500]">
                     {t("mon", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[0.875rem] font-[500]">
                     {t("tue", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[0.875rem] font-[500]">
                     {t("wed", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[0.875rem] font-[500]">
                     {t("thu", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[0.875rem] font-[500]">
                     {t("fri", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[0.875rem] font-[500]">
                     {t("sat", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
-                  </span>
+                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                 </div>
                 <div className="flex flex-col items-center">
                   <div className="text-[0.875rem] font-[500]">
                     {t("sun", { ns: "routes\\tools\\party-finder" })}
                   </div>
-                  <span className="material-symbols-outlined text-[1.875rem]">
-                    check_box_outline_blank
+                  <span className="material-symbols-outlined filled-icon text-[1.875rem]">
+                    priority
                   </span>
                 </div>
               </div>
@@ -306,40 +290,53 @@ export default function ToolsPartyFinderPage() {
               <div className="text-[1.25rem] font-[400]">
                 {t("filterByDate", { ns: "routes\\tools\\party-finder" })}
               </div>
-              <div className="flex flex-col gap-[0.625rem]">
+              <div className="flex items-center gap-[0.625rem]">
                 <div className="flex items-center gap-[0.625rem]">
-                  <div className="flex items-center gap-[0.625rem]">
-                    <Dropdown
-                      button={
-                        <div className="flex w-[5.75rem] cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive px-[1rem] py-[0.4375rem]">
-                          <div className="text-[0.875rem] font-[500]">2000</div>
-                          <span className="material-symbols-outlined text-[1.5rem]">
-                            expand_more
-                          </span>
-                        </div>
-                      }
-                      horizontalAlignment="center"
-                      horizontalPanelAnchor="center"
-                      origin="origin-top"
-                      panel={<div>panel</div>}
-                      verticalAlignment="bottom"
-                      verticalPanelAnchor="top"
-                    />
-                    <div>년</div>
-                  </div>
-                  <div className="flex gap-[0.625rem]">
-                    <div>12</div>
-                    <div>월</div>
+                  <Dropdown
+                    button={
+                      <div className="flex cursor-pointer items-center justify-between gap-[0.25rem] rounded-[0.9375rem] bg-loa-inactive px-[1rem] py-[0.4375rem]">
+                        <div className="text-[0.875rem] font-[500]">2000</div>
+                        <span className="material-symbols-outlined text-[1.5rem]">
+                          expand_more
+                        </span>
+                      </div>
+                    }
+                    horizontalAlignment="center"
+                    horizontalPanelAnchor="center"
+                    origin="origin-top"
+                    panel={<div>panel</div>}
+                    verticalAlignment="bottom"
+                    verticalPanelAnchor="top"
+                  />
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("year", { ns: "routes\\tools\\party-finder" })}
                   </div>
                 </div>
-                <div className="flex gap-[0.625rem]">
-                  <div>PM 11:00</div>
-                  <div>까지</div>
+                <div className="flex items-center gap-[0.625rem]">
+                  <Dropdown
+                    button={
+                      <div className="flex cursor-pointer items-center justify-between gap-[0.25rem] rounded-[0.9375rem] bg-loa-inactive px-[1rem] py-[0.4375rem]">
+                        <div className="text-[0.875rem] font-[500]">12</div>
+                        <span className="material-symbols-outlined text-[1.5rem]">
+                          expand_more
+                        </span>
+                      </div>
+                    }
+                    horizontalAlignment="center"
+                    horizontalPanelAnchor="center"
+                    origin="origin-top"
+                    panel={<div>panel</div>}
+                    verticalAlignment="bottom"
+                    verticalPanelAnchor="top"
+                  />
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("month", { ns: "routes\\tools\\party-finder" })}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <hr className="mb-[5rem] border-loa-button" />
+          <hr className="border-loa-button" />
         </div>
         <div className="flex-grow">파티 리스트</div>
       </div>

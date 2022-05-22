@@ -20,5 +20,7 @@
   "sat": "S",
   "sun": "Sun",
   "from": "From",
-  "to": "To"
+  "to": "To",
+  "year": "Year",
+  "month": "Month"
 }
