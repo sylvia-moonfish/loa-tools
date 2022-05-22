@@ -1,81 +1,168 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 model User {
-  id String @id @default(cuid())
+    id String @id @default(cuid())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  discordId            String @unique
-  discordUsername      String
-  discordDiscriminator String
-  discordAvatarHash    String
+    discordId            String @unique
+    discordUsername      String
+    discordDiscriminator String
+    discordAvatarHash    String
 
-  characters Character[]
+    characters Character[]
 }
 
 model Region {
-  id   String @id @default(cuid())
-  name String
+    id String @id @default(cuid())
 
-  servers Server[]
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    name String @unique
+
+    servers Server[]
 }
 
 model Server {
-  id   String @id @default(cuid())
-  name String
+    id String @id @default(cuid())
 
-  region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  regionId String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  characters Character[]
+    name String @unique
+
+    region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    regionId String
+
+    characters Character[]
 }
 
 model Character {
-  id        String  @id @default(cuid())
-  name      String
-  isPrimary Boolean
-  job       Job
-  itemLevel Float
+    id String @id @default(cuid())
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
+    name      String
+    isPrimary Boolean
+    job       Job
+    itemLevel Float
 
-  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  serverId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String
+
+    server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    serverId String
 }
 
 enum Job {
-  GUNLANCER
-  BERSERKER
-  PALADIN
+    GUNLANCER
+    BERSERKER
+    PALADIN
 
-  STRIKER
+    STRIKER
 
-  WARDANCER
-  SCRAPPER
-  SOULFIST
-  GLAIVIER
+    WARDANCER
+    SCRAPPER
+    SOULFIST
+    GLAIVIER
 
-  DEADEYE
-  ARTILLERIST
-  SHARPSHOOTER
+    DEADEYE
+    ARTILLERIST
+    SHARPSHOOTER
 
-  GUNSLINGER
+    GUNSLINGER
 
-  BARD
-  SORCERESS
+    BARD
+    SORCERESS
 
-  DEATHBLADE
-  SHADOWHUNTER
+    DEATHBLADE
+    SHADOWHUNTER
+}
+
+model ContentType {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    contentGroups ContentGroup[]
+    name          LocalizedText[]
+}
+
+model ContentGroup {
+    id String @id @default(cuid())
+
+    order Int
+
+    contentType   ContentType @relation(fields: [contentTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentTypeId String
+
+    contents Content[]
+    name     LocalizedText[]
+
+    @@unique([order, contentTypeId])
+}
+
+model Content {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    order            Int
+    tier             Int
+    level            Int
+    groupSize        Int
+    requireFullParty Boolean
+    iconSrc          String?
+    bannerSrc        String?
+
+    contentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentDifficultyId String?
+
+    contentGroup   ContentGroup @relation(fields: [contentGroupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    contentGroupId String
+
+    name LocalizedText[]
+
+    @@unique([order, contentGroupId])
+}
+
+model ContentDifficulty {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    contents Content[]
+    name     LocalizedText[]
+}
+
+model LocalizedText {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    text   String
+    locale String
+
+    ContentType         ContentType?       @relation(fields: [contentTypeId], references: [id])
+    contentTypeId       String?
+    ContentGroup        ContentGroup?      @relation(fields: [contentGroupId], references: [id])
+    contentGroupId      String?
+    Content             Content?           @relation(fields: [contentId], references: [id])
+    contentId           String?
+    ContentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id])
+    contentDifficultyId String?
 }
