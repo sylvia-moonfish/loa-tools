@@ -6,5 +6,8 @@
   "filterByObjectives": "Filter by objectives",
   "filterByDayOfTheWeek": "Filter by day of the week",
   "filterByStartTime": "Filter by start time",
-  "filterByDate": "Filter by date"
+  "filterByDate": "Filter by date",
+  "contentType": "Type",
+  "contentGroup": "Tier",
+  "content": "Stage"
 }

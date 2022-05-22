@@ -6,5 +6,8 @@
   "filterByObjectives": "숙련도",
   "filterByDayOfTheWeek": "요일별",
   "filterByStartTime": "시작시간별",
-  "filterByDate": "날짜별"
+  "filterByDate": "날짜별",
+  "contentType": "유형",
+  "contentGroup": "티어",
+  "content": "스테이지"
 }

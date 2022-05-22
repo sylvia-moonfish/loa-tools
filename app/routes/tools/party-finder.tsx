@@ -5,6 +5,7 @@ import { json } from "@remix-run/node";
 import { Link, useOutletContext } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import Dropdown from "~/components/dropdown";
 import GoToTopButton from "~/components/goToTopButton";
 import { i18n } from "~/i18n.server";
 import { useOptionalUser } from "~/utils";
@@ -43,22 +44,23 @@ export default function ToolsPartyFinderPage() {
       <GoToTopButton />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-[0.5625rem]">
-          <div className="text-[1.625rem]">
+          <div className="text-[1.625rem] font-[400] leading-[1.5rem]">
             {t("title", { ns: "routes\\tools\\party-finder" })}
           </div>
-          <span className="material-symbols-outlined text-[1.25rem]">help</span>
+          <span className="material-symbols-outlined text-[1.5rem]">help</span>
         </div>
         <Link
-          className="rounded-[0.9375rem] bg-loa-button py-[0.9375rem] px-[0.875rem] font-[500]"
+          className="rounded-[0.9375rem] bg-loa-button py-[0.9375rem] px-[0.875rem] text-[1rem] font-[500]"
           to="/"
         >
           + {t("postParty", { ns: "routes\\tools\\party-finder" })}
         </Link>
       </div>
       <div className="mt-[1.25rem] flex gap-[1.25rem]">
-        <div className="flex w-[18.125rem] flex-col">
-          <div className="flex flex-col gap-[1.25rem] border-t-[0.0625rem] border-loa-button py-[1.25rem]">
-            <div className="text-[1.25rem]">
+        <div className="flex w-[18.125rem] flex-col gap-[1.25rem]">
+          <hr className="border-loa-button" />
+          <div className="flex flex-col gap-[1.25rem]">
+            <div className="text-[1.25rem] font-[400]">
               {t("filterByJobs", { ns: "routes\\tools\\party-finder" })}
             </div>
             <div className="flex flex-wrap gap-[0.625rem]">
@@ -74,9 +76,66 @@ export default function ToolsPartyFinderPage() {
               })}
             </div>
           </div>
-          <div className="flex flex-col gap-[1.25rem] border-t-[0.0625rem] border-loa-button py-[1.25rem]">
-            <div className="text-[1.25rem]">
+          <hr className="border-loa-button" />
+          <div className="flex flex-col gap-[1.25rem]">
+            <div className="text-[1.25rem] font-[400]">
               {t("filterByContents", { ns: "routes\\tools\\party-finder" })}
+            </div>
+            <div className="flex flex-col gap-[0.625rem]">
+              <Dropdown
+                button={
+                  <div className="flex cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive py-[0.4375rem] px-[1.25rem]">
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("contentType", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                    <span className="material-symbols-outlined text-[1.5rem]">
+                      expand_more
+                    </span>
+                  </div>
+                }
+                horizontalAlignment="center"
+                horizontalPanelAnchor="center"
+                origin="origin-top"
+                panel={<div>panel</div>}
+                verticalAlignment="bottom"
+                verticalPanelAnchor="top"
+              />
+              <Dropdown
+                button={
+                  <div className="flex cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive py-[0.4375rem] px-[1.25rem]">
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("contentGroup", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                    <span className="material-symbols-outlined text-[1.5rem]">
+                      expand_more
+                    </span>
+                  </div>
+                }
+                horizontalAlignment="center"
+                horizontalPanelAnchor="center"
+                origin="origin-top"
+                panel={<div>panel</div>}
+                verticalAlignment="bottom"
+                verticalPanelAnchor="top"
+              />
+              <Dropdown
+                button={
+                  <div className="flex cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive py-[0.4375rem] px-[1.25rem]">
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("content", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                    <span className="material-symbols-outlined text-[1.5rem]">
+                      expand_more
+                    </span>
+                  </div>
+                }
+                horizontalAlignment="center"
+                horizontalPanelAnchor="center"
+                origin="origin-top"
+                panel={<div>panel</div>}
+                verticalAlignment="bottom"
+                verticalPanelAnchor="top"
+              />
             </div>
           </div>
         </div>
