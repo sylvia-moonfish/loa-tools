@@ -9,5 +9,16 @@
   "filterByDate": "Filter by date",
   "contentType": "Type",
   "contentGroup": "Tier",
-  "content": "Stage"
+  "content": "Stage",
+  "objectivePractice": "Learning",
+  "objectiveFarm": "Farming",
+  "mon": "M",
+  "tue": "Tu",
+  "wed": "W",
+  "thu": "Th",
+  "fri": "F",
+  "sat": "S",
+  "sun": "Sun",
+  "from": "From",
+  "to": "To"
 }

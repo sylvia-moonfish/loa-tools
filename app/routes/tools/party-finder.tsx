@@ -2,7 +2,7 @@ import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { RootContext } from "~/root";
 import { Job } from "@prisma/client";
 import { json } from "@remix-run/node";
-import { Link, useOutletContext } from "@remix-run/react";
+import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import Dropdown from "~/components/dropdown";
@@ -19,6 +19,7 @@ export const handle = {
 };
 
 type LoaderData = {
+  locale: string;
   title: string;
 };
 
@@ -26,6 +27,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, "root");
 
   return json<LoaderData>({
+    locale: await i18n.getLocale(request),
     title: `${t("partyFinderPageTitle")} | ${t("shortTitle")}`,
   });
 };
@@ -33,7 +35,10 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function ToolsPartyFinderPage() {
   const { setPathname } = useOutletContext<RootContext>();
   const { t } = useTranslation();
+  const data = useLoaderData<LoaderData>();
   const user = useOptionalUser();
+
+  const putFromAndToOnRight = ["ko"];
 
   React.useEffect(() => {
     setPathname("/tools/party-finder");
@@ -138,6 +143,203 @@ export default function ToolsPartyFinderPage() {
               />
             </div>
           </div>
+          <hr className="border-loa-button" />
+          <div className="flex flex-col gap-[1.25rem]">
+            <div className="flex flex-col gap-[1.25rem]">
+              <div className="text-[1.25rem] font-[400]">
+                {t("filterByObjectives", { ns: "routes\\tools\\party-finder" })}
+              </div>
+              <div className="grid grid-cols-2">
+                <div className="flex cursor-pointer items-center gap-[0.8125rem]">
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                  <div className="overflow-hidden text-ellipsis text-[0.875rem] font-[500]">
+                    {t("objectivePractice", {
+                      ns: "routes\\tools\\party-finder",
+                    })}
+                  </div>
+                </div>
+                <div className="flex cursor-pointer items-center gap-[0.8125rem]">
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                  <div className="overflow-hidden text-ellipsis text-[0.875rem] font-[500]">
+                    {t("objectiveFarm", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-[1.25rem]">
+              <div className="text-[1.25rem] font-[400]">
+                {t("filterByDayOfTheWeek", {
+                  ns: "routes\\tools\\party-finder",
+                })}
+              </div>
+              <div className="grid grid-cols-7">
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("mon", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("tue", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("wed", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("thu", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("fri", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("sat", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="text-[0.875rem] font-[500]">
+                    {t("sun", { ns: "routes\\tools\\party-finder" })}
+                  </div>
+                  <span className="material-symbols-outlined text-[1.875rem]">
+                    check_box_outline_blank
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-[1.25rem]">
+              <div className="text-[1.25rem] font-[400]">
+                {t("filterByStartTime", { ns: "routes\\tools\\party-finder" })}
+              </div>
+              <div className="flex flex-col gap-[0.625rem] self-start">
+                <div className="flex items-center justify-between gap-[0.625rem]">
+                  {!putFromAndToOnRight.includes(data.locale) && (
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("from", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                  )}
+                  <Dropdown
+                    button={
+                      <div className="flex w-[10.125rem] cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive px-[1.0625rem] py-[0.4375rem]">
+                        <div className="text-[0.875rem] font-[500]">
+                          AM 00:00
+                        </div>
+                        <span className="material-symbols-outlined text-[1.5rem]">
+                          expand_more
+                        </span>
+                      </div>
+                    }
+                    horizontalAlignment="center"
+                    horizontalPanelAnchor="center"
+                    origin="origin-top"
+                    panel={<div>panel</div>}
+                    verticalAlignment="bottom"
+                    verticalPanelAnchor="top"
+                  />
+                  {putFromAndToOnRight.includes(data.locale) && (
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("from", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-between gap-[0.625rem]">
+                  {!putFromAndToOnRight.includes(data.locale) && (
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("to", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                  )}
+                  <Dropdown
+                    button={
+                      <div className="flex w-[10.125rem] cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive px-[1.0625rem] py-[0.4375rem]">
+                        <div className="text-[0.875rem] font-[500]">
+                          AM 00:00
+                        </div>
+                        <span className="material-symbols-outlined text-[1.5rem]">
+                          expand_more
+                        </span>
+                      </div>
+                    }
+                    horizontalAlignment="center"
+                    horizontalPanelAnchor="center"
+                    origin="origin-top"
+                    panel={<div>panel</div>}
+                    verticalAlignment="bottom"
+                    verticalPanelAnchor="top"
+                  />
+                  {putFromAndToOnRight.includes(data.locale) && (
+                    <div className="text-[0.875rem] font-[500]">
+                      {t("to", { ns: "routes\\tools\\party-finder" })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col gap-[1.25rem]">
+              <div className="text-[1.25rem] font-[400]">
+                {t("filterByDate", { ns: "routes\\tools\\party-finder" })}
+              </div>
+              <div className="flex flex-col gap-[0.625rem]">
+                <div className="flex items-center gap-[0.625rem]">
+                  <div className="flex items-center gap-[0.625rem]">
+                    <Dropdown
+                      button={
+                        <div className="flex w-[5.75rem] cursor-pointer items-center justify-between rounded-[0.9375rem] bg-loa-inactive px-[1rem] py-[0.4375rem]">
+                          <div className="text-[0.875rem] font-[500]">2000</div>
+                          <span className="material-symbols-outlined text-[1.5rem]">
+                            expand_more
+                          </span>
+                        </div>
+                      }
+                      horizontalAlignment="center"
+                      horizontalPanelAnchor="center"
+                      origin="origin-top"
+                      panel={<div>panel</div>}
+                      verticalAlignment="bottom"
+                      verticalPanelAnchor="top"
+                    />
+                    <div>년</div>
+                  </div>
+                  <div className="flex gap-[0.625rem]">
+                    <div>12</div>
+                    <div>월</div>
+                  </div>
+                </div>
+                <div className="flex gap-[0.625rem]">
+                  <div>PM 11:00</div>
+                  <div>까지</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr className="mb-[5rem] border-loa-button" />
         </div>
         <div className="flex-grow">파티 리스트</div>
       </div>
