@@ -71,10 +71,15 @@ export default function Header(props: {
             horizontalPanelAnchor="center"
             origin="origin-top"
             panel={
-              <div className="mt-[0.6875rem] flex w-[7.5rem] flex-col items-center rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
+              <div className="mt-[0.6875rem] flex w-[7.5rem] flex-col items-stretch rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
                 {props.supportedLocales.map((locale, index) => {
                   return (
-                    <Form action="/change-language" key={index} method="post">
+                    <Form
+                      action="/change-language"
+                      className="flex flex-col items-stretch"
+                      key={index}
+                      method="post"
+                    >
                       <input name="locale" type="hidden" value={locale} />
                       <input
                         name="pathname"
@@ -85,7 +90,7 @@ export default function Header(props: {
                         <hr className="mx-[0.625rem] border-loa-button" />
                       )}
                       <button
-                        className="w-[6.25rem] overflow-hidden text-ellipsis py-[1.375rem] text-[1rem] font-[500] leading-[1.25rem]"
+                        className="overflow-hidden text-ellipsis py-[1.375rem] text-[1rem] font-[500] leading-[1.25rem]"
                         type="submit"
                       >
                         {t(locale, { ns: "dictionary\\locale" })}
@@ -117,7 +122,7 @@ export default function Header(props: {
               horizontalPanelAnchor="right"
               origin="origin-top"
               panel={
-                <div className="mt-[0.6875rem] flex w-[15.875rem] flex-col items-stretch justify-center rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
+                <div className="mt-[0.6875rem] flex w-[15.875rem] flex-col items-stretch rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
                   <Link
                     className="flex items-center justify-start gap-[0.625rem] py-[1.375rem] px-[1.25rem]"
                     to="/characters"

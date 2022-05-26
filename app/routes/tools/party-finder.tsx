@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import Checkbox from "~/components/checkbox";
 import Dropdown from "~/components/dropdown";
 import GoToTopButton from "~/components/goToTopButton";
+import { getAllContentTypes } from "~/models/contentType.server";
 import { i18n } from "~/i18n.server";
 import { useOptionalUser } from "~/utils";
 
@@ -20,6 +21,7 @@ export const handle = {
 };
 
 type LoaderData = {
+  contentTypes: Awaited<ReturnType<typeof getAllContentTypes>>;
   locale: string;
   title: string;
 };
@@ -28,6 +30,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18n.getFixedT(request, "root");
 
   return json<LoaderData>({
+    contentTypes: await getAllContentTypes(),
     locale: await i18n.getLocale(request),
     title: `${t("partyFinderPageTitle")} | ${t("shortTitle")}`,
   });
@@ -45,6 +48,8 @@ export default function ToolsPartyFinderPage() {
     { type: string; text: string; value: string }[]
   >([]);
   const [filterPracticeParty, setFilterPracticeParty] = React.useState(false);
+
+  console.log(data);
 
   React.useEffect(() => {
     setPathname("/tools/party-finder");
@@ -127,10 +132,35 @@ export default function ToolsPartyFinderPage() {
                     </span>
                   </div>
                 }
+                fullWidth={true}
                 horizontalAlignment="center"
                 horizontalPanelAnchor="center"
                 origin="origin-top"
-                panel={<div>panel</div>}
+                panel={
+                  <div className="mt-[0.6875rem] flex w-full flex-col items-stretch rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
+                    {data.contentTypes.map((contentType, index) => {
+                      return (
+                        <div
+                          className="flex flex-col items-stretch"
+                          key={index}
+                        >
+                          {index !== 0 && (
+                            <hr className="mx-[0.625rem] border-loa-button" />
+                          )}
+                          <div className="overflow-hidden text-ellipsis py-[1.375rem] text-center text-[1rem] font-[500] leading-[1.25rem]">
+                            {
+                              (
+                                contentType.name.find(
+                                  (n) => n.locale === data.locale
+                                ) ?? contentType.name[0]
+                              ).text
+                            }
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                }
                 verticalAlignment="bottom"
                 verticalPanelAnchor="top"
               />
@@ -389,7 +419,12 @@ export default function ToolsPartyFinderPage() {
                     <div className="text-[0.75rem] font-[500] leading-[1.25rem]">
                       {f.text}
                     </div>
-                    <span className="material-symbols-outlined text-[1.0625rem] text-loa-close-icon">
+                    <span
+                      className="material-symbols-outlined text-[1.0625rem] text-loa-close-icon"
+                      style={{
+                        fontVariationSettings: '"wght" 500',
+                      }}
+                    >
                       close
                     </span>
                   </div>

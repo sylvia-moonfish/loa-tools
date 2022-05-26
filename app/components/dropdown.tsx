@@ -2,6 +2,7 @@ import * as React from "react";
 
 export default function Dropdown(props: {
   button: React.ReactElement;
+  fullWidth?: boolean;
   horizontalAlignment: "left" | "center" | "right";
   horizontalPanelAnchor: "left" | "center" | "right";
   origin:
@@ -54,7 +55,9 @@ export default function Dropdown(props: {
           props.verticalAlignment === "center" ? "top-2/4 " : ""
         }${props.verticalPanelAnchor === "center" ? "-translate-y-2/4 " : ""}${
           props.verticalPanelAnchor === "bottom" ? "-translate-y-full " : ""
-        }${props.origin} absolute transition`}
+        }${props.fullWidth ? "w-full " : ""}${
+          props.origin
+        } absolute z-10 transition`}
       >
         {props.panel}
       </div>

@@ -10,7 +10,10 @@ export function getAllContentTypes() {
         include: {
           name: true,
           contents: {
-            include: {},
+            include: {
+              contentDifficulty: true,
+              name: true,
+            },
           },
         },
       },
