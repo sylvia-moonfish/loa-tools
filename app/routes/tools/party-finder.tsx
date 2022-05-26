@@ -41,6 +41,9 @@ export default function ToolsPartyFinderPage() {
 
   const putFromAndToOnRight = ["ko"];
 
+  const [filterList, setFilterList] = React.useState<
+    { type: string; text: string; value: string }[]
+  >([]);
   const [filterPracticeParty, setFilterPracticeParty] = React.useState(false);
 
   React.useEffect(() => {
@@ -75,8 +78,31 @@ export default function ToolsPartyFinderPage() {
               {Object.values(Job).map((job, index) => {
                 return (
                   <div
-                    className="rounded-[0.9375rem] bg-loa-panel py-[0.3125rem] px-[0.75rem] text-[0.75rem] font-[500]"
+                    className={`${
+                      filterList.find((f) => f.value === job)
+                        ? "bg-loa-button-border "
+                        : "bg-loa-panel "
+                    }cursor-pointer rounded-[0.9375rem] py-[0.3125rem] px-[0.75rem] text-[0.75rem] font-[500]`}
                     key={index}
+                    onClick={() => {
+                      const index = filterList.findIndex(
+                        (f) => f.value === job
+                      );
+
+                      const tempArray = [...filterList];
+
+                      if (index !== -1) {
+                        tempArray.splice(index, 1);
+                      } else {
+                        tempArray.push({
+                          type: "job",
+                          text: t(job, { ns: "dictionary\\job" }),
+                          value: job,
+                        });
+                      }
+
+                      setFilterList(tempArray);
+                    }}
                   >
                     {t(job, { ns: "dictionary\\job" })}
                   </div>
@@ -346,7 +372,33 @@ export default function ToolsPartyFinderPage() {
           </div>
           <hr className="border-loa-button" />
         </div>
-        <div className="flex-grow">파티 리스트</div>
+        <div className="flex flex-grow flex-col gap-[1.25rem]">
+          {filterList.length > 0 && (
+            <div className="flex flex-wrap gap-[0.8125rem]">
+              {filterList.map((f, index) => {
+                return (
+                  <div
+                    className="flex cursor-pointer items-center gap-[0.1875rem] rounded-[0.9375rem] bg-loa-button-border px-[0.8125rem] py-[0.25rem]"
+                    key={index}
+                    onClick={() => {
+                      const tempArray = [...filterList];
+                      tempArray.splice(index, 1);
+                      setFilterList(tempArray);
+                    }}
+                  >
+                    <div className="text-[0.75rem] font-[500] leading-[1.25rem]">
+                      {f.text}
+                    </div>
+                    <span className="material-symbols-outlined text-[1.0625rem] text-loa-close-icon">
+                      close
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="flex">파티 리스트가 들어갈 곳임</div>
+        </div>
       </div>
     </div>
   );
