@@ -5,6 +5,7 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData, useOutletContext } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
+import Checkbox from "~/components/checkbox";
 import Dropdown from "~/components/dropdown";
 import GoToTopButton from "~/components/goToTopButton";
 import { i18n } from "~/i18n.server";
@@ -39,6 +40,8 @@ export default function ToolsPartyFinderPage() {
   const user = useOptionalUser();
 
   const putFromAndToOnRight = ["ko"];
+
+  const [filterPracticeParty, setFilterPracticeParty] = React.useState(false);
 
   React.useEffect(() => {
     setPathname("/tools/party-finder");
@@ -150,14 +153,19 @@ export default function ToolsPartyFinderPage() {
                 {t("filterByObjectives", { ns: "routes\\tools\\party-finder" })}
               </div>
               <div className="grid grid-cols-2">
-                <div className="flex cursor-pointer items-center gap-[0.8125rem]">
-                  <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
-                  <div className="overflow-hidden text-ellipsis text-[0.875rem] font-[500]">
-                    {t("objectivePractice", {
-                      ns: "routes\\tools\\party-finder",
-                    })}
-                  </div>
-                </div>
+                <Checkbox
+                  boxSizeRem={1.875}
+                  checked={filterPracticeParty}
+                  divClassName="gap-[0.8125rem]"
+                  onClick={() => {
+                    setFilterPracticeParty(!filterPracticeParty);
+                  }}
+                  textClassName="text-[0.875rem] font-[500]"
+                >
+                  {t("objectivePractice", {
+                    ns: "routes\\tools\\party-finder",
+                  })}
+                </Checkbox>
                 <div className="flex cursor-pointer items-center gap-[0.8125rem]">
                   <span className="m-[0.2378rem] h-[1.4rem] w-[1.4rem] rounded-[0.45rem] bg-loa-white"></span>
                   <div className="overflow-hidden text-ellipsis text-[0.875rem] font-[500]">
