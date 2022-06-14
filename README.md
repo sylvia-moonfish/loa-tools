@@ -26,6 +26,12 @@ npx create-remix --template remix-run/blues-stack
 
 Not a fan of bits of the stack? Fork it, change it, and use `npx create-remix --template your/repo`! Make it your own.
 
+## Quickstart
+
+Click this button to create a [Gitpod](https://gitpod.io) workspace with the project set up, Postgres started, and Fly pre-installed
+
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/from-referrer/)
+
 ## Development
 
 - Start the Postgres Database in [Docker](https://www.docker.com/get-started):
@@ -90,8 +96,8 @@ Prior to your first deployment, you'll need to do a few things:
 - Create two apps on Fly, one for staging and one for production:
 
   ```sh
-  fly create loa-tools-f849
-  fly create loa-tools-f849-staging
+  fly create loa-tools-8d3d
+  fly create loa-tools-8d3d-staging
   ```
 
 - Initialize Git.
@@ -111,35 +117,35 @@ Prior to your first deployment, you'll need to do a few things:
 - Add a `SESSION_SECRET` to your fly app secrets, to do this you can run the following commands:
 
   ```sh
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-f849
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-f849-staging
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-8d3d
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-8d3d-staging
   ```
 
   > **Note:** When creating the staging secret, you may get a warning from the Fly CLI that looks like this:
   >
   > ```
-  > WARN app flag 'loa-tools-f849-staging' does not match app name in config file 'loa-tools-f849'
+  > WARN app flag 'loa-tools-8d3d-staging' does not match app name in config file 'loa-tools-8d3d'
   > ```
   >
   > This simply means that the current directory contains a config that references the production app we created in the first step. Ignore this warning and proceed to create the secret.
 
-  If you don't have openssl installed, you can also use [1password](https://1password.com/generate-password) to generate a random secret, just replace `$(openssl rand -hex 32)` with the generated secret.
+  If you don't have openssl installed, you can also use [1password](https://1password.com/password-generator/) to generate a random secret, just replace `$(openssl rand -hex 32)` with the generated secret.
 
 - Create a database for both your staging and production environments. Run the following:
 
   ```sh
-  fly postgres create --name loa-tools-f849-db
-  fly postgres attach --postgres-app loa-tools-f849-db --app loa-tools-f849
+  fly postgres create --name loa-tools-8d3d-db
+  fly postgres attach --postgres-app loa-tools-8d3d-db --app loa-tools-8d3d
 
-  fly postgres create --name loa-tools-f849-staging-db
-  fly postgres attach --postgres-app loa-tools-f849-staging-db --app loa-tools-f849-staging
+  fly postgres create --name loa-tools-8d3d-staging-db
+  fly postgres attach --postgres-app loa-tools-8d3d-staging-db --app loa-tools-8d3d-staging
   ```
 
   > **Note:** You'll get the same warning for the same reason when attaching the staging database that you did in the `fly set secret` step above. No worries. Proceed!
 
 Fly will take care of setting the `DATABASE_URL` secret for you.
 
-Now that every is set up you can commit and push your changes to your repo. Every commit to your `main` branch will trigger a deployment to your production environment, and every commit to your `dev` branch will trigger a deployment to your staging environment.
+Now that everything is set up you can commit and push your changes to your repo. Every commit to your `main` branch will trigger a deployment to your production environment, and every commit to your `dev` branch will trigger a deployment to your staging environment.
 
 If you run into any issues deploying to Fly, make sure you've followed all of the steps above and if you have, then post as many details about your deployment (including your app name) to [the Fly support community](https://community.fly.io). They're normally pretty responsive over there and hopefully can help resolve any of your deployment issues and questions.
 

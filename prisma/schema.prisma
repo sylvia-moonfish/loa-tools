@@ -1,335 +1,38 @@
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 model User {
-    id String @id @default(cuid())
+  id    String @id @default(cuid())
+  email String @unique
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    discordId            String @unique
-    discordUsername      String
-    discordDiscriminator String
-    discordAvatarHash    String
-
-    characters Character[]
+  password Password?
+  notes    Note[]
 }
 
-model Region {
-    id String @id @default(cuid())
+model Password {
+  hash String
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    name String @unique
-
-    servers Server[]
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
 }
 
-model Server {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    name String @unique
-
-    region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    regionId String
-
-    characters Character[]
-}
-
-model Character {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    name      String
-    isPrimary Boolean
-    job       Job
-    itemLevel Float
-
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId String
-
-    server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    serverId String
-}
-
-enum Job {
-    GUNLANCER
-    BERSERKER
-    PALADIN
-
-    STRIKER
-
-    WARDANCER
-    SCRAPPER
-    SOULFIST
-    GLAIVIER
-
-    DEADEYE
-    ARTILLERIST
-    SHARPSHOOTER
-
-    GUNSLINGER
-
-    BARD
-    SORCERESS
-
-    DEATHBLADE
-    SHADOWHUNTER
-}
-
-model ChaosDungeon {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    nameEn String
-    nameKo String
-
-    tabs ChaosDungeonTab[]
-}
-
-model ChaosDungeonTab {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-
-    chaosDungeon   ChaosDungeon @relation(fields: [chaosDungeonId], references: [id])
-    chaosDungeonId String
-
-    stages ChaosDungeonStage[]
-
-    @@unique([index, chaosDungeonId])
-}
-
-model ChaosDungeonStage {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-    tier   Int
-    level  Int
-
-    chaosDungeonTab   ChaosDungeonTab @relation(fields: [chaosDungeonTabId], references: [id])
-    chaosDungeonTabId String
-
-    @@unique([index, chaosDungeonTabId])
-}
-
-model GuardianRaid {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    nameEn String
-    nameKo String
-
-    tabs GuardianRaidTab[]
-}
-
-model GuardianRaidTab {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-
-    guardianRaid   GuardianRaid @relation(fields: [guardianRaidId], references: [id])
-    guardianRaidId String
-
-    stages GuardianRaidStage[]
-
-    @@unique([index, guardianRaidId])
-}
-
-model GuardianRaidStage {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-    tier   Int
-    level  Int
-
-    guardianRaidTab   GuardianRaidTab @relation(fields: [guardianRaidTabId], references: [id])
-    guardianRaidTabId String
-
-    @@unique([index, guardianRaidTabId])
-}
-
-model AbyssalDungeon {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    nameEn String
-    nameKo String
-
-    tabs AbyssalDungeonTab[]
-}
-
-model AbyssalDungeonTab {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index            Int
-    nameEn           String
-    nameKo           String
-    difficultyNameEn String?
-    difficultyNameKo String?
-
-    abyssalDungeon   AbyssalDungeon @relation(fields: [abyssalDungeonId], references: [id])
-    abyssalDungeonId String
-
-    stages AbyssalDungeonStage[]
-
-    @@unique([index, abyssalDungeonId])
-}
-
-model AbyssalDungeonStage {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index     Int
-    nameEn    String
-    nameKo    String
-    tier      Int
-    level     Int
-    groupSize Int
-
-    abyssalDungeonTab   AbyssalDungeonTab @relation(fields: [abyssalDungeonTabId], references: [id])
-    abyssalDungeonTabId String
-
-    @@unique([index, abyssalDungeonTabId])
-}
-
-model AbyssRaid {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    nameEn String
-    nameKo String
-
-    tabs AbyssRaidTab[]
-}
-
-model AbyssRaidTab {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-
-    abyssRaid   AbyssRaid @relation(fields: [abyssRaidId], references: [id])
-    abyssRaidId String
-
-    stages AbyssRaidStage[]
-
-    @@unique([index, abyssRaidId])
-}
-
-model AbyssRaidStage {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-    tier   Int
-    level  Int
-
-    abyssRaidTab   AbyssRaidTab @relation(fields: [abyssRaidTabId], references: [id])
-    abyssRaidTabId String
-
-    @@unique([index, abyssRaidTabId])
-}
-
-model LegionRaid {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    nameEn String
-    nameKo String
-
-    tabs LegionRaidTab[]
-}
-
-model LegionRaidTab {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index            Int
-    nameEn           String
-    nameKo           String
-    difficultyNameEn String
-    difficultyNameKo String
-
-    legionRaid   LegionRaid @relation(fields: [legionRaidId], references: [id])
-    legionRaidId String
-
-    stages LegionRaidStage[]
-
-    @@unique([index, legionRaidId])
-}
-
-model LegionRaidStage {
-    id String @id @default(cuid())
-
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    index  Int
-    nameEn String
-    nameKo String
-    tier   Int
-    level  Int
-
-    legionRaidTab   LegionRaidTab @relation(fields: [legionRaidTabId], references: [id])
-    legionRaidTabId String
-
-    @@unique([index, legionRaidTabId])
+model Note {
+  id    String @id @default(cuid())
+  title String
+  body  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
 }
