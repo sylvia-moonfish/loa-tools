@@ -2,6 +2,7 @@ import * as React from "react";
 
 export default function Dropdown(props: {
   button: React.ReactElement;
+  disabled?: boolean;
   fullWidth?: boolean;
   horizontalAlignment: "left" | "center" | "right";
   horizontalPanelAnchor: "left" | "center" | "right";
@@ -37,7 +38,7 @@ export default function Dropdown(props: {
     <div className="relative">
       <div
         onClick={() => {
-          if (!isOpened) {
+          if (!props.disabled && !isOpened) {
             setIsOpened(true);
           }
         }}

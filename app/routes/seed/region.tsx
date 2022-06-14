@@ -1,9 +1,15 @@
 import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { prisma } from "~/db.server";
+import { requireUser } from "~/session.server";
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  if (!process.env.DISCORD_ADMIN_ID) return redirect("/");
+
+  const user = await requireUser(request);
+  if (user.discordId !== process.env.DISCORD_ADMIN_ID) return redirect("/");
+
   const regionMap = [
     {
       regionName: "North America West",

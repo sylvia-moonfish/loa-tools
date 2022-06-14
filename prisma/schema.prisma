@@ -89,80 +89,247 @@ enum Job {
     SHADOWHUNTER
 }
 
-model ContentType {
+model ChaosDungeon {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    contentGroups ContentGroup[]
-    name          LocalizedText[]
+    nameEn String
+    nameKo String
+
+    tabs ChaosDungeonTab[]
 }
 
-model ContentGroup {
-    id String @id @default(cuid())
-
-    order Int
-
-    contentType   ContentType @relation(fields: [contentTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentTypeId String
-
-    contents Content[]
-    name     LocalizedText[]
-
-    @@unique([order, contentTypeId])
-}
-
-model Content {
+model ChaosDungeonTab {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    order            Int
-    tier             Int
-    level            Int
-    groupSize        Int
-    requireFullParty Boolean
-    iconSrc          String?
-    bannerSrc        String?
+    index  Int
+    nameEn String
+    nameKo String
 
-    contentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentDifficultyId String?
+    chaosDungeon   ChaosDungeon @relation(fields: [chaosDungeonId], references: [id])
+    chaosDungeonId String
 
-    contentGroup   ContentGroup @relation(fields: [contentGroupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentGroupId String
+    stages ChaosDungeonStage[]
 
-    name LocalizedText[]
-
-    @@unique([order, contentGroupId])
+    @@unique([index, chaosDungeonId])
 }
 
-model ContentDifficulty {
+model ChaosDungeonStage {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    contents Content[]
-    name     LocalizedText[]
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    chaosDungeonTab   ChaosDungeonTab @relation(fields: [chaosDungeonTabId], references: [id])
+    chaosDungeonTabId String
+
+    @@unique([index, chaosDungeonTabId])
 }
 
-model LocalizedText {
+model GuardianRaid {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    text   String
-    locale String
+    nameEn String
+    nameKo String
 
-    ContentType         ContentType?       @relation(fields: [contentTypeId], references: [id])
-    contentTypeId       String?
-    ContentGroup        ContentGroup?      @relation(fields: [contentGroupId], references: [id])
-    contentGroupId      String?
-    Content             Content?           @relation(fields: [contentId], references: [id])
-    contentId           String?
-    ContentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id])
-    contentDifficultyId String?
+    tabs GuardianRaidTab[]
+}
+
+model GuardianRaidTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+
+    guardianRaid   GuardianRaid @relation(fields: [guardianRaidId], references: [id])
+    guardianRaidId String
+
+    stages GuardianRaidStage[]
+
+    @@unique([index, guardianRaidId])
+}
+
+model GuardianRaidStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    guardianRaidTab   GuardianRaidTab @relation(fields: [guardianRaidTabId], references: [id])
+    guardianRaidTabId String
+
+    @@unique([index, guardianRaidTabId])
+}
+
+model AbyssalDungeon {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn String
+    nameKo String
+
+    tabs AbyssalDungeonTab[]
+}
+
+model AbyssalDungeonTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index            Int
+    nameEn           String
+    nameKo           String
+    difficultyNameEn String?
+    difficultyNameKo String?
+
+    abyssalDungeon   AbyssalDungeon @relation(fields: [abyssalDungeonId], references: [id])
+    abyssalDungeonId String
+
+    stages AbyssalDungeonStage[]
+
+    @@unique([index, abyssalDungeonId])
+}
+
+model AbyssalDungeonStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index     Int
+    nameEn    String
+    nameKo    String
+    tier      Int
+    level     Int
+    groupSize Int
+
+    abyssalDungeonTab   AbyssalDungeonTab @relation(fields: [abyssalDungeonTabId], references: [id])
+    abyssalDungeonTabId String
+
+    @@unique([index, abyssalDungeonTabId])
+}
+
+model AbyssRaid {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn String
+    nameKo String
+
+    tabs AbyssRaidTab[]
+}
+
+model AbyssRaidTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+
+    abyssRaid   AbyssRaid @relation(fields: [abyssRaidId], references: [id])
+    abyssRaidId String
+
+    stages AbyssRaidStage[]
+
+    @@unique([index, abyssRaidId])
+}
+
+model AbyssRaidStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    abyssRaidTab   AbyssRaidTab @relation(fields: [abyssRaidTabId], references: [id])
+    abyssRaidTabId String
+
+    @@unique([index, abyssRaidTabId])
+}
+
+model LegionRaid {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn String
+    nameKo String
+
+    tabs LegionRaidTab[]
+}
+
+model LegionRaidTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index            Int
+    nameEn           String
+    nameKo           String
+    difficultyNameEn String
+    difficultyNameKo String
+
+    legionRaid   LegionRaid @relation(fields: [legionRaidId], references: [id])
+    legionRaidId String
+
+    stages LegionRaidStage[]
+
+    @@unique([index, legionRaidId])
+}
+
+model LegionRaidStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    legionRaidTab   LegionRaidTab @relation(fields: [legionRaidTabId], references: [id])
+    legionRaidTabId String
+
+    @@unique([index, legionRaidTabId])
 }
