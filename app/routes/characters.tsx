@@ -1,7 +1,7 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Outlet, useOutletContext } from "@remix-run/react";
-import { i18n } from "~/i18n.server";
+import i18next from "~/i18next.server";
 
 export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
   return { title: data.title };
@@ -16,7 +16,7 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const t = await i18n.getFixedT(request, "root");
+  const t = await i18next.getFixedT(request, "root");
 
   return json<LoaderData>({
     title: `${t("charactersPageTitle")} | ${t("shortTitle")}`,

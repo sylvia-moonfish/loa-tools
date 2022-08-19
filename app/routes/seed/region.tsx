@@ -3,10 +3,12 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { prisma } from "~/db.server";
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
   const regionMap = [
     {
       regionName: "North America West",
+      regionAbbr: "NW",
+      regionShortName: "NA.W",
       serverNames: [
         "Mari",
         "Valtan",
@@ -19,6 +21,8 @@ export const loader: LoaderFunction = async () => {
     },
     {
       regionName: "North America East",
+      regionAbbr: "NE",
+      regionShortName: "NA.E",
       serverNames: [
         "Azena",
         "Una",
@@ -39,6 +43,8 @@ export const loader: LoaderFunction = async () => {
     },
     {
       regionName: "Europe Central",
+      regionAbbr: "EC",
+      regionShortName: "E.C",
       serverNames: [
         "Neria",
         "Kadan",
@@ -63,6 +69,8 @@ export const loader: LoaderFunction = async () => {
     },
     {
       regionName: "Europe West",
+      regionAbbr: "EW",
+      regionShortName: "E.W",
       serverNames: [
         "Rethramis",
         "Tortoyk",
@@ -76,6 +84,8 @@ export const loader: LoaderFunction = async () => {
     },
     {
       regionName: "South America",
+      regionAbbr: "SA",
+      regionShortName: "SA",
       serverNames: [
         "Kazeros",
         "Agaton",
@@ -100,6 +110,8 @@ export const loader: LoaderFunction = async () => {
       },
       create: {
         name: regionMap[i].regionName,
+        abbr: regionMap[i].regionAbbr,
+        shortName: regionMap[i].regionShortName,
       },
     });
 

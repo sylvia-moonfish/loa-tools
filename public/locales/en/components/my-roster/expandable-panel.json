@@ -1,0 +1,22 @@
+{
+  "recruitComplete": "Complete",
+  "expired": "Expired",
+  "recruiting": "Recruiting",
+  "rejected": "Rejected",
+  "approved": "Approved",
+  "waiting": "Waiting",
+  "partyMemberList": "Party Members",
+  "party1Title": "Party 1",
+  "party2Title": "Party 2",
+  "waitList": "Applicants",
+  "detailPage": "See post details",
+  "deleteTitle": "Delete Post",
+  "confirmDelete": "Do you really want to delete this post?",
+  "delete": "Delete",
+  "approve": "Approve",
+  "deny": "Deny",
+  "contact": "Contact",
+  "kick": "Kick",
+  "kickTitle": "Kick Party Member",
+  "confirmKick": "Do you really want to kick this party member?"
+}

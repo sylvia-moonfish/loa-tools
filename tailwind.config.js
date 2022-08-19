@@ -1,3 +1,5 @@
+/** @type {import('tailwindcss').Config} */
+
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
@@ -13,6 +15,11 @@ module.exports = {
       "loa-white": "#ffffff",
       "loa-red": "#e24444",
       "loa-button-gray": "#4b4b62",
+      "loa-close-icon": "#1c1b1f",
+      "loa-green": "#50d86a",
+      "loa-party-leader-star": "#ffa10b",
+      "loa-pink": "#ea4c89",
+      "loa-grey": "#979797",
     },
     extend: {
       fontFamily: {

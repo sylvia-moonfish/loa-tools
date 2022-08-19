@@ -1,8 +1,10 @@
+import type { User } from "@prisma/client";
 import type {
   LinksFunction,
   LoaderFunction,
   MetaFunction,
 } from "@remix-run/node";
+import type { LocaleType } from "~/i18n";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -12,16 +14,17 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
 } from "@remix-run/react";
-import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useChangeLanguage } from "remix-i18next";
-import Header, { handle as HeaderHandle } from "~/components/header";
+import Header from "~/components/header";
 import fontsStylesheetUrl from "~/styles/fonts.css";
 import materialSymbolsStylesheetUrl from "~/styles/material-symbols.css";
 import tailwindStylesheetUrl from "~/styles/tailwind.css";
-import { initOptions } from "~/i18n.config";
-import { i18n } from "~/i18n.server";
+import { prisma } from "~/db.server";
+import i18nConfig from "~/i18n";
+import i18next from "~/i18next.server";
 import { getUserFromRequest } from "~/session.server";
 
 export const links: LinksFunction = () => {
@@ -41,36 +44,58 @@ export const meta: MetaFunction = () => ({
 });
 
 export const handle = {
-  i18n: [...new Set(["root", ...HeaderHandle.i18n])],
+  i18n: [
+    "components\\my-roster\\expandable-panel",
+    "components\\tools\\party-finder\\add-party-button",
+    "components\\tools\\party-finder\\content-filter",
+    "components\\header",
+    "dictionary\\job",
+    "dictionary\\locale",
+    "dictionary\\party-find-content-type",
+    "routes\\character\\add",
+    "routes\\character\\id",
+    "routes\\my-roster\\my-parties",
+    "routes\\party-find-post\\id",
+    "routes\\tools\\party-finder\\id",
+    "routes\\tools\\party-finder",
+    "routes\\my-roster",
+    "error-messages",
+    "root",
+  ],
 };
 
 type LoaderData = {
-  locale: string;
-  pathname: string;
-  user: Awaited<ReturnType<typeof getUserFromRequest>>;
+  locale: LocaleType;
+  user:
+    | {
+        id: User["id"];
+        discordId: User["discordId"];
+        discordAvatarHash: User["discordAvatarHash"];
+      }
+    | undefined;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  return json<LoaderData>({
-    locale: await i18n.getLocale(request),
-    pathname: new URL(request.url).pathname,
-    user: await getUserFromRequest(request),
-  });
-};
+  const _user = await getUserFromRequest(request);
+  const user =
+    _user &&
+    (await prisma.user.findFirst({
+      where: { id: _user.id },
+      select: { id: true, discordId: true, discordAvatarHash: true },
+    }));
 
-export type RootContext = {
-  setPathname: React.Dispatch<React.SetStateAction<string>>;
+  return json<LoaderData>({
+    locale: (await i18next.getLocale(request)) as LocaleType,
+    user: user ?? undefined,
+  });
 };
 
 export default function App() {
   const data = useLoaderData<LoaderData>();
-  useChangeLanguage(data.locale);
-
+  const location = useLocation();
   const { i18n } = useTranslation();
 
-  const [pathname, setPathname] = React.useState(data.pathname);
-
-  const context: RootContext = { setPathname };
+  useChangeLanguage(data.locale);
 
   return (
     <html className="h-full" dir={i18n.dir()} lang={data.locale}>
@@ -81,14 +106,14 @@ export default function App() {
       <body className="flex min-h-screen select-none flex-col whitespace-nowrap bg-loa-body text-loa-white">
         <Header
           currentLocale={data.locale}
-          pathname={pathname}
-          supportedLocales={initOptions.supportedLngs || []}
+          location={location}
+          supportedLocales={i18nConfig.supportedLngs || []}
           user={data.user}
         />
         <div className="flex w-full flex-grow">
-          <Outlet context={context} />
+          <Outlet />
         </div>
-        <footer className="grid h-20 grid-cols-3 items-center justify-between border-t-2 border-loa-panel-border bg-loa-panel px-28">
+        <footer className="z-10 grid h-20 grid-cols-3 items-center justify-between border-t-2 border-loa-panel-border bg-loa-panel px-28">
           <div className="flex items-center justify-start">
             social stuff goes here
           </div>

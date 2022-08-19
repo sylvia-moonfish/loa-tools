@@ -1,6 +1,6 @@
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
+import { prisma } from "~/db.server";
 import invariant from "tiny-invariant";
-import { getUser } from "~/models/user.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -8,7 +8,7 @@ export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "__session",
     httpOnly: true,
-    maxAge: 0,
+    maxAge: 60 * 60 * 24,
     path: "/",
     sameSite: "lax",
     secrets: [process.env.SESSION_SECRET],
@@ -17,6 +17,7 @@ export const sessionStorage = createCookieSessionStorage({
 });
 
 export type Session = {
+  accessToken: string | undefined;
   lng: string | undefined;
   loginRedirect: string | undefined;
   state: string | undefined;
@@ -29,6 +30,7 @@ export async function getSession(request: Request): Promise<Session> {
   );
 
   return {
+    accessToken: session.get("accessToken"),
     lng: session.get("lng"),
     loginRedirect: session.get("loginRedirect"),
     state: session.get("state"),
@@ -40,7 +42,10 @@ export async function getUserFromRequest(request: Request) {
   const userId = (await getSession(request)).userId;
 
   if (userId) {
-    const user = await getUser({ id: userId });
+    const user = await prisma.user.findFirst({
+      where: { id: userId },
+      select: { id: true },
+    });
 
     if (user) return user;
   }
@@ -73,6 +78,9 @@ export async function saveSession({
   const _session = await sessionStorage.getSession(
     request.headers.get("Cookie")
   );
+  session.accessToken
+    ? _session.set("accessToken", session.accessToken)
+    : _session.unset("accessToken");
   session.lng ? _session.set("lng", session.lng) : _session.unset("lng");
   session.loginRedirect
     ? _session.set("loginRedirect", session.loginRedirect)

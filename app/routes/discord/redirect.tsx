@@ -1,6 +1,6 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { upsertUser } from "~/models/user.server";
+import { prisma } from "~/db.server";
 import { getSession, saveSession } from "~/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -53,17 +53,26 @@ export const loader: LoaderFunction = async ({ request }) => {
     if (
       typeof discordUser.id !== "string" ||
       typeof discordUser.username !== "string" ||
-      typeof discordUser.avatar !== "string" ||
       typeof discordUser.discriminator !== "string"
     ) {
       return redirect("/");
     }
 
-    const user = await upsertUser({
-      discordId: discordUser.id,
-      discordUsername: discordUser.username,
-      discordDiscriminator: discordUser.discriminator,
-      discordAvatarHash: discordUser.avatar,
+    const user = await prisma.user.upsert({
+      where: {
+        discordId: discordUser.id,
+      },
+      update: {
+        discordUsername: discordUser.username,
+        discordDiscriminator: discordUser.discriminator,
+        discordAvatarHash: discordUser.avatar ?? null,
+      },
+      create: {
+        discordId: discordUser.id,
+        discordUsername: discordUser.username,
+        discordDiscriminator: discordUser.discriminator,
+        discordAvatarHash: discordUser.avatar ?? null,
+      },
     });
 
     if (typeof user.id !== "string") {
@@ -71,6 +80,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     const redirectTo = session.loginRedirect || "/";
+    session.accessToken = accessToken;
     session.loginRedirect = undefined;
     session.state = undefined;
     session.userId = user.id;

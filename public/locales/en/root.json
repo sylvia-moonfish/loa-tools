@@ -1,7 +1,9 @@
 {
   "shortTitle": "LA-Tools",
   "longTitle": "Lost Ark Tools",
-  "charactersPageTitle": "Characters",
+  "myRosterTitle": "My Roster",
+  "myPartiesTitle": "My Parties",
   "partyFinderPageTitle": "Party Finder",
-  "helpPageTitle": "Help"
+  "helpPageTitle": "Help",
+  "addCharacterTitle": "Add Character"
 }

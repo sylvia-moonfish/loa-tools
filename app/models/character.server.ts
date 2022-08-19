@@ -1,18 +1,17 @@
 import type { Character, Server, User } from "@prisma/client";
 import { prisma } from "~/db.server";
 
-export type { Character } from "@prisma/client";
-
-export function getCharacter({
+/*export async function getCharacter({
   id,
   userId,
 }: Pick<Character, "id"> & { userId: User["id"] }) {
   return prisma.character.findFirst({
+    include: { server: true },
     where: { id, userId },
   });
 }
 
-export function getPrimaryCharacter({ userId }: { userId: User["id"] }) {
+export async function getPrimaryCharacter({ userId }: { userId: User["id"] }) {
   return prisma.character.findFirst({
     where: {
       userId,
@@ -21,7 +20,7 @@ export function getPrimaryCharacter({ userId }: { userId: User["id"] }) {
   });
 }
 
-export function getCharacters({ userId }: { userId: User["id"] }) {
+export async function getCharacters({ userId }: { userId: User["id"] }) {
   return prisma.character.findMany({
     where: { userId },
     include: {
@@ -34,7 +33,7 @@ export function getCharacters({ userId }: { userId: User["id"] }) {
   });
 }
 
-export function addCharacter({
+export async function addCharacter({
   name,
   isPrimary,
   job,
@@ -55,4 +54,4 @@ export function addCharacter({
       serverId: serverId,
     },
   });
-}
+}*/

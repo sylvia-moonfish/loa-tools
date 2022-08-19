@@ -1,0 +1,16 @@
+{
+  "postParty": "파티 등록하기",
+  "contentInfo": "컨텐츠 정보",
+  "partyInfo": "파티 정보",
+  "partyTitle": "제목",
+  "partyType": "숙련도",
+  "partyRoles": "역할 구분",
+  "partyRecruitAnyone": "(역할에 관계없이 구인)",
+  "partyRecruitEnforced": "(파티당 1 서포터)",
+  "partySchedule": "파티 일정",
+  "scheduleDate": "시작 날짜",
+  "recurring": "매주 반복?",
+  "characterInfo": "캐릭터 선택",
+  "post": "등록",
+  "edit": "수정하기"
+}

@@ -13,12 +13,20 @@ model User {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    discordId            String @unique
+    discordId            String  @unique
     discordUsername      String
     discordDiscriminator String
-    discordAvatarHash    String
+    discordAvatarHash    String?
 
-    characters Character[]
+    languages Language[]
+
+    rosters        Roster[]
+    partyFindPosts PartyFindPost[]
+}
+
+enum Language {
+    KR
+    EN
 }
 
 model Region {
@@ -27,7 +35,9 @@ model Region {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    name String @unique
+    name      String @unique
+    abbr      String @unique
+    shortName String @unique
 
     servers Server[]
 }
@@ -40,10 +50,61 @@ model Server {
 
     name String @unique
 
-    region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    region   Region @relation(fields: [regionId], references: [id])
     regionId String
 
+    guilds         Guild[]
+    partyFindPosts PartyFindPost[]
+    rosters        Roster[]
+}
+
+model Guild {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    name String
+
+    server   Server @relation(fields: [serverId], references: [id])
+    serverId String
+
     characters Character[]
+
+    @@unique([name, serverId])
+}
+
+model Roster {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    level      Int
+    stronghold Stronghold?
+
+    server   Server @relation(fields: [serverId], references: [id])
+    serverId String
+
+    user   User   @relation(fields: [userId], references: [id])
+    userId String
+
+    characters Character[]
+
+    @@unique([serverId, userId])
+}
+
+model Stronghold {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    name  String
+    level Int
+
+    roster   Roster @relation(fields: [rosterId], references: [id])
+    rosterId String @unique
 }
 
 model Character {
@@ -55,16 +116,78 @@ model Character {
     name      String
     isPrimary Boolean
     job       Job
-    itemLevel Float
 
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    userId String
+    onTimeBadge       Int
+    friendlyBadge     Int
+    professionalBadge Int
 
-    server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    serverId String
+    combatLevel Int
+    itemLevel   Float
+
+    comment String
+
+    crit           Int
+    specialization Int
+    domination     Int
+    swiftness      Int
+    endurance      Int
+    expertise      Int
+
+    roster   Roster @relation(fields: [rosterId], references: [id])
+    rosterId String
+
+    guild   Guild?  @relation(fields: [guildId], references: [id])
+    guildId String?
+
+    engravingSlots EngravingSlot[]
+    partyFindSlots PartyFindSlot[]
+    waitlistPosts  PartyFindPost[]
+
+    @@unique([name, rosterId])
+}
+
+model Engraving {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn     String
+    nameKo     String
+    isPositive Boolean
+    iconPath   String
+    type       EngravingType
+    job        Job?
+
+    engravingSlots EngravingSlot[]
+}
+
+enum EngravingType {
+    COMBAT
+    CLASS
+}
+
+model EngravingSlot {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index Int
+    level Int
+
+    engraving   Engraving @relation(fields: [engravingId], references: [id])
+    engravingId String
+
+    character   Character @relation(fields: [characterId], references: [id])
+    characterId String
+
+    @@unique([characterId, index])
+    @@unique([characterId, engravingId])
 }
 
 enum Job {
+    DESTROYER
     GUNLANCER
     BERSERKER
     PALADIN
@@ -83,86 +206,334 @@ enum Job {
     GUNSLINGER
 
     BARD
+    ARCANIST
     SORCERESS
 
     DEATHBLADE
     SHADOWHUNTER
 }
 
-model ContentType {
+model ChaosDungeon {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    contentGroups ContentGroup[]
-    name          LocalizedText[]
+    nameEn String
+    nameKo String
+
+    tabs ChaosDungeonTab[]
 }
 
-model ContentGroup {
-    id String @id @default(cuid())
-
-    order Int
-
-    contentType   ContentType @relation(fields: [contentTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentTypeId String
-
-    contents Content[]
-    name     LocalizedText[]
-
-    @@unique([order, contentTypeId])
-}
-
-model Content {
+model ChaosDungeonTab {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    order            Int
-    tier             Int
-    level            Int
-    groupSize        Int
-    requireFullParty Boolean
-    iconSrc          String?
-    bannerSrc        String?
+    index  Int
+    nameEn String
+    nameKo String
 
-    contentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentDifficultyId String?
+    chaosDungeon   ChaosDungeon @relation(fields: [chaosDungeonId], references: [id])
+    chaosDungeonId String
 
-    contentGroup   ContentGroup @relation(fields: [contentGroupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-    contentGroupId String
+    stages ChaosDungeonStage[]
 
-    name LocalizedText[]
-
-    @@unique([order, contentGroupId])
+    @@unique([index, chaosDungeonId])
 }
 
-model ContentDifficulty {
+model ChaosDungeonStage {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    contents Content[]
-    name     LocalizedText[]
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    chaosDungeonTab   ChaosDungeonTab @relation(fields: [chaosDungeonTabId], references: [id])
+    chaosDungeonTabId String
+
+    partyFindPosts PartyFindPost[]
+
+    @@unique([index, chaosDungeonTabId])
 }
 
-model LocalizedText {
+model GuardianRaid {
     id String @id @default(cuid())
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    text   String
-    locale String
+    nameEn String
+    nameKo String
 
-    ContentType         ContentType?       @relation(fields: [contentTypeId], references: [id])
-    contentTypeId       String?
-    ContentGroup        ContentGroup?      @relation(fields: [contentGroupId], references: [id])
-    contentGroupId      String?
-    Content             Content?           @relation(fields: [contentId], references: [id])
-    contentId           String?
-    ContentDifficulty   ContentDifficulty? @relation(fields: [contentDifficultyId], references: [id])
-    contentDifficultyId String?
+    tabs GuardianRaidTab[]
+}
+
+model GuardianRaidTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+
+    guardianRaid   GuardianRaid @relation(fields: [guardianRaidId], references: [id])
+    guardianRaidId String
+
+    stages GuardianRaidStage[]
+
+    @@unique([index, guardianRaidId])
+}
+
+model GuardianRaidStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    guardianRaidTab   GuardianRaidTab @relation(fields: [guardianRaidTabId], references: [id])
+    guardianRaidTabId String
+
+    partyFindPosts PartyFindPost[]
+
+    @@unique([index, guardianRaidTabId])
+}
+
+model AbyssalDungeon {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn String
+    nameKo String
+
+    tabs AbyssalDungeonTab[]
+}
+
+model AbyssalDungeonTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index            Int
+    nameEn           String
+    nameKo           String
+    difficultyNameEn String?
+    difficultyNameKo String?
+
+    abyssalDungeon   AbyssalDungeon @relation(fields: [abyssalDungeonId], references: [id])
+    abyssalDungeonId String
+
+    stages AbyssalDungeonStage[]
+
+    @@unique([index, abyssalDungeonId])
+}
+
+model AbyssalDungeonStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index     Int
+    nameEn    String
+    nameKo    String
+    tier      Int
+    level     Int
+    groupSize Int
+
+    abyssalDungeonTab   AbyssalDungeonTab @relation(fields: [abyssalDungeonTabId], references: [id])
+    abyssalDungeonTabId String
+
+    partyFindPosts PartyFindPost[]
+
+    @@unique([index, abyssalDungeonTabId])
+}
+
+model AbyssRaid {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn String
+    nameKo String
+
+    tabs AbyssRaidTab[]
+}
+
+model AbyssRaidTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+
+    abyssRaid   AbyssRaid @relation(fields: [abyssRaidId], references: [id])
+    abyssRaidId String
+
+    stages AbyssRaidStage[]
+
+    @@unique([index, abyssRaidId])
+}
+
+model AbyssRaidStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index  Int
+    nameEn String
+    nameKo String
+    tier   Int
+    level  Int
+
+    abyssRaidTab   AbyssRaidTab @relation(fields: [abyssRaidTabId], references: [id])
+    abyssRaidTabId String
+
+    partyFindPosts PartyFindPost[]
+
+    @@unique([index, abyssRaidTabId])
+}
+
+model LegionRaid {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    nameEn String
+    nameKo String
+
+    tabs LegionRaidTab[]
+}
+
+model LegionRaidTab {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index            Int
+    nameEn           String
+    nameKo           String
+    difficultyNameEn String
+    difficultyNameKo String
+
+    legionRaid   LegionRaid @relation(fields: [legionRaidId], references: [id])
+    legionRaidId String
+
+    stages LegionRaidStage[]
+
+    @@unique([index, legionRaidId])
+}
+
+model LegionRaidStage {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index     Int
+    nameEn    String
+    nameKo    String
+    tier      Int
+    level     Int
+    groupSize Int
+
+    legionRaidTab   LegionRaidTab @relation(fields: [legionRaidTabId], references: [id])
+    legionRaidTabId String
+
+    partyFindPosts PartyFindPost[]
+
+    @@unique([index, legionRaidTabId])
+}
+
+model PartyFindPost {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    contentType     PartyFindContentType
+    isPracticeParty Boolean
+    isReclearParty  Boolean
+    title           String
+    startTime       DateTime
+    recurring       Boolean
+
+    chaosDungeon   ChaosDungeonStage? @relation(fields: [chaosDungeonId], references: [id])
+    chaosDungeonId String?
+
+    guardianRaid   GuardianRaidStage? @relation(fields: [guardianRaidId], references: [id])
+    guardianRaidId String?
+
+    abyssalDungeon   AbyssalDungeonStage? @relation(fields: [abyssalDungeonId], references: [id])
+    abyssalDungeonId String?
+
+    abyssRaid   AbyssRaidStage? @relation(fields: [abyssRaidId], references: [id])
+    abyssRaidId String?
+
+    legionRaid   LegionRaidStage? @relation(fields: [legionRaidId], references: [id])
+    legionRaidId String?
+
+    author   User   @relation(fields: [authorId], references: [id])
+    authorId String
+
+    server   Server @relation(fields: [serverId], references: [id])
+    serverId String
+
+    partyFindSlots     PartyFindSlot[]
+    waitlistCharacters Character[]
+}
+
+enum PartyFindContentType {
+    CHAOS_DUNGEON
+    GUARDIAN_RAID
+    ABYSSAL_DUNGEON
+    ABYSS_RAID
+    LEGION_RAID
+}
+
+model PartyFindSlot {
+    id String @id @default(cuid())
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    index    Int
+    jobType  JobType
+    isAuthor Boolean
+
+    partyFindPost   PartyFindPost @relation(fields: [partyFindPostId], references: [id])
+    partyFindPostId String
+
+    character   Character? @relation(fields: [characterId], references: [id])
+    characterId String?
+}
+
+enum JobType {
+    DPS
+    SUPPORT
+    ANY
 }
