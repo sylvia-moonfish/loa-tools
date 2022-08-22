@@ -28,9 +28,6 @@ export default function Modal(props: {
         className="transition"
         style={{
           left: "50%",
-          maxHeight: "100vh",
-          maxWidth: "100vw",
-          overflowX: "auto",
           position: "fixed",
           top: "50%",
           transform: `translate(-50%, -50%) scale(${

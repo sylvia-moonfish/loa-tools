@@ -484,9 +484,7 @@ export default function PartyFindPostIdPage() {
           </div>
           {data.user && data.user.id === data.partyFindPost.authorId && (
             <div className="flex gap-[0.625rem]">
-              {!data.partyFindPost.partyFindSlots.find(
-                (s) => !s.isAuthor && s.character
-              ) && (
+              {
                 <EditPartyButton
                   backgroundColor="bg-loa-button"
                   contentTypes={contentTypes}
@@ -506,7 +504,7 @@ export default function PartyFindPostIdPage() {
                   partyFindPostId={data.partyFindPost.id}
                   userId={data.user.id}
                 />
-              )}
+              }
               <Button
                 onClick={() => {
                   setIsDeleteWarningOpen(true);
@@ -858,10 +856,7 @@ export default function PartyFindPostIdPage() {
                     </div>
                     <Dropdown
                       invalid={!character}
-                      items={characters
-                        .concat(characters)
-                        .concat(characters)
-                        .concat(characters)}
+                      items={characters}
                       locale={data.locale}
                       onChange={setCharacter}
                       selected={character}

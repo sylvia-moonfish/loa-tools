@@ -438,9 +438,9 @@ export default function ExpandablePanel(props: {
                     })}
                   />
                 </Link>
-                {!props.partyFindPost.partyFindSlots.find(
-                  (s) => !s.isAuthor && s.character
-                ) ? (
+                {statusText === "expired" ? (
+                  <div></div>
+                ) : (
                   <EditPartyButton
                     backgroundColor="bg-loa-green"
                     contentTypes={props.contentTypes}
@@ -460,8 +460,6 @@ export default function ExpandablePanel(props: {
                     partyFindPostId={props.partyFindPost.id}
                     userId={props.userId}
                   />
-                ) : (
-                  <div></div>
                 )}
                 <div>
                   <Button

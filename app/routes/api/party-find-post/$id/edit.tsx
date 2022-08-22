@@ -56,17 +56,10 @@ export const action: ActionFunction = async ({ params, request }) => {
         select: {
           id: true,
           authorId: true,
-          partyFindSlots: {
-            select: { id: true, isAuthor: true, characterId: true },
-          },
         },
       });
 
-      if (
-        !partyFindPostDb ||
-        partyFindPostDb.authorId !== user.id ||
-        partyFindPostDb.partyFindSlots.find((s) => !s.isAuthor && s.characterId)
-      )
+      if (!partyFindPostDb || partyFindPostDb.authorId !== user.id)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
