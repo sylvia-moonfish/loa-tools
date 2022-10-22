@@ -19,23 +19,29 @@ export const action: ActionFunction = async ({ params, request }) => {
     actionBody.userId === user.id
   ) {
     try {
+      // Get the post that will be deleted.
       const partyFindPostDb = await prisma.partyFindPost.findFirst({
         where: { id: params.id },
-        select: { id: true, authorId: true },
+        select: { id: true, startTime: true, authorId: true },
       });
 
+      // Validate: Check if the post exists.
       if (!partyFindPostDb) return json({});
+
+      // Validate: Check if the user making this delete request is the post's author.
       if (partyFindPostDb.authorId !== user.id) return json({});
 
+      // Delete all the apply states for this post.
+      await prisma.partyFindApplyState.deleteMany({
+        where: { partyFindPostId: partyFindPostDb.id },
+      });
+
+      // Delete all the slots for this post.
       await prisma.partyFindSlot.deleteMany({
         where: { partyFindPostId: partyFindPostDb.id },
       });
 
-      await prisma.partyFindPost.update({
-        where: { id: partyFindPostDb.id },
-        data: { waitlistCharacters: { set: [] } },
-      });
-
+      // Delete the post itself.
       await prisma.partyFindPost.delete({ where: { id: partyFindPostDb.id } });
     } catch (e) {
       console.log(e);

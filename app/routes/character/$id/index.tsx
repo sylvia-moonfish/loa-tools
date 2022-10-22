@@ -11,9 +11,11 @@ import { prisma } from "~/db.server";
 import i18next from "~/i18next.server";
 import { getUserFromRequest } from "~/session.server";
 import {
+  elapsedTimeSpaced,
   generateJobIconPath,
   generateProperLocaleDateString,
   printTime,
+  printTimeElapsed,
 } from "~/utils";
 
 export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
@@ -117,6 +119,12 @@ export default function CharacterIdIndexPage() {
       updatedAtTime.getHours(),
       updatedAtTime.getMinutes()
     );
+    const elapsedTimes = printTimeElapsed(updatedAtTime);
+    const elapsedTimeString = `${elapsedTimes[0]}${
+      elapsedTimeSpaced.includes(data.locale) ? " " : ""
+    }${t(`${elapsedTimes[1]}${elapsedTimes[0] === "1" ? "" : "s"}`, {
+      ns: "dictionary\\time-elapsed",
+    })} ${t("ago", { ns: "dictionary\\time-elapsed" })}`;
 
     const engravingPanel: (
       | {
@@ -154,8 +162,32 @@ export default function CharacterIdIndexPage() {
       React.useState(true);
 
     return (
-      <div className="mx-auto my-[3.125rem] flex w-[46.875rem] flex-col">
-        <div className="flex items-start gap-[1.5625rem]">
+      <div className="mx-auto my-[2.5rem] flex w-[46.875rem] flex-col">
+        <div className="flex">
+          <Button
+            onClick={() => {
+              navigate("/my-roster");
+            }}
+            style={{
+              additionalClass:
+                "w-[1.875rem] h-[1.875rem] rounded-full flex items-center justify-center",
+              backgroundColorClass: "bg-loa-button",
+              cornerRadius: "",
+              fontSize: "",
+              fontWeight: "",
+              lineHeight: "",
+              px: "",
+              py: "",
+              textColorClass: "",
+            }}
+            text={
+              <span className="material-symbols-outlined text-[0.9375rem]">
+                navigate_before
+              </span>
+            }
+          />
+        </div>
+        <div className="mt-[1.25rem] flex items-start gap-[1.5625rem]">
           <div
             className="h-[4.0625rem] w-[4.0625rem] rounded-full bg-contain bg-center bg-no-repeat"
             style={{ backgroundImage: `url('${iconPath}')` }}
@@ -177,7 +209,7 @@ export default function CharacterIdIndexPage() {
             <div className="truncate text-[0.75rem] font-[400] leading-[1.25rem] text-loa-grey">
               {`${t("lastUpdated", {
                 ns: "routes\\character\\id",
-              })} ${dateString} ${timeString}`}
+              })} ${elapsedTimeString} ${dateString} ${timeString}`}
             </div>
           </div>
           {data.user && data.user.id === data.character.roster.userId && (

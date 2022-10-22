@@ -18,26 +18,29 @@ export const action: ActionFunction = async ({ params, request }) => {
     typeof params.id === "string" &&
     params.id.length > 0 &&
     actionBody &&
+    typeof actionBody.characterId === "string" &&
+    actionBody.characterId.length > 0 &&
     typeof actionBody.partyFindPostId === "string" &&
     actionBody.partyFindPostId === params.id &&
     typeof actionBody.userId === "string" &&
-    actionBody.userId === user.id &&
-    typeof actionBody.characterId === "string" &&
-    actionBody.characterId.length > 0
+    actionBody.userId === user.id
   ) {
+    // Get the character.
     try {
-      // Get the character that is to be denied.
       const characterDb = await prisma.character.findFirst({
         where: { id: actionBody.characterId },
-        select: { id: true, job: true },
+        select: { id: true, roster: { select: { userId: true } } },
       });
 
       // Validate: Check if the character exists.
       if (!characterDb) return json({});
 
+      // Validate: Check if the user making the request is the owner of the character.
+      if (characterDb.roster.userId !== user.id) return json({});
+
       // Get the post.
       const partyFindPostDb = await prisma.partyFindPost.findFirst({
-        where: { id: params.id },
+        where: { id: actionBody.partyFindPostId },
         select: { id: true, state: true, startTime: true, authorId: true },
       });
 
@@ -59,21 +62,17 @@ export const action: ActionFunction = async ({ params, request }) => {
         return json({});
       }
 
-      // Validate: Check if the user making the deny request is the author of this post.
-      if (partyFindPostDb.authorId !== user.id) return json({});
+      // Validate: Check if the user is not the author of the post.
+      // (Author cannot leave the group.)
+      if (partyFindPostDb.authorId === user.id) return json({});
 
-      // Update the apply state of the given character for this post to REJECTED
-      // and disconnect slot if it exists.
-      await prisma.partyFindApplyState.update({
+      // Delete the apply state for this post that belongs to this character.
+      await prisma.partyFindApplyState.delete({
         where: {
           partyFindPostId_characterId: {
             partyFindPostId: partyFindPostDb.id,
             characterId: characterDb.id,
           },
-        },
-        data: {
-          state: PartyFindApplyStateValue.REJECTED,
-          partyFindSlot: { disconnect: true },
         },
       });
 

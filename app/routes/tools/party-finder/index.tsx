@@ -22,7 +22,6 @@ import {
   generateProperLocaleDateString,
   getColorCodeFromDifficulty,
   getContentByType,
-  getItemFromArray,
   printTime,
   putFromAndToOnRight,
 } from "~/utils";
@@ -175,12 +174,14 @@ export const loader: LoaderFunction = async ({ request }) => {
   });
 };
 
+// This is used to cancel previous on-going AJAX calls in case of multiple clicks.
 let abortController = new AbortController();
 
 export default function ToolsPartyFinderIndexPage() {
   const { t } = useTranslation();
   const data = useLoaderData<LoaderData>();
 
+  // Flattening out the characters this user has for all rosters.
   const _characters =
     data.user?.rosters
       .sort((a, b) => a.server.name.localeCompare(b.server.name))
@@ -191,42 +192,81 @@ export default function ToolsPartyFinderIndexPage() {
           .map((c) => ({ ...c, roster: r }))
       )
       .flat() ?? [];
-  const characters = _characters.map((c) => {
-    return {
-      id: c.id,
-      text: {
-        en: `${t(c.job, { ns: "dictionary\\job", lng: "en" })} [${
-          c.name
-        }] lv.${c.itemLevel.toFixed(0)} ${c.roster.server.region.abbr}`,
-        ko: `${t(c.job, { ns: "dictionary\\job", lng: "ko" })} [${
-          c.name
-        }] lv.${c.itemLevel.toFixed(0)} ${c.roster.server.region.abbr}`,
-      },
-    };
-  });
+
+  // Map the character array into dropdown item types.
+  const characters = [
+    { id: "-", text: { en: "-------", ko: "-------" } },
+  ].concat(
+    _characters.map((c) => {
+      return {
+        id: c.id,
+        text: {
+          en: `${t(c.job, { ns: "dictionary\\job", lng: "en" })} [${
+            c.name
+          }] lv.${c.itemLevel.toFixed(0)} ${c.roster.server.region.abbr}`,
+          ko: `${t(c.job, { ns: "dictionary\\job", lng: "ko" })} [${
+            c.name
+          }] lv.${c.itemLevel.toFixed(0)} ${c.roster.server.region.abbr}`,
+        },
+      };
+    })
+  );
+
+  // Filter for character.
   const [characterFilter, _setCharacterFilter] = React.useState<
     ItemType | undefined
   >(undefined);
+
+  // Do some required computation every time we set the character filter.
   const setCharacterFilter = (item: ItemType | undefined) => {
+    // If the selection made is already selected, no change.
     if (item && characterFilter && item.id === characterFilter.id) return;
 
     if (item) {
+      // Check if the job filter currently has the previously selected character's job,
+      // and remove it since the selection is changing.
+      const _jobFilterList = [...jobFilterList];
+
+      if (characterFilter && _jobFilterList.length > 0) {
+        const jobId = _jobFilterList.findIndex(
+          (j) => j === _characters.find((c) => c.id === characterFilter.id)?.job
+        );
+        if (jobId !== -1) _jobFilterList.splice(jobId, 1);
+      }
+
+      // If the selection made is '-', that means no character filter.
+      if (item.id === "-") {
+        // First set the job filter back because we're not adding a new job filter.
+        setJobFilterList(_jobFilterList);
+
+        // See if previous character filter has region filter set too.
+        if (
+          characterFilter &&
+          regionFilter &&
+          regionFilter.id ===
+            _characters.find((c) => c.id === characterFilter.id)?.roster.server
+              .region.id
+        ) {
+          // If yes, unset it.
+          setRegionFilter(undefined);
+        }
+
+        // Also unset the character filter.
+        setCharacterFilter(undefined);
+
+        return;
+      }
+
+      // If the selection is a valid character, find it from the character array.
       const character = _characters.find((c) => c.id === item.id);
 
       if (character) {
-        const _jobFilterList = [...jobFilterList];
-
-        if (characterFilter && _jobFilterList.length > 0) {
-          const jobId = _jobFilterList.findIndex(
-            (j) => j === getItemFromArray(characterFilter.id, _characters)?.job
-          );
-          if (jobId !== -1) _jobFilterList.splice(jobId, 1);
-        }
-
+        // Add the new character's job to job filter.
         if (!_jobFilterList.find((j) => j === character.job))
           _jobFilterList.push(character.job);
-
         setJobFilterList(_jobFilterList);
+
+        // Set the region filter accordingly.
         setRegionFilter({
           id: character.roster.server.region.id,
           text: {
@@ -254,41 +294,61 @@ export default function ToolsPartyFinderIndexPage() {
     _setJobFilterList(items);
   };
 
+  const contentTypeUnselector: ItemType & {
+    tiers: (ItemType & { stages: ItemType[] })[];
+  } = { id: "-", text: { en: "-------", ko: "-------" }, tiers: [] };
+
+  const contentTierUnselector: ItemType & { stages: ItemType[] } = {
+    id: "-",
+    text: { en: "-------", ko: "-------" },
+    stages: [],
+  };
+
+  const contentStageUnselector: ItemType = {
+    id: "-",
+    text: { en: "-------", ko: "-------" },
+  };
+
   const contentTypes: (ItemType & {
     tiers: (ItemType & { stages: ItemType[] })[];
-  })[] = [
-    data.chaosDungeon,
-    data.guardianRaid,
-    data.abyssalDungeon,
-    data.abyssRaid,
-    data.legionRaid,
-  ].map((d) => {
-    return {
-      id: d?.id ?? "",
-      text: { en: d?.nameEn ?? "", ko: d?.nameKo ?? "" },
-      tiers:
-        d?.tabs.map((t) => {
-          return {
-            id: t.id,
-            text: {
-              en: `${t.nameEn}${
-                (t as any).difficultyNameEn
-                  ? ` [${(t as any).difficultyNameEn}]`
-                  : ""
-              }`,
-              ko: `${t.nameKo}${
-                (t as any).difficultyNameKo
-                  ? ` [${(t as any).difficultyNameKo}]`
-                  : ""
-              }`,
-            },
-            stages: t.stages.map((s) => {
-              return { id: s.id, text: { en: s.nameEn, ko: s.nameKo } };
-            }),
-          };
-        }) ?? [],
-    };
-  });
+  })[] = [contentTypeUnselector].concat(
+    [
+      data.chaosDungeon,
+      data.guardianRaid,
+      data.abyssalDungeon,
+      data.abyssRaid,
+      data.legionRaid,
+    ].map((d) => {
+      return {
+        id: d?.id ?? "",
+        text: { en: d?.nameEn ?? "", ko: d?.nameKo ?? "" },
+        tiers: [contentTierUnselector].concat(
+          d?.tabs.map((t) => {
+            return {
+              id: t.id,
+              text: {
+                en: `${t.nameEn}${
+                  (t as any).difficultyNameEn
+                    ? ` [${(t as any).difficultyNameEn}]`
+                    : ""
+                }`,
+                ko: `${t.nameKo}${
+                  (t as any).difficultyNameKo
+                    ? ` [${(t as any).difficultyNameKo}]`
+                    : ""
+                }`,
+              },
+              stages: [contentStageUnselector].concat(
+                t.stages.map((s) => {
+                  return { id: s.id, text: { en: s.nameEn, ko: s.nameKo } };
+                })
+              ),
+            };
+          }) ?? []
+        ),
+      };
+    })
+  );
   const [contentTypeFilter, setContentTypeFilter] = React.useState<
     ItemType | undefined
   >(undefined);
@@ -312,7 +372,8 @@ export default function ToolsPartyFinderIndexPage() {
     )
       setCharacterFilter(undefined);
 
-    _setRegionFilter(item);
+    if (item && item.id === "-") _setRegionFilter(undefined);
+    else _setRegionFilter(item);
   };
 
   const [practicePartyFilter, setPracticePartyFilter] = React.useState(false);
@@ -333,10 +394,12 @@ export default function ToolsPartyFinderIndexPage() {
     _times.push(i);
   }
   const [times] = React.useState<ItemType[]>(
-    _times.map((t) => ({
-      id: t.toString(),
-      text: { en: printTime(t, 0), ko: printTime(t, 0) },
-    }))
+    [{ id: "-", text: { en: "-------", ko: "-------" } }].concat(
+      _times.map((t) => ({
+        id: t.toString(),
+        text: { en: printTime(t, 0), ko: printTime(t, 0) },
+      }))
+    )
   );
   const [startTimeFilter, setStartTimeFilter] = React.useState<
     ItemType | undefined
@@ -350,10 +413,12 @@ export default function ToolsPartyFinderIndexPage() {
     _years.push(i);
   }
   const [years] = React.useState<ItemType[]>(
-    _years.map((y) => ({
-      id: y.toString(),
-      text: { en: y.toString(), ko: y.toString() },
-    }))
+    [{ id: "-", text: { en: "-------", ko: "-------" } }].concat(
+      _years.map((y) => ({
+        id: y.toString(),
+        text: { en: y.toString(), ko: y.toString() },
+      }))
+    )
   );
   const [yearFilter, setYearFilter] = React.useState<ItemType | undefined>(
     undefined
@@ -363,14 +428,20 @@ export default function ToolsPartyFinderIndexPage() {
   for (let i = 1; i <= 12; i++) {
     _months.push(i);
   }
+  const monthUnselector: ItemType = {
+    id: "-",
+    text: { en: "-------", ko: "-------" },
+  };
   const [months] = React.useState<ItemType[]>(
-    _months.map((m) => ({
-      id: m.toString(),
-      i18n: {
-        keyword: `month${m}Filter`,
-        namespace: "routes\\tools\\party-finder",
-      },
-    }))
+    [monthUnselector].concat(
+      _months.map((m) => ({
+        id: m.toString(),
+        i18n: {
+          keyword: `month${m}Filter`,
+          namespace: "routes\\tools\\party-finder",
+        },
+      }))
+    )
   );
   const [monthFilter, setMonthFilter] = React.useState<ItemType | undefined>(
     undefined
@@ -545,9 +616,19 @@ export default function ToolsPartyFinderIndexPage() {
                 contentTypes={contentTypes}
                 locale={data.locale}
                 required={false}
-                setContentStage={setContentStageFilter}
-                setContentTier={setContentTierFilter}
-                setContentType={setContentTypeFilter}
+                setContentStage={(item) => {
+                  if (item && item.id === "-") setContentStageFilter(undefined);
+                  else setContentStageFilter(item);
+                }}
+                setContentTier={(item) => {
+                  if (item && item.id === "-") setContentTierFilter(undefined);
+                  else setContentTierFilter(item);
+                }}
+                setContentType={(item) => {
+                  setContentTypeFilter;
+                  if (item && item.id === "-") setContentTypeFilter(undefined);
+                  else setContentTypeFilter(item);
+                }}
               />
             </div>
           </div>
@@ -557,10 +638,14 @@ export default function ToolsPartyFinderIndexPage() {
               {t("filterByRegion", { ns: "routes\\tools\\party-finder" })}
             </div>
             <Dropdown
-              items={data.regions.map((r) => ({
-                id: r.id,
-                text: { en: r.name, ko: r.name },
-              }))}
+              items={[
+                { id: "-", text: { en: "-------", ko: "-------" } },
+              ].concat(
+                data.regions.map((r) => ({
+                  id: r.id,
+                  text: { en: r.name, ko: r.name },
+                }))
+              )}
               locale={data.locale}
               onChange={setRegionFilter}
               selected={regionFilter}
@@ -709,7 +794,11 @@ export default function ToolsPartyFinderIndexPage() {
                   <Dropdown
                     items={times}
                     locale={data.locale}
-                    onChange={setStartTimeFilter}
+                    onChange={(item) => {
+                      if (item && item.id === "-")
+                        setStartTimeFilter(undefined);
+                      else setStartTimeFilter(item);
+                    }}
                     selected={startTimeFilter}
                     style={{
                       additionalClass: "w-full",
@@ -762,7 +851,10 @@ export default function ToolsPartyFinderIndexPage() {
                   <Dropdown
                     items={times}
                     locale={data.locale}
-                    onChange={setEndTimeFilter}
+                    onChange={(item) => {
+                      if (item && item.id === "-") setEndTimeFilter(undefined);
+                      else setEndTimeFilter(item);
+                    }}
                     selected={endTimeFilter}
                     style={{
                       additionalClass: "w-full",
@@ -816,7 +908,10 @@ export default function ToolsPartyFinderIndexPage() {
                 <Dropdown
                   items={years}
                   locale={data.locale}
-                  onChange={setYearFilter}
+                  onChange={(item) => {
+                    if (item && item.id === "-") setYearFilter(undefined);
+                    else setYearFilter(item);
+                  }}
                   selected={yearFilter}
                   style={{
                     additionalClass: "w-full",
@@ -857,7 +952,10 @@ export default function ToolsPartyFinderIndexPage() {
                 <Dropdown
                   items={months}
                   locale={data.locale}
-                  onChange={setMonthFilter}
+                  onChange={(item) => {
+                    if (item && item.id === "-") setMonthFilter(undefined);
+                    else setMonthFilter(item);
+                  }}
                   selected={monthFilter}
                   style={{
                     additionalClass: "w-full",
@@ -1351,9 +1449,12 @@ export default function ToolsPartyFinderIndexPage() {
                       {partyFindPost.partyFindSlots.map((slot, index) => {
                         let circle, star;
 
-                        if (slot.character && slot.character.id) {
+                        if (
+                          slot.partyFindApplyState &&
+                          slot.partyFindApplyState.id
+                        ) {
                           const iconPath = generateJobIconPath(
-                            slot.character.job
+                            slot.partyFindApplyState.character.job
                           );
 
                           circle = (
@@ -1394,7 +1495,12 @@ export default function ToolsPartyFinderIndexPage() {
                           );
                         }
 
-                        if (slot.isAuthor) {
+                        if (
+                          slot.partyFindApplyState &&
+                          slot.partyFindApplyState.id &&
+                          slot.partyFindApplyState.character.roster.userId ===
+                            partyFindPost.authorId
+                        ) {
                           star = (
                             <div className="material-symbols-outlined absolute right-[-5px] top-[-5px] text-[1.125rem] text-loa-party-leader-star">
                               star
@@ -1414,32 +1520,51 @@ export default function ToolsPartyFinderIndexPage() {
                   <div className="flex w-[13.125rem] flex-col">
                     <div className="text-[0.9375rem] font-[400] leading-[1.25rem]">
                       {partyFindPost.recurring
-                        ? `${t("every", {
-                            ns: "routes\\tools\\party-finder",
-                          })} ${t(
-                            [
-                              "sunFilter",
-                              "monFilter",
-                              "tueFilter",
-                              "wedFilter",
-                              "thuFilter",
-                              "friFilter",
-                              "satFilter",
-                            ][convertedDate.getDay()],
-                            { ns: "routes\\tools\\party-finder" }
-                          )} ${timeString}`
-                        : `${dateString} ${timeString} ${t(
-                            [
-                              "sunList",
-                              "monList",
-                              "tueList",
-                              "wedList",
-                              "thuList",
-                              "friList",
-                              "satList",
-                            ][convertedDate.getDay()],
-                            { ns: "routes\\tools\\party-finder" }
-                          )}`}
+                        ? [
+                            <span key={1}>{`${t("every", {
+                              ns: "routes\\tools\\party-finder",
+                            })} `}</span>,
+                            <span
+                              className="text-loa-party-leader-star"
+                              key={2}
+                            >{`${t(
+                              [
+                                "sunFilter",
+                                "monFilter",
+                                "tueFilter",
+                                "wedFilter",
+                                "thuFilter",
+                                "friFilter",
+                                "satFilter",
+                              ][convertedDate.getDay()],
+                              { ns: "routes\\tools\\party-finder" }
+                            )} `}</span>,
+                            <span key={3}>{timeString}</span>,
+                          ]
+                        : [
+                            <span
+                              className="whitespace-pre"
+                              key={1}
+                            >{`${dateString}  `}</span>,
+                            <span
+                              className="whitespace-pre text-loa-party-leader-star"
+                              key={2}
+                            >
+                              {`${t(
+                                [
+                                  "sunList",
+                                  "monList",
+                                  "tueList",
+                                  "wedList",
+                                  "thuList",
+                                  "friList",
+                                  "satList",
+                                ][convertedDate.getDay()],
+                                { ns: "routes\\tools\\party-finder" }
+                              )}  `}
+                            </span>,
+                            <span key={3}>{timeString}</span>,
+                          ]}
                     </div>
                     <div className="min-h-[1.25rem] text-[0.9375rem] font-[400] leading-[1.25rem]">
                       {partyFindPost.recurring
@@ -1458,11 +1583,18 @@ export default function ToolsPartyFinderIndexPage() {
                         {(
                           partyFindPost.partyFindSlots.reduce(
                             (prev, current) =>
-                              prev + (current.character?.itemLevel ?? 0),
+                              prev +
+                              (current.partyFindApplyState &&
+                              current.partyFindApplyState.id
+                                ? current.partyFindApplyState.character
+                                    .itemLevel
+                                : 0),
                             0
                           ) /
                           partyFindPost.partyFindSlots.filter(
-                            (slot) => slot.character && slot.character.id
+                            (slot) =>
+                              slot.partyFindApplyState &&
+                              slot.partyFindApplyState.id
                           ).length
                         ).toFixed(0)}{" "}
                       </div>

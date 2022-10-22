@@ -1,7 +1,7 @@
 import type {
   _Character,
   _PartyFindSlot,
-} from "~/components/my-roster/expandable-panel";
+} from "~/components/my-roster/my-posts/expandable-panel";
 import type { ActionBody as ApproveActionBody } from "~/routes/api/party-find-post/$id/approve";
 import type { ActionBody as DenyActionBody } from "~/routes/api/party-find-post/$id/deny";
 import type { ActionBody as KickActionBody } from "~/routes/api/party-find-post/$id/kick";
@@ -13,8 +13,8 @@ import Button from "~/components/button";
 import { generateJobIconPath, getJobTypeFromJob } from "~/utils";
 
 export default function CharacterRow(props: {
-  accessToken: string;
   character: _Character | undefined;
+  isAuthor: boolean;
   isWaitlist: boolean;
   jobType: JobType;
   loading: boolean;
@@ -50,7 +50,7 @@ export default function CharacterRow(props: {
               }}
             />
           </div>
-          {props.partyFindSlot && props.partyFindSlot.isAuthor && (
+          {props.partyFindSlot && props.isAuthor && (
             <div className="material-symbols-outlined absolute right-[-5px] top-[-5px] text-[1.125rem] text-loa-party-leader-star">
               star
             </div>
@@ -65,12 +65,14 @@ export default function CharacterRow(props: {
         <div className="flex items-center justify-start text-[0.9375rem] font-[500] leading-[1.25rem]">
           {`LV.${props.character.itemLevel.toFixed(0)}`}
         </div>
-        <div className="flex items-center justify-start text-[0.9375rem] font-[500] leading-[1.25rem]">
-          {`(${props.character.roster.user.discordUsername}#${props.character.roster.user.discordDiscriminator})`}
-        </div>
-        <div className="flex flex-grow items-center justify-start gap-[0.625rem] overflow-hidden">
-          {props.printEngravings &&
-            props.character.engravingSlots
+        {!props.printEngravings && (
+          <div className="flex items-center justify-start text-[0.9375rem] font-[500] leading-[1.25rem]">
+            {`(${props.character.roster.user.discordUsername}#${props.character.roster.user.discordDiscriminator})`}
+          </div>
+        )}
+        {props.printEngravings && (
+          <div className="flex flex-grow items-center justify-start gap-[0.625rem] overflow-hidden">
+            {props.character.engravingSlots
               .sort((a, b) => a.index - b.index)
               .map((s, index) => {
                 return (
@@ -86,7 +88,8 @@ export default function CharacterRow(props: {
                   ></div>
                 );
               })}
-        </div>
+          </div>
+        )}
         {props.isWaitlist && (
           <div
             className="flex shrink-0"
@@ -124,7 +127,7 @@ export default function CharacterRow(props: {
                     .catch(() => {})
                     .finally(() => {
                       props.setLoading(false);
-                      navigate("/my-roster/my-parties");
+                      navigate("/my-roster/my-posts");
                     });
                 }
               }}
@@ -166,7 +169,7 @@ export default function CharacterRow(props: {
                     .catch(() => {})
                     .finally(() => {
                       props.setLoading(false);
-                      navigate("/my-roster/my-parties");
+                      navigate("/my-roster/my-posts");
                     });
                 }
               }}
@@ -190,63 +193,58 @@ export default function CharacterRow(props: {
             />
           </div>
         )}
-        {!props.isWaitlist &&
-          props.partyFindSlot &&
-          !props.partyFindSlot.isAuthor && (
-            <div
-              className="flex shrink-0"
-              onClick={(e) => {
-                e.preventDefault();
+        {!props.isWaitlist && props.partyFindSlot && !props.isAuthor && (
+          <div
+            className="flex shrink-0"
+            onClick={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <Button
+              onClick={() => {
+                if (!props.loading) {
+                  props.setLoading(true);
+
+                  const actionBody: KickActionBody = {
+                    characterId: props.character?.id ?? "",
+                    partyFindSlotId: props.partyFindSlot?.id ?? "",
+                    userId: props.userId,
+                  };
+
+                  fetch(`/api/party-find-post/${props.partyFindPostId}/kick`, {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(actionBody),
+                  })
+                    .then((response) => response.json())
+                    .catch(() => {})
+                    .finally(() => {
+                      props.setLoading(false);
+                      navigate("/my-roster/my-posts");
+                    });
+                }
               }}
-            >
-              <Button
-                onClick={() => {
-                  if (!props.loading) {
-                    props.setLoading(true);
-
-                    const actionBody: KickActionBody = {
-                      characterId: props.character?.id ?? "",
-                      partyFindSlotId: props.partyFindSlot?.id ?? "",
-                      userId: props.userId,
-                    };
-
-                    fetch(
-                      `/api/party-find-post/${props.partyFindPostId}/kick`,
-                      {
-                        method: "POST",
-                        credentials: "same-origin",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(actionBody),
-                      }
-                    )
-                      .then((response) => response.json())
-                      .catch(() => {})
-                      .finally(() => {
-                        props.setLoading(false);
-                        navigate("/my-roster/my-parties");
-                      });
-                  }
-                }}
-                disabled={props.loading}
-                style={{
-                  additionalClass: "",
-                  backgroundColorClass: "bg-loa-red",
-                  cornerRadius: "0.625rem",
-                  disabledBackgroundColorClass: "bg-loa-inactive",
-                  disabledTextColorClass: "text-loa-grey",
-                  fontSize: "0.8125rem",
-                  fontWeight: "500",
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={t("kick", {
-                  ns: "components\\my-roster\\expandable-panel",
-                })}
-              />
-            </div>
-          )}
+              disabled={props.loading}
+              style={{
+                additionalClass: "",
+                backgroundColorClass: "bg-loa-red",
+                cornerRadius: "0.625rem",
+                disabledBackgroundColorClass: "bg-loa-inactive",
+                disabledTextColorClass: "text-loa-grey",
+                fontSize: "0.8125rem",
+                fontWeight: "500",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={t("kick", {
+                ns: "components\\my-roster\\expandable-panel",
+              })}
+            />
+          </div>
+        )}
       </Link>
     );
   } else {

@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import { Alarm, AlarmMessageType, User } from "@prisma/client";
 import type { Location } from "@remix-run/react";
 import { Form, Link } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,15 @@ export const handle = {
 };
 
 export default function Header(props: {
+  alarms:
+    | {
+        id: Alarm["id"];
+        createdAt: Alarm["createdAt"];
+        message: Alarm["message"];
+        link: Alarm["link"];
+        isRead: Alarm["isRead"];
+      }[]
+    | undefined;
   currentLocale: string;
   location: Location;
   supportedLocales: readonly string[];
@@ -62,11 +71,86 @@ export default function Header(props: {
               {t("helpPageTitle", { ns: "root" })}
             </div>
           </Link>
+          <Link
+            className={`${
+              ![
+                "/my-roster",
+                "/my-roster/my-posts",
+                "/my-roster/applied-posts",
+              ].includes(props.location.pathname)
+                ? "text-loa-inactive "
+                : ""
+            }flex items-center justify-center gap-[0.625rem]`}
+            to="/my-roster"
+          >
+            <span className="material-symbols-outlined filled-icon text-[1.5rem]">
+              group
+            </span>
+            <div className="text-[1.125rem] font-[400] leading-[1.40625rem]">
+              {t("myRosterAndPartyTitle", { ns: "root" })}
+            </div>
+          </Link>
         </div>
-        <div className="flex items-center justify-end gap-[0.625rem]">
+        <div className="flex items-center justify-end">
+          {props.alarms && (
+            <Dropdown
+              button={
+                <div className="relative">
+                  <div
+                    className={`${
+                      props.alarms.length > 0 ? "cursor-pointer" : ""
+                    } material-symbols-outlined filled-icon mr-[1.25rem] mt-[0.25rem] text-[1.75rem]`}
+                  >
+                    notifications
+                  </div>
+                  {props.alarms.filter((a) => !a.isRead).length > 0 && (
+                    <div className="absolute right-[15px] top-[-1px] w-[1rem] rounded-full bg-loa-red text-center text-[0.625rem] text-[1.125rem] font-[400] leading-[1rem]">
+                      {props.alarms.filter((a) => !a.isRead).length}
+                    </div>
+                  )}
+                </div>
+              }
+              disabled={props.alarms.length === 0}
+              horizontalAlignment="right"
+              horizontalPanelAnchor="right"
+              origin="origin-top"
+              panel={
+                <div className="flex w-[7.5rem] flex-col items-stretch rounded-[0.9375rem] border-[0.125rem] border-loa-button bg-loa-panel">
+                  {props.supportedLocales.map((locale, index) => {
+                    return (
+                      <Form
+                        action="/change-language"
+                        className="flex flex-col items-stretch"
+                        key={index}
+                        method="post"
+                      >
+                        <input name="locale" type="hidden" value={locale} />
+                        <input
+                          name="pathname"
+                          type="hidden"
+                          value={props.location.pathname}
+                        />
+                        {index !== 0 && (
+                          <hr className="mx-[0.625rem] border-loa-button" />
+                        )}
+                        <button
+                          className="overflow-hidden text-ellipsis py-[1.375rem] text-[1rem] font-[500] leading-[1.25rem]"
+                          type="submit"
+                        >
+                          {t(locale, { ns: "dictionary\\locale" })}
+                        </button>
+                      </Form>
+                    );
+                  })}
+                </div>
+              }
+              verticalAlignment="bottom"
+              verticalPanelAnchor="top"
+            />
+          )}
           <Dropdown
             button={
-              <div className="flex h-[2.5rem] w-[7.5rem] cursor-pointer items-center justify-center rounded-[0.9375rem] bg-loa-button">
+              <div className="mr-[0.625rem] flex h-[2.5rem] w-[7.5rem] cursor-pointer items-center justify-center rounded-[0.9375rem] bg-loa-button">
                 <div className="w-[4.25rem] text-ellipsis text-[1rem] font-[400] leading-[1.25rem]">
                   {t(props.currentLocale, { ns: "dictionary\\locale" })}
                 </div>
@@ -141,6 +225,30 @@ export default function Header(props: {
                     </span>
                     <div className="text-[1rem] font-[500] leading-[1.25rem]">
                       {t("myRoster", { ns: "components\\header" })}
+                    </div>
+                  </Link>
+                  <hr className="mx-[1.25rem] border-loa-button" />
+                  <Link
+                    className="flex items-center justify-start gap-[0.625rem] py-[1.375rem] px-[1.25rem]"
+                    to="/my-roster/my-posts"
+                  >
+                    <span className="material-symbols-outlined filled-icon text-[1.5rem]">
+                      group
+                    </span>
+                    <div className="text-[1rem] font-[500] leading-[1.25rem]">
+                      {t("recruiting", { ns: "routes\\my-roster\\my-parties" })}
+                    </div>
+                  </Link>
+                  <hr className="mx-[1.25rem] border-loa-button" />
+                  <Link
+                    className="flex items-center justify-start gap-[0.625rem] py-[1.375rem] px-[1.25rem]"
+                    to="/my-roster/applied-posts"
+                  >
+                    <span className="material-symbols-outlined filled-icon text-[1.5rem]">
+                      inventory
+                    </span>
+                    <div className="text-[1rem] font-[500] leading-[1.25rem]">
+                      {t("applying", { ns: "routes\\my-roster\\my-parties" })}
                     </div>
                   </Link>
                   <hr className="mx-[1.25rem] border-loa-button" />

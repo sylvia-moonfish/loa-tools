@@ -15,9 +15,11 @@ import type {
   LegionRaid,
   LegionRaidStage,
   LegionRaidTab,
+  PartyFindApplyState,
   PartyFindPost,
   PartyFindSlot,
   Region,
+  Roster,
   Server,
 } from "@prisma/client";
 import type { ActionFunction } from "@remix-run/node";
@@ -26,10 +28,14 @@ import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { supportJobs } from "~/utils";
 
+// There's too many filters to manually typecheck the json...
 export type ActionBody = {};
 
+// Export the query result type.
+// This has to match whatever the raw query is returning.
 export type FilteredPartyFindPosts = {
   id: PartyFindPost["id"];
+  state: PartyFindPost["state"];
   contentType: PartyFindPost["contentType"];
   isPracticeParty: PartyFindPost["isPracticeParty"];
   isReclearParty: PartyFindPost["isReclearParty"];
@@ -115,6 +121,7 @@ export type FilteredPartyFindPosts = {
       };
     };
   };
+  authorId: PartyFindPost["authorId"];
   server: {
     id: Server["id"];
     region: {
@@ -128,19 +135,25 @@ export type FilteredPartyFindPosts = {
     id: PartyFindSlot["id"];
     index: PartyFindSlot["index"];
     jobType: PartyFindSlot["jobType"];
-    isAuthor: PartyFindSlot["isAuthor"];
-    character: {
-      id: Character["id"];
-      job: Character["job"];
-      itemLevel: Character["itemLevel"];
+    partyFindApplyState: {
+      id: PartyFindApplyState["id"];
+      character: {
+        id: Character["id"];
+        job: Character["job"];
+        itemLevel: Character["itemLevel"];
+        roster: { id: Roster["id"]; userId: Roster["userId"] };
+      };
     };
   }[];
 }[];
 
+// Template for the raw query.
+// We use raw query because timezone calculation is not supported by prisma.
 const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
   const query = `
       SELECT
         "PartyFindPost"."id",
+        "PartyFindPost"."state",
         "PartyFindPost"."contentType",
         "PartyFindPost"."isPracticeParty",
         "PartyFindPost"."isReclearParty",
@@ -226,6 +239,7 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
             )
           )
         ) AS "legionRaid",
+        "PartyFindPost"."authorId",
         json_build_object(
           'id', "Server"."id",
           'region', json_build_object(
@@ -242,20 +256,34 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
                 'id', "PartyFindSlot"."id",
                 'index', "PartyFindSlot"."index",
                 'jobType', "PartyFindSlot"."jobType",
-                'isAuthor', "PartyFindSlot"."isAuthor",
-                'character', json_build_object(
-                  'id', "Character"."id",
-                  'job', "Character"."job",
-                  'itemLevel', "Character"."itemLevel"
+                'partyFindApplyState', json_build_object(
+                  'id', "PartyFindApplyState"."id",
+                  'character', json_build_object(
+                    'id', "Character"."id",
+                    'job', "Character"."job",
+                    'itemLevel', "Character"."itemLevel",
+                    'roster', json_build_object(
+                      'id', "Roster"."id",
+                      'userId', "Roster"."userId"
+                    )
+                  )
                 )
               ) ORDER BY "index" ASC
             )
           FROM
             "public"."PartyFindSlot"
-          LEFT JOIN 
+          LEFT JOIN
+            "public"."PartyFindApplyState"
+          ON
+            "PartyFindApplyState"."partyFindSlotId" = "PartyFindSlot"."id"
+          LEFT JOIN
             "public"."Character"
             ON
-              "Character"."id" = "PartyFindSlot"."characterId"
+              "Character"."id" = "PartyFindApplyState"."characterId"
+          LEFT JOIN
+            "public"."Roster"
+          ON
+            "Roster"."id" = "Character"."rosterId"
           WHERE
             "PartyFindSlot"."partyFindPostId" = "PartyFindPost"."id"
         ) AS "partyFindSlots"
@@ -341,11 +369,17 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
   return await prisma.$queryRawUnsafe(query);
 };
 
+// Dynamically generate the "WHERE" clause to append to the raw query.
 export const action: ActionFunction = async ({ request }) => {
   const payload = await request.json();
 
-  const filterClauses: string[] = ['"PartyFindPost"."startTime" > now()'];
+  // Default condition: the post should not be expired and the post should be recruiting.
+  const filterClauses: string[] = [
+    '"PartyFindPost"."startTime" > now()',
+    "\"PartyFindPost\".\"state\" IN ('RECRUITING', 'RERECRUITING')",
+  ];
 
+  // Generate job filter conditionals.
   const jobFilterList: JobType[] = [JobType.ANY];
 
   if (payload.jobFilterList) {
@@ -367,7 +401,7 @@ export const action: ActionFunction = async ({ request }) => {
           WHERE
             "PartyFindSlot"."partyFindPostId" = "PartyFindPost"."id"
             AND
-            "PartyFindSlot"."characterId" IS NULL
+            "PartyFindSlot"."partyFindApplyStateId" IS NULL
             AND
             "PartyFindSlot"."jobType" IN (${jobFilterList
               .map((jobFilter) => `'${jobFilter}'`)
@@ -375,6 +409,7 @@ export const action: ActionFunction = async ({ request }) => {
         )`);
   }
 
+  // Generate content type filter conditionals.
   if (payload.contentTypeFilter) {
     let contentType = undefined;
     let tableBaseName: string | undefined = undefined;
@@ -427,10 +462,12 @@ export const action: ActionFunction = async ({ request }) => {
     }
   }
 
+  // Generate region filter conditionals.
   if (payload.regionFilter) {
     filterClauses.push(`"Region"."id" = '${payload.regionFilter}'`);
   }
 
+  // Generate goal filter conditionals.
   if (payload.practicePartyFilter !== payload.reclearPartyFilter) {
     if (payload.practicePartyFilter) {
       filterClauses.push(`"PartyFindPost"."isPracticeParty" = TRUE`);
@@ -439,7 +476,9 @@ export const action: ActionFunction = async ({ request }) => {
     }
   }
 
+  // To generate time-related conditionals, we need client's timezone information...
   if (payload.timezone) {
+    // Generate day-of-the-week filter conditionals.
     if (
       payload.dayFilterList &&
       payload.dayFilterList.includes(true) &&
@@ -464,6 +503,7 @@ export const action: ActionFunction = async ({ request }) => {
       );
     }
 
+    // Generate start time filter conditionals.
     const clauses = [
       { value: payload.startTimeFilter, type: "start" },
       { value: payload.endTimeFilter, type: "end" },
@@ -478,6 +518,7 @@ export const action: ActionFunction = async ({ request }) => {
           }')) ${e.type === "start" ? ">=" : "<="} ${e.value * 60}`
       );
 
+    // Generate year and month filter conditionals.
     if (
       typeof payload.startTimeFilter !== "undefined" &&
       typeof payload.endTimeFilter !== "undefined" &&

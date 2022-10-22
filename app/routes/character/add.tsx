@@ -2,7 +2,7 @@ import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { ActionBody, ActionData } from "~/routes/api/character/add";
 import type { LocaleType } from "~/i18n";
 import { Job } from "@prisma/client";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,7 @@ type LoaderData = {
   locale: LocaleType;
   regions: Awaited<ReturnType<typeof getRegions>>;
   title: string;
-  userId: string;
+  user: Awaited<ReturnType<typeof getUser>>;
 };
 
 const getEngravings = async () => {
@@ -50,6 +50,30 @@ const getRegions = async () => {
   });
 };
 
+const getUser = async (id: string, redirectTo: string) => {
+  const user = await prisma.user.findFirst({
+    where: { id },
+    select: {
+      id: true,
+      rosters: {
+        select: {
+          id: true,
+          level: true,
+          stronghold: { select: { id: true, name: true } },
+          serverId: true,
+        },
+      },
+    },
+  });
+
+  if (!user)
+    throw redirect(
+      `/login?${new URLSearchParams([["redirectTo", redirectTo]])}`
+    );
+
+  return user;
+};
+
 export const loader: LoaderFunction = async ({ request }) => {
   const t = await i18next.getFixedT(request, "root");
   const user = await requireUser(request);
@@ -59,7 +83,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     locale: (await i18next.getLocale(request)) as LocaleType,
     regions: await getRegions(),
     title: `${t("addCharacterTitle")} | ${t("shortTitle")}`,
-    userId: user.id,
+    user: await getUser(user.id, new URL(request.url).pathname),
   });
 };
 
@@ -70,6 +94,12 @@ export default function CharacterAddPage() {
   const { t } = useTranslation();
   const data = useLoaderData<LoaderData>();
 
+  const [jobs, setJobs] = React.useState<ItemType[]>(
+    Object.values(Job).map((job) => ({
+      i18n: { keyword: job, namespace: "dictionary\\job" },
+      id: job,
+    }))
+  );
   const [job, setJob] = React.useState<ItemType | undefined>(undefined);
   const [jobIconPath, setJobIconPath] = React.useState<string | undefined>(
     undefined
@@ -200,14 +230,53 @@ export default function CharacterAddPage() {
     }
   }, [job]);
 
+  React.useEffect(() => {
+    if (server) {
+      const roster = data.user.rosters.find((r) => r.serverId === server.id);
+
+      if (roster) {
+        setRosterLevel(roster.level.toString());
+        setStronghold(roster.stronghold ? roster.stronghold.name : "");
+        return;
+      }
+    }
+
+    setRosterLevel("");
+    setStronghold("");
+  }, [server]);
+
   return (
-    <div className="mx-auto my-[3.125rem] flex w-[46.875rem] flex-col">
+    <div className="mx-auto my-[2.5rem] flex w-[46.875rem] flex-col">
       {typeof errorMessage === "string" && (
-        <div className="mb-[3.125rem] flex items-center justify-center whitespace-normal rounded-[0.9375rem] bg-loa-red p-[1.25rem]">
+        <div className="mb-[2.5rem] flex items-center justify-center whitespace-normal rounded-[0.9375rem] bg-loa-red p-[1.25rem]">
           {t(errorMessage, { ns: "error-messages" })}
         </div>
       )}
-      <div className="flex items-start">
+      <div className="flex">
+        <Button
+          onClick={() => {
+            navigate(-1);
+          }}
+          style={{
+            additionalClass:
+              "w-[1.875rem] h-[1.875rem] rounded-full flex items-center justify-center",
+            backgroundColorClass: "bg-loa-button",
+            cornerRadius: "",
+            fontSize: "",
+            fontWeight: "",
+            lineHeight: "",
+            px: "",
+            py: "",
+            textColorClass: "",
+          }}
+          text={
+            <span className="material-symbols-outlined text-[0.9375rem]">
+              navigate_before
+            </span>
+          }
+        />
+      </div>
+      <div className="mt-[1.25rem] flex items-start">
         <div
           className="h-[4.0625rem] w-[4.0625rem] rounded-full bg-contain bg-center bg-no-repeat"
           style={{
@@ -216,14 +285,25 @@ export default function CharacterAddPage() {
         ></div>
         <div className="ml-[1.5625rem] flex w-[27.9375rem] flex-col gap-[0.5rem]">
           <div className="flex gap-[0.3125rem]">
-            <Dropdown
+            <SearchableDropdown
               invalid={!validateDropdownSelection(job)}
-              items={Object.values(Job).map((job) => ({
-                i18n: { keyword: job, namespace: "dictionary\\job" },
-                id: job,
-              }))}
+              items={jobs}
               locale={data.locale}
-              onChange={(item) => {
+              onFilter={(text) => {
+                setJobs(
+                  Object.values(Job)
+                    .map((job) => ({
+                      i18n: { keyword: job, namespace: "dictionary\\job" },
+                      id: job,
+                    }))
+                    .filter((j) =>
+                      t(j.i18n.keyword, { ns: j.i18n.namespace })
+                        .toLowerCase()
+                        .includes(text.toLowerCase())
+                    )
+                );
+              }}
+              onSelect={(item) => {
                 if (
                   item &&
                   item.id &&
@@ -259,12 +339,12 @@ export default function CharacterAddPage() {
                   margin: 0.25,
                   maxHeight: 15,
                 },
-                selectButton: {
+                selectInput: {
+                  additionalClass: "w-[8.37rem]",
                   backgroundColorClass: "bg-loa-inactive",
                   cornerRadius: "0.9375rem",
                   fontSize: "0.75rem",
                   fontWeight: "500",
-                  gap: "0.625rem",
                   inactiveTextColorClass: "text-loa-grey",
                   invalid: {
                     outlineColorClass: "outline-loa-red",
@@ -374,7 +454,9 @@ export default function CharacterAddPage() {
               invalid={!validateDropdownSelection(server)}
               items={servers}
               locale={data.locale}
-              onChange={(item) => setServer(item)}
+              onChange={(item) => {
+                setServer(item);
+              }}
               placeholder={t("selectServer", { ns: "routes\\character\\add" })}
               selected={server}
               style={{
@@ -1021,7 +1103,7 @@ export default function CharacterAddPage() {
                     }
                   })
                   .flat(),
-                userId: data.userId,
+                userId: data.user.id,
               };
 
               abortController.abort();

@@ -1,0 +1,6 @@
+{
+  "WAITING": "Waiting",
+  "ACCEPTED": "Approved",
+  "REJECTED": "Rejected",
+  "EXPIRED": "Expired"
+}

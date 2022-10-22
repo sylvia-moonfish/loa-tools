@@ -51,20 +51,27 @@ export const action: ActionFunction = async ({ params, request }) => {
     actionBody.partyFindPostId === params.id
   ) {
     try {
+      // If the start time is already expired, throw this away.
+      if (new Date().getTime() > new Date(actionBody.startDate).getTime())
+        return json<ActionData>({
+          success: false,
+          errorMessage: "commonError",
+        });
+
+      // Get the post.
       const partyFindPostDb = await prisma.partyFindPost.findFirst({
         where: { id: params.id },
-        select: {
-          id: true,
-          authorId: true,
-        },
+        select: { id: true, authorId: true },
       });
 
+      // Validate: Check if post exists and that the user who made the edit request is the author.
       if (!partyFindPostDb || partyFindPostDb.authorId !== user.id)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
         });
 
+      // Determine content type and group size.
       let contentType = undefined;
       let groupSize = 4;
 
@@ -116,12 +123,14 @@ export const action: ActionFunction = async ({ params, request }) => {
           break;
       }
 
+      // Validate: If content type could not be determined, abort.
       if (!contentType)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
         });
 
+      // Update post information.
       await prisma.partyFindPost.update({
         where: { id: partyFindPostDb.id },
         data: {

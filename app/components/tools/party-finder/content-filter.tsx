@@ -13,9 +13,9 @@ export default function ContentFilter(props: {
   initContentStages?: ItemType[];
   locale: LocaleType;
   required: boolean;
-  setContentStage: React.Dispatch<React.SetStateAction<ItemType | undefined>>;
-  setContentTier: React.Dispatch<React.SetStateAction<ItemType | undefined>>;
-  setContentType: React.Dispatch<React.SetStateAction<ItemType | undefined>>;
+  setContentStage: (item: ItemType | undefined) => void;
+  setContentTier: (item: ItemType | undefined) => void;
+  setContentType: (item: ItemType | undefined) => void;
 }) {
   const { t } = useTranslation();
 

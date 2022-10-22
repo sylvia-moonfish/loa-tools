@@ -154,7 +154,7 @@ export const action: ActionFunction = async ({ params, request }) => {
       }
 
       let characterDb = await prisma.character.findFirst({
-        where: { rosterId: rosterDb.id, name: actionBody.characterName },
+        where: { rosterId: rosterDb.id, id: params.id },
       });
 
       if (!characterDb) {

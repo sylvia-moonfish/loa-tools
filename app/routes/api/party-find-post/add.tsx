@@ -1,6 +1,11 @@
 import type { ActionFunction } from "@remix-run/node";
 import type { ItemType } from "~/components/dropdown";
-import { JobType, PartyFindContentType } from "@prisma/client";
+import {
+  JobType,
+  PartyFindApplyStateValue,
+  PartyFindContentType,
+  PartyFindPostState,
+} from "@prisma/client";
 import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { requireUser } from "~/session.server";
@@ -51,6 +56,14 @@ export const action: ActionFunction = async ({ request }) => {
     actionBody.userId === user.id
   ) {
     try {
+      // If the start time is already expired, throw this away.
+      if (new Date().getTime() > new Date(actionBody.startDate).getTime())
+        return json<ActionData>({
+          success: false,
+          errorMessage: "commonError",
+        });
+
+      // Get the content type and the required group size.
       let contentType = undefined;
       let groupSize = 4;
 
@@ -108,7 +121,8 @@ export const action: ActionFunction = async ({ request }) => {
           errorMessage: "commonError",
         });
 
-      const character = await prisma.character.findFirst({
+      // Validate the author's character first.
+      const characterDb = await prisma.character.findFirst({
         where: { id: actionBody.characterId },
         select: {
           id: true,
@@ -117,14 +131,16 @@ export const action: ActionFunction = async ({ request }) => {
         },
       });
 
-      if (!character || character.roster.userId !== user.id)
+      if (!characterDb || characterDb.roster.userId !== user.id)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
         });
 
-      const partyFindPost = await prisma.partyFindPost.create({
+      // Create the post based on the payload.
+      const partyFindPostDb = await prisma.partyFindPost.create({
         data: {
+          state: PartyFindPostState.RECRUITING,
           contentType,
           isPracticeParty: actionBody.isPracticeParty,
           isReclearParty: actionBody.isReclearParty,
@@ -154,16 +170,17 @@ export const action: ActionFunction = async ({ request }) => {
               : undefined,
 
           authorId: user.id,
-          serverId: character.roster.serverId,
+          serverId: characterDb.roster.serverId,
         },
       });
 
-      if (!partyFindPost)
+      if (!partyFindPostDb)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
         });
 
+      // Create empty slots to fill the required group size.
       for (let i = 1; i <= groupSize; i++) {
         await prisma.partyFindSlot.create({
           data: {
@@ -173,34 +190,39 @@ export const action: ActionFunction = async ({ request }) => {
                 ? JobType.SUPPORT
                 : JobType.DPS
               : JobType.ANY,
-            isAuthor: false,
-            partyFindPostId: partyFindPost.id,
+            partyFindPostId: partyFindPostDb.id,
           },
         });
       }
 
-      const partyFindSlot = await prisma.partyFindSlot.findFirst({
+      // Find the first eligible slot that the author's character can join.
+      const partyFindSlotDb = await prisma.partyFindSlot.findFirst({
         orderBy: { index: "asc" },
         where: {
-          jobType: { in: [JobType.ANY, getJobTypeFromJob(character.job)] },
-          partyFindPostId: partyFindPost.id,
+          jobType: { in: [JobType.ANY, getJobTypeFromJob(characterDb.job)] },
+          partyFindPostId: partyFindPostDb.id,
         },
       });
 
-      if (!partyFindSlot)
+      if (!partyFindSlotDb)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
         });
 
-      await prisma.partyFindSlot.update({
-        where: { id: partyFindSlot.id },
-        data: { isAuthor: true, characterId: character.id },
+      // Create a state for the author's character and link it to the eligible slot in the party.
+      await prisma.partyFindApplyState.create({
+        data: {
+          state: PartyFindApplyStateValue.ACCEPTED,
+          partyFindPostId: partyFindPostDb.id,
+          partyFindSlotId: partyFindSlotDb.id,
+          characterId: characterDb.id,
+        },
       });
 
       return json<ActionData>({
         success: true,
-        partyFindPostId: partyFindPost.id,
+        partyFindPostId: partyFindPostDb.id,
       });
     } catch {}
   }

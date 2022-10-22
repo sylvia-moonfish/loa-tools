@@ -99,7 +99,20 @@ const getRegions = async () => {
 };
 
 const getUser = async (id: string) => {
-  return await prisma.user.findFirst({ where: { id }, select: { id: true } });
+  return await prisma.user.findFirst({
+    where: { id },
+    select: {
+      id: true,
+      rosters: {
+        select: {
+          id: true,
+          level: true,
+          stronghold: { select: { id: true, name: true } },
+          serverId: true,
+        },
+      },
+    },
+  });
 };
 
 export const loader: LoaderFunction = async ({ params, request }) => {
@@ -130,6 +143,12 @@ export default function CharacterIdEditPage() {
   const { t } = useTranslation();
   const data = useLoaderData<LoaderData>();
 
+  const [jobs, setJobs] = React.useState<ItemType[]>(
+    Object.values(Job).map((job) => ({
+      i18n: { keyword: job, namespace: "dictionary\\job" },
+      id: job,
+    }))
+  );
   const [job, setJob] = React.useState<ItemType | undefined>(
     data.character?.job
       ? {
@@ -334,14 +353,53 @@ export default function CharacterIdEditPage() {
     }
   }, [job]);
 
+  React.useEffect(() => {
+    if (server && data.user) {
+      const roster = data.user.rosters.find((r) => r.serverId === server.id);
+
+      if (roster) {
+        setRosterLevel(roster.level.toString());
+        setStronghold(roster.stronghold ? roster.stronghold.name : "");
+        return;
+      }
+    }
+
+    setRosterLevel("");
+    setStronghold("");
+  }, [server]);
+
   return (
-    <div className="mx-auto my-[3.125rem] flex w-[46.875rem] flex-col">
+    <div className="mx-auto my-[2.5rem] flex w-[46.875rem] flex-col">
       {typeof errorMessage === "string" && (
-        <div className="mb-[3.125rem] flex items-center justify-center rounded-[0.9375rem] bg-loa-red p-[1.25rem]">
+        <div className="mb-[2.5rem] flex items-center justify-center rounded-[0.9375rem] bg-loa-red p-[1.25rem]">
           {t(errorMessage, { ns: "error-messages" })}
         </div>
       )}
-      <div className="flex items-start">
+      <div className="flex">
+        <Button
+          onClick={() => {
+            navigate(-1);
+          }}
+          style={{
+            additionalClass:
+              "w-[1.875rem] h-[1.875rem] rounded-full flex items-center justify-center",
+            backgroundColorClass: "bg-loa-button",
+            cornerRadius: "",
+            fontSize: "",
+            fontWeight: "",
+            lineHeight: "",
+            px: "",
+            py: "",
+            textColorClass: "",
+          }}
+          text={
+            <span className="material-symbols-outlined text-[0.9375rem]">
+              navigate_before
+            </span>
+          }
+        />
+      </div>
+      <div className="mt-[1.25rem] flex items-start">
         <div
           className="h-[4.0625rem] w-[4.0625rem] rounded-full bg-contain bg-center bg-no-repeat"
           style={{
@@ -350,14 +408,25 @@ export default function CharacterIdEditPage() {
         ></div>
         <div className="ml-[1.5625rem] flex w-[27.9375rem] flex-col gap-[0.5rem]">
           <div className="flex gap-[0.3125rem]">
-            <Dropdown
+            <SearchableDropdown
               invalid={!validateDropdownSelection(job)}
-              items={Object.values(Job).map((job) => ({
-                i18n: { keyword: job, namespace: "dictionary\\job" },
-                id: job,
-              }))}
+              items={jobs}
               locale={data.locale}
-              onChange={(item) => {
+              onFilter={(text) => {
+                setJobs(
+                  Object.values(Job)
+                    .map((job) => ({
+                      i18n: { keyword: job, namespace: "dictionary\\job" },
+                      id: job,
+                    }))
+                    .filter((j) =>
+                      t(j.i18n.keyword, { ns: j.i18n.namespace })
+                        .toLowerCase()
+                        .includes(text.toLowerCase())
+                    )
+                );
+              }}
+              onSelect={(item) => {
                 if (
                   item &&
                   item.id &&
@@ -393,12 +462,12 @@ export default function CharacterIdEditPage() {
                   margin: 0.25,
                   maxHeight: 15,
                 },
-                selectButton: {
+                selectInput: {
+                  additionalClass: "w-[8.37rem]",
                   backgroundColorClass: "bg-loa-inactive",
                   cornerRadius: "0.9375rem",
                   fontSize: "0.75rem",
                   fontWeight: "500",
-                  gap: "0.625rem",
                   inactiveTextColorClass: "text-loa-grey",
                   invalid: {
                     outlineColorClass: "outline-loa-red",

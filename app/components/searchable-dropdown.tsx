@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 
 export default function SearchableDropdown(props: {
+  invalid?: boolean;
   items: ItemType[];
   locale: LocaleType;
   onFilter: (text: string) => void;
@@ -30,11 +31,13 @@ export default function SearchableDropdown(props: {
       maxHeight: number;
     };
     selectInput: {
+      additionalClass?: string;
       backgroundColorClass: string;
       cornerRadius: string;
       fontSize: string;
       fontWeight: string;
       inactiveTextColorClass: string;
+      invalid?: { outlineColorClass: string; outlineWidth: string };
       lineHeight: string;
       px: string;
       py: string;
@@ -149,7 +152,11 @@ export default function SearchableDropdown(props: {
           isFocused || props.selected
             ? ""
             : `${props.style.selectInput.inactiveTextColorClass} `
-        }${props.style.selectInput.backgroundColorClass} w-full`}
+        }${props.style.selectInput.backgroundColorClass} ${
+          props.invalid && props.style.selectInput.invalid
+            ? props.style.selectInput.invalid.outlineColorClass
+            : ""
+        } ${props.style.selectInput.additionalClass ?? ""}`}
         onChange={(e) => {
           if (props.items.length > 0 && !isOpened) setIsOpened(true);
           setInputText(e.target.value);
@@ -162,6 +169,14 @@ export default function SearchableDropdown(props: {
           fontSize: props.style.selectInput.fontSize,
           fontWeight: props.style.selectInput.fontWeight,
           lineHeight: props.style.selectInput.lineHeight,
+          outlineStyle:
+            props.invalid && props.style.selectInput.invalid
+              ? "solid"
+              : undefined,
+          outlineWidth:
+            props.invalid && props.style.selectInput.invalid
+              ? props.style.selectInput.invalid.outlineWidth
+              : undefined,
           paddingBottom: props.style.selectInput.py,
           paddingLeft: props.style.selectInput.px,
           paddingRight: props.style.selectInput.px,

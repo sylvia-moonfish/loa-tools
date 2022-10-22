@@ -39,6 +39,25 @@ export function getItemFromArray<T>(id: string, array: T[]): T | undefined {
   return index >= 0 && index < array.length ? array[index] : undefined;
 }
 
+export const elapsedTimeSpaced = ["en"];
+
+export function printTimeElapsed(date: Date): string[] {
+  const diff = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+
+  if (diff <= 0) return [];
+  if (diff < 60) return [diff.toString(), "second"];
+  if (diff < 60 * 60) return [Math.floor(diff / 60).toString(), "minute"];
+  if (diff < 60 * 60 * 24)
+    return [Math.floor(diff / 60 / 60).toString(), "hour"];
+  if (diff < 60 * 60 * 24 * 7)
+    return [Math.floor(diff / 60 / 60 / 24).toString(), "day"];
+  if (diff < 60 * 60 * 24 * 7 * 4)
+    return [Math.floor(diff / 60 / 60 / 24 / 7).toString(), "week"];
+  if (diff < 60 * 60 * 24 * 365)
+    return [Math.floor(diff / 60 / 60 / 24 / 30).toString(), "month"];
+  else return [Math.floor(diff / 60 / 60 / 24 / 365).toString(), "year"];
+}
+
 export function printTime(hour: number, minute: number): string {
   return `${
     hour === 12

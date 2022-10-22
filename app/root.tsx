@@ -1,4 +1,4 @@
-import type { User } from "@prisma/client";
+import type { Alarm, User } from "@prisma/client";
 import type {
   LinksFunction,
   LoaderFunction,
@@ -51,7 +51,10 @@ export const handle = {
     "components\\header",
     "dictionary\\job",
     "dictionary\\locale",
+    "dictionary\\party-find-apply-state-value",
     "dictionary\\party-find-content-type",
+    "dictionary\\party-find-post-state",
+    "dictionary\\time-elapsed",
     "routes\\character\\add",
     "routes\\character\\id",
     "routes\\my-roster\\my-parties",
@@ -65,6 +68,15 @@ export const handle = {
 };
 
 type LoaderData = {
+  alarms:
+    | {
+        id: Alarm["id"];
+        createdAt: Alarm["createdAt"];
+        message: Alarm["message"];
+        link: Alarm["link"];
+        isRead: Alarm["isRead"];
+      }[]
+    | undefined;
   locale: LocaleType;
   user:
     | {
@@ -83,8 +95,22 @@ export const loader: LoaderFunction = async ({ request }) => {
       where: { id: _user.id },
       select: { id: true, discordId: true, discordAvatarHash: true },
     }));
+  const alarms = user
+    ? await prisma.alarm.findMany({
+        orderBy: { createdAt: "desc" },
+        where: { userId: user.id },
+        select: {
+          id: true,
+          createdAt: true,
+          message: true,
+          link: true,
+          isRead: true,
+        },
+      })
+    : undefined;
 
   return json<LoaderData>({
+    alarms,
     locale: (await i18next.getLocale(request)) as LocaleType,
     user: user ?? undefined,
   });
@@ -105,6 +131,7 @@ export default function App() {
       </head>
       <body className="flex min-h-screen select-none flex-col whitespace-nowrap bg-loa-body text-loa-white">
         <Header
+          alarms={data.alarms}
           currentLocale={data.locale}
           location={location}
           supportedLocales={i18nConfig.supportedLngs || []}

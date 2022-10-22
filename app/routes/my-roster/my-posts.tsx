@@ -2,12 +2,11 @@ import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { ItemType } from "~/components/dropdown";
 import type { LocaleType } from "~/i18n";
 import { json, redirect } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
-import ExpandablePanel from "~/components/my-roster/expandable-panel";
+import ExpandablePanel from "~/components/my-roster/my-posts/expandable-panel";
 import AddPartyButton from "~/components/tools/party-finder/add-party-button";
-import Button from "~/components/button";
 import { prisma } from "~/db.server";
 import i18next from "~/i18next.server";
 import { getSession, requireUser } from "~/session.server";
@@ -20,7 +19,6 @@ type LoaderData = {
   accessToken: string;
   abyssalDungeon: Awaited<ReturnType<typeof getAbyssalDungeon>>;
   abyssRaid: Awaited<ReturnType<typeof getAbyssRaid>>;
-  appliedPosts: Awaited<ReturnType<typeof getPostsByUserId>>;
   chaosDungeon: Awaited<ReturnType<typeof getChaosDungeon>>;
   guardianRaid: Awaited<ReturnType<typeof getGuardianRaid>>;
   legionRaid: Awaited<ReturnType<typeof getLegionRaid>>;
@@ -124,173 +122,210 @@ const getLegionRaid = async () => {
   });
 };
 
-const characterSelect = {
-  id: true,
-  name: true,
-  job: true,
-  itemLevel: true,
-  roster: {
-    select: {
-      id: true,
-      user: {
-        select: {
-          id: true,
-          discordId: true,
-          discordUsername: true,
-          discordDiscriminator: true,
-        },
-      },
-      userId: true,
-    },
-  },
-  engravingSlots: {
-    select: {
-      id: true,
-      index: true,
-      level: true,
-      engraving: {
-        select: { id: true, nameEn: true, nameKo: true, iconPath: true },
-      },
-    },
-  },
-};
-
-const postSelect = {
-  id: true,
-  isPracticeParty: true,
-  isReclearParty: true,
-  contentType: true,
-  startTime: true,
-  recurring: true,
-  title: true,
-
-  chaosDungeon: {
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      chaosDungeonTab: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          chaosDungeon: {
-            select: { id: true, nameEn: true, nameKo: true },
-          },
-        },
-      },
-    },
-  },
-  guardianRaid: {
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      guardianRaidTab: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          guardianRaid: {
-            select: { id: true, nameEn: true, nameKo: true },
-          },
-        },
-      },
-    },
-  },
-  abyssalDungeon: {
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      abyssalDungeonTab: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          abyssalDungeon: {
-            select: { id: true, nameEn: true, nameKo: true },
-          },
-        },
-      },
-    },
-  },
-  abyssRaid: {
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      abyssRaidTab: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssRaid: {
-            select: { id: true, nameEn: true, nameKo: true },
-          },
-        },
-      },
-    },
-  },
-  legionRaid: {
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      legionRaidTab: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          legionRaid: {
-            select: { id: true, nameEn: true, nameKo: true },
-          },
-        },
-      },
-    },
-  },
-
-  server: {
-    select: { id: true, region: { select: { id: true, shortName: true } } },
-  },
-
-  partyFindSlots: {
-    select: {
-      id: true,
-      index: true,
-      jobType: true,
-      isAuthor: true,
-      character: { select: characterSelect },
-    },
-  },
-
-  waitlistCharacters: { select: characterSelect },
-};
-
 const getPostsByAuthorId = async (id: string) => {
   return await prisma.partyFindPost.findMany({
     orderBy: { startTime: "asc" },
     where: { authorId: id },
-    select: postSelect,
-  });
-};
-const getPostsByUserId = async (id: string) => {
-  return await prisma.partyFindPost.findMany({
-    orderBy: { startTime: "asc" },
-    where: {
-      authorId: {
-        not: id,
+    select: {
+      id: true,
+      state: true,
+      isPracticeParty: true,
+      isReclearParty: true,
+      contentType: true,
+      startTime: true,
+      recurring: true,
+      title: true,
+
+      chaosDungeon: {
+        select: {
+          id: true,
+          nameEn: true,
+          nameKo: true,
+          chaosDungeonTab: {
+            select: {
+              id: true,
+              nameEn: true,
+              nameKo: true,
+              chaosDungeon: {
+                select: { id: true, nameEn: true, nameKo: true },
+              },
+            },
+          },
+        },
       },
-      OR: [
-        { partyFindSlots: { some: { character: { roster: { userId: id } } } } },
-        { waitlistCharacters: { some: { roster: { userId: id } } } },
-      ],
+      guardianRaid: {
+        select: {
+          id: true,
+          nameEn: true,
+          nameKo: true,
+          guardianRaidTab: {
+            select: {
+              id: true,
+              nameEn: true,
+              nameKo: true,
+              guardianRaid: {
+                select: { id: true, nameEn: true, nameKo: true },
+              },
+            },
+          },
+        },
+      },
+      abyssalDungeon: {
+        select: {
+          id: true,
+          nameEn: true,
+          nameKo: true,
+          abyssalDungeonTab: {
+            select: {
+              id: true,
+              nameEn: true,
+              nameKo: true,
+              difficultyNameEn: true,
+              difficultyNameKo: true,
+              abyssalDungeon: {
+                select: { id: true, nameEn: true, nameKo: true },
+              },
+            },
+          },
+        },
+      },
+      abyssRaid: {
+        select: {
+          id: true,
+          nameEn: true,
+          nameKo: true,
+          abyssRaidTab: {
+            select: {
+              id: true,
+              nameEn: true,
+              nameKo: true,
+              abyssRaid: {
+                select: { id: true, nameEn: true, nameKo: true },
+              },
+            },
+          },
+        },
+      },
+      legionRaid: {
+        select: {
+          id: true,
+          nameEn: true,
+          nameKo: true,
+          legionRaidTab: {
+            select: {
+              id: true,
+              nameEn: true,
+              nameKo: true,
+              difficultyNameEn: true,
+              difficultyNameKo: true,
+              legionRaid: {
+                select: { id: true, nameEn: true, nameKo: true },
+              },
+            },
+          },
+        },
+      },
+
+      authorId: true,
+      server: {
+        select: { id: true, region: { select: { id: true, shortName: true } } },
+      },
+
+      partyFindSlots: {
+        select: {
+          id: true,
+          index: true,
+          jobType: true,
+          partyFindApplyState: {
+            select: {
+              id: true,
+              state: true,
+              character: {
+                select: {
+                  id: true,
+                  name: true,
+                  job: true,
+                  itemLevel: true,
+                  roster: {
+                    select: {
+                      id: true,
+                      user: {
+                        select: {
+                          id: true,
+                          discordId: true,
+                          discordUsername: true,
+                          discordDiscriminator: true,
+                        },
+                      },
+                      userId: true,
+                    },
+                  },
+                  engravingSlots: {
+                    select: {
+                      id: true,
+                      index: true,
+                      level: true,
+                      engraving: {
+                        select: {
+                          id: true,
+                          nameEn: true,
+                          nameKo: true,
+                          iconPath: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+
+      applyStates: {
+        select: {
+          id: true,
+          state: true,
+          character: {
+            select: {
+              id: true,
+              name: true,
+              job: true,
+              itemLevel: true,
+              roster: {
+                select: {
+                  id: true,
+                  user: {
+                    select: {
+                      id: true,
+                      discordId: true,
+                      discordUsername: true,
+                      discordDiscriminator: true,
+                    },
+                  },
+                  userId: true,
+                },
+              },
+              engravingSlots: {
+                select: {
+                  id: true,
+                  index: true,
+                  level: true,
+                  engraving: {
+                    select: {
+                      id: true,
+                      nameEn: true,
+                      nameKo: true,
+                      iconPath: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    select: postSelect,
   });
 };
 
@@ -331,18 +366,17 @@ export const loader: LoaderFunction = async ({ request }) => {
     accessToken: session.accessToken,
     abyssalDungeon: await getAbyssalDungeon(),
     abyssRaid: await getAbyssRaid(),
-    appliedPosts: await getPostsByUserId(user.id),
     chaosDungeon: await getChaosDungeon(),
     guardianRaid: await getGuardianRaid(),
     legionRaid: await getLegionRaid(),
     locale: (await i18next.getLocale(request)) as LocaleType,
     myPosts: await getPostsByAuthorId(user.id),
-    title: `${t("myPartiesTitle")} | ${t("shortTitle")}`,
+    title: `${t("myPostsTitle")} | ${t("shortTitle")}`,
     user,
   });
 };
 
-export default function MyRosterMyPartiesPage() {
+export default function MyRosterMyPostsPage() {
   const data = useLoaderData<LoaderData>();
   const { t } = useTranslation();
 
@@ -421,57 +455,7 @@ export default function MyRosterMyPartiesPage() {
           {data.myPosts.map((p, index) => {
             return (
               <ExpandablePanel
-                accessToken={data.accessToken}
                 contentTypes={contentTypes}
-                isAuthor={true}
-                key={index}
-                loading={loading}
-                locale={data.locale}
-                partyFindPost={p}
-                setLoading={setLoading}
-                userId={data.user.id}
-              />
-            );
-          })}
-        </div>
-      </div>
-      <div className="flex flex-col gap-[1.25rem]">
-        <div className="flex items-center justify-between">
-          <div className="text-[1.25rem] font-[400] leading-[1.25rem]">
-            {t("applying", { ns: "routes\\my-roster\\my-parties" })}
-          </div>
-          <Link to="/tools/party-finder">
-            <Button
-              style={{
-                additionalClass: "",
-                backgroundColorClass: "bg-loa-button",
-                cornerRadius: "0.9375rem",
-                fontSize: "1rem",
-                fontWeight: "500",
-                lineHeight: "1.25rem",
-                px: "0.9375rem",
-                py: "0.9375rem",
-                textColorClass: "text-loa-white",
-              }}
-              text={t("lookForOtherParty", {
-                ns: "routes\\my-roster\\my-parties",
-              })}
-            />
-          </Link>
-        </div>
-        <div className="flex flex-col gap-[1.25rem]">
-          {data.appliedPosts.map((p, index) => {
-            return (
-              <ExpandablePanel
-                accessToken={data.accessToken}
-                contentTypes={contentTypes}
-                isAuthor={false}
-                isAccepted={
-                  !!p.partyFindSlots.find(
-                    (s) =>
-                      s.character && s.character.roster.userId === data.user.id
-                  )
-                }
                 key={index}
                 loading={loading}
                 locale={data.locale}

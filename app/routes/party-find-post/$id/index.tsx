@@ -2,8 +2,9 @@ import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { ItemType } from "~/components/dropdown";
 import type { ActionBody as ApplyActionBody } from "~/routes/api/party-find-post/$id/apply";
 import type { ActionBody as DeleteActionBody } from "~/routes/api/party-find-post/$id/delete";
+import type { ActionBody as LeaveActionBody } from "~/routes/api/party-find-post/$id/leave";
 import type { LocaleType } from "~/i18n";
-import { JobType } from "@prisma/client";
+import { JobType, PartyFindApplyStateValue } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import * as React from "react";
@@ -16,11 +17,13 @@ import { prisma } from "~/db.server";
 import i18next from "~/i18next.server";
 import { getUserFromRequest } from "~/session.server";
 import {
+  elapsedTimeSpaced,
   generateJobIconPath,
   generateProperLocaleDateString,
   getContentByType,
   getJobTypeFromJob,
   printTime,
+  printTimeElapsed,
   putFromAndToOnRight,
 } from "~/utils";
 
@@ -249,14 +252,37 @@ const getPartyFindPost = async (id: string) => {
         select: {
           id: true,
           jobType: true,
-          isAuthor: true,
-          character: {
-            select: { id: true, name: true, job: true, itemLevel: true },
+          partyFindApplyState: {
+            select: {
+              id: true,
+              character: {
+                select: {
+                  id: true,
+                  name: true,
+                  job: true,
+                  itemLevel: true,
+                  roster: { select: { id: true, userId: true } },
+                },
+              },
+            },
           },
         },
       },
 
-      waitlistCharacters: { select: { id: true } },
+      applyStates: {
+        select: {
+          id: true,
+          state: true,
+          character: {
+            select: {
+              id: true,
+              name: true,
+              job: true,
+              roster: { select: { id: true, userId: true } },
+            },
+          },
+        },
+      },
     },
   });
 };
@@ -310,8 +336,14 @@ export default function PartyFindPostIdPage() {
   const { t } = useTranslation();
 
   if (data.partyFindPost) {
-    const authorJob = data.partyFindPost.partyFindSlots.find((s) => s.isAuthor)
-      ?.character?.job;
+    const authorJob = data.partyFindPost.partyFindSlots.find(
+      (s) =>
+        data.partyFindPost &&
+        s.partyFindApplyState &&
+        s.partyFindApplyState.id &&
+        s.partyFindApplyState.character.roster.userId ===
+          data.partyFindPost.authorId
+    )?.partyFindApplyState?.character.job;
     const iconPath = authorJob ? generateJobIconPath(authorJob) : "";
 
     const updatedAtTime = new Date(data.partyFindPost.updatedAt);
@@ -323,6 +355,15 @@ export default function PartyFindPostIdPage() {
       updatedAtTime.getHours(),
       updatedAtTime.getMinutes()
     );
+    const updatedAtElapsedTimes = printTimeElapsed(updatedAtTime);
+    const updatedAtElapsedTimeString = `${updatedAtElapsedTimes[0]}${
+      elapsedTimeSpaced.includes(data.locale) ? " " : ""
+    }${t(
+      `${updatedAtElapsedTimes[1]}${
+        updatedAtElapsedTimes[0] === "1" ? "" : "s"
+      }`,
+      { ns: "dictionary\\time-elapsed" }
+    )} ${t("ago", { ns: "dictionary\\time-elapsed" })}`;
 
     const startTime = new Date(data.partyFindPost.startTime);
     const startDateString = generateProperLocaleDateString(
@@ -343,13 +384,14 @@ export default function PartyFindPostIdPage() {
       React.useState(true);
     let _isDeleteButtonEnabled = true;
 
-    const [isCharacterSelectionOpen, setIsCharacterSelectionOpen] =
-      React.useState(false);
-    const [allowCharacterSelectionToClose, setAllowCharacterSelectionToClose] =
+    const [showPopup, setShowPopup] = React.useState(false);
+
+    const [isApplyModalOpen, setIsApplyModalOpen] = React.useState(false);
+    const [allowApplyModalToClose, setAllowApplyModalToClose] =
       React.useState(true);
-    const [isCharacterSubmitButtonEnabled, setIsCharacterSubmitButtonEnabled] =
+    const [isApplyModalButtonEnabled, setIsApplyModalButtonEnabled] =
       React.useState(true);
-    let _isCharacterSubmitButtonEnabled = true;
+    let _isApplyModalButtonEnabled = true;
 
     const _characters =
       data.user?.rosters
@@ -364,21 +406,9 @@ export default function PartyFindPostIdPage() {
       .filter(
         (c) =>
           data.partyFindPost &&
-          !data.partyFindPost.partyFindSlots.find(
-            (s) => s.character && s.character.id === c.id
-          )
-      )
-      .filter(
-        (c) =>
-          data.partyFindPost &&
-          !data.partyFindPost.waitlistCharacters.find((_c) => _c.id === c.id)
-      )
-      .filter(
-        (c) =>
-          data.partyFindPost &&
           data.partyFindPost.partyFindSlots.find(
             (s) =>
-              !s.character &&
+              !(s.partyFindApplyState && s.partyFindApplyState.id) &&
               [JobType.ANY, getJobTypeFromJob(c.job)].includes(s.jobType)
           )
       )
@@ -397,24 +427,45 @@ export default function PartyFindPostIdPage() {
       undefined
     );
 
-    let applyErrorMessage: "" | "author" | "alreadyApplied" | "noCharacter" =
-      "";
+    const userApplyState = data.partyFindPost.applyStates.find(
+      (a) => data.user && a.character.roster.userId === data.user.id
+    );
+
+    let applyText:
+      | "apply"
+      | "author"
+      | "leave"
+      | "alreadyApplied"
+      | "noCharacter" = "apply";
+    let applyColor: "bg-loa-green" | "bg-loa-red" | "bg-loa-button" =
+      "bg-loa-button";
+    let applyDisabled: boolean = false;
 
     if (data.user) {
-      if (data.partyFindPost.authorId === data.user.id)
-        applyErrorMessage = "author";
+      if (data.partyFindPost.authorId === data.user.id) applyText = "author";
       else if (
-        data.partyFindPost.partyFindSlots.find(
-          (s) =>
-            s.character &&
-            _characters.find((c) => s.character && c.id === s.character.id)
-        ) ||
-        data.partyFindPost.waitlistCharacters.find((c) =>
-          _characters.find((_c) => _c.id === c.id)
-        )
-      )
-        applyErrorMessage = "alreadyApplied";
-      else if (characters.length === 0) applyErrorMessage = "noCharacter";
+        userApplyState &&
+        userApplyState.state === PartyFindApplyStateValue.ACCEPTED
+      ) {
+        applyText = "leave";
+        applyColor = "bg-loa-red";
+        applyDisabled = false;
+      } else if (
+        userApplyState &&
+        userApplyState.state === PartyFindApplyStateValue.WAITING
+      ) {
+        applyText = "alreadyApplied";
+        applyColor = "bg-loa-button";
+        applyDisabled = true;
+      } else if (characters.length === 0) {
+        applyText = "noCharacter";
+        applyColor = "bg-loa-button";
+        applyDisabled = true;
+      } else {
+        applyText = "apply";
+        applyColor = "bg-loa-green";
+        applyDisabled = false;
+      }
     }
 
     const contentTypes: (ItemType & {
@@ -465,8 +516,51 @@ export default function PartyFindPostIdPage() {
     );
 
     return (
-      <div className="mx-auto my-[3.125rem] flex w-[46.875rem] flex-col">
-        <div className="flex items-start gap-[1.5625rem]">
+      <div className="mx-auto my-[2.5rem] flex w-[46.875rem] flex-col">
+        <div
+          style={{
+            left: "50vw",
+            position: "fixed",
+            top: "6.5rem",
+            transform: "translate(-50%,0)",
+            zIndex: 999,
+          }}
+        >
+          <div
+            className="flex rounded-[1.25rem] bg-loa-panel-border py-[1.25rem] px-[1.25rem] transition"
+            style={{
+              opacity: showPopup ? 1 : 0,
+              transform: showPopup ? "" : "translate(0, -1.5rem)",
+            }}
+          >
+            {t("urlCopied", { ns: "routes\\party-find-post\\id" })}
+          </div>
+        </div>
+        <div className="flex">
+          <Button
+            onClick={() => {
+              navigate(-1);
+            }}
+            style={{
+              additionalClass:
+                "w-[1.875rem] h-[1.875rem] rounded-full flex items-center justify-center",
+              backgroundColorClass: "bg-loa-button",
+              cornerRadius: "",
+              fontSize: "",
+              fontWeight: "",
+              lineHeight: "",
+              px: "",
+              py: "",
+              textColorClass: "",
+            }}
+            text={
+              <span className="material-symbols-outlined text-[0.9375rem]">
+                navigate_before
+              </span>
+            }
+          />
+        </div>
+        <div className="mt-[1.25rem] flex items-start gap-[1.5625rem]">
           <div
             className="min-h-[4.0625rem] min-w-[4.0625rem] rounded-full bg-contain bg-center bg-no-repeat"
             style={{ backgroundImage: `url('${iconPath}')` }}
@@ -480,7 +574,7 @@ export default function PartyFindPostIdPage() {
               {
                 ns: "routes\\party-find-post\\id",
               }
-            )} ${updatedAtDateString} ${updatedAtTimeString}`}</div>
+            )} ${updatedAtElapsedTimeString} ${updatedAtDateString} ${updatedAtTimeString}`}</div>
           </div>
           {data.user && data.user.id === data.partyFindPost.authorId && (
             <div className="flex gap-[0.625rem]">
@@ -576,7 +670,7 @@ export default function PartyFindPostIdPage() {
                           )
                             .catch(() => {})
                             .finally(() => {
-                              navigate("/my-roster/my-parties");
+                              navigate("/my-roster/my-posts");
                             });
                         }
                       }}
@@ -602,6 +696,46 @@ export default function PartyFindPostIdPage() {
           )}
         </div>
         <div className="mt-[1.25rem] flex flex-col gap-[1.25rem]">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => {
+                if (
+                  navigator &&
+                  navigator.clipboard &&
+                  !showPopup &&
+                  window &&
+                  window.location
+                ) {
+                  navigator.clipboard.writeText(window.location.href);
+                  setShowPopup(true);
+                  setTimeout(() => {
+                    setShowPopup(false);
+                  }, 2000);
+                }
+              }}
+              style={{
+                additionalClass: "flex gap-[0.3125rem] items-center",
+                backgroundColorClass: "bg-loa-button-border",
+                cornerRadius: "0.3125rem",
+                fontSize: "0.75rem",
+                fontWeight: "400",
+                lineHeight: "1.25rem",
+                px: "0.3125rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={
+                <>
+                  <span className="material-symbols-outlined filled-icon text-[0.9375rem]">
+                    share
+                  </span>
+                  <span>
+                    {t("share", { ns: "routes\\party-find-post\\id" })}
+                  </span>
+                </>
+              }
+            />
+          </div>
           <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
             <div className="text-[1.25rem] font-[700] leading-[1.25rem]">
               {t("basicInfo", { ns: "routes\\party-find-post\\id" })}
@@ -686,30 +820,51 @@ export default function PartyFindPostIdPage() {
               <div className="text-[1rem] font-[700] leading-[1.25rem]">
                 <div>
                   {data.partyFindPost.recurring
-                    ? `${t("every", { ns: "routes\\party-find-post\\id" })} ${t(
-                        [
-                          "sunFilter",
-                          "monFilter",
-                          "tueFilter",
-                          "wedFilter",
-                          "thuFilter",
-                          "friFilter",
-                          "satFilter",
-                        ][startTime.getDay()],
-                        { ns: "routes\\party-find-post\\id" }
-                      )} ${startTimeString}`
-                    : `${startDateString} ${startTimeString} ${t(
-                        [
-                          "sunList",
-                          "monList",
-                          "tueList",
-                          "wedList",
-                          "thuList",
-                          "friList",
-                          "satList",
-                        ][startTime.getDay()],
-                        { ns: "routes\\party-find-post\\id" }
-                      )}`}
+                    ? [
+                        <span key={1}>{`${t("every", {
+                          ns: "routes\\tools\\party-finder",
+                        })} `}</span>,
+                        <span
+                          className="text-loa-party-leader-star"
+                          key={2}
+                        >{`${t(
+                          [
+                            "sunFilter",
+                            "monFilter",
+                            "tueFilter",
+                            "wedFilter",
+                            "thuFilter",
+                            "friFilter",
+                            "satFilter",
+                          ][startTime.getDay()],
+                          { ns: "routes\\tools\\party-finder" }
+                        )} `}</span>,
+                        <span key={3}>{`${startTimeString}`}</span>,
+                      ]
+                    : [
+                        <span
+                          className="whitespace-pre"
+                          key={1}
+                        >{`${startDateString}  `}</span>,
+                        <span
+                          className="whitespace-pre text-loa-party-leader-star"
+                          key={2}
+                        >
+                          {`${t(
+                            [
+                              "sunList",
+                              "monList",
+                              "tueList",
+                              "wedList",
+                              "thuList",
+                              "friList",
+                              "satList",
+                            ][startTime.getDay()],
+                            { ns: "routes\\tools\\party-finder" }
+                          )}  `}
+                        </span>,
+                        <span key={3}>{startTimeString}</span>,
+                      ]}
                 </div>
                 <div>
                   {data.partyFindPost.recurring
@@ -739,15 +894,20 @@ export default function PartyFindPostIdPage() {
               }}
             >
               {data.partyFindPost.partyFindSlots
-                .filter((s) => s.character)
+                .filter(
+                  (s) => s.partyFindApplyState && s.partyFindApplyState.id
+                )
                 .map((s, index) => {
-                  if (!s.character) return [];
+                  if (!s.partyFindApplyState || !s.partyFindApplyState.id)
+                    return [];
 
                   return [
                     <div className="relative flex shrink-0" key={index * 4}>
                       <div
                         className={`${
-                          getJobTypeFromJob(s.character.job) === JobType.SUPPORT
+                          getJobTypeFromJob(
+                            s.partyFindApplyState.character.job
+                          ) === JobType.SUPPORT
                             ? "border-loa-green"
                             : "border-loa-red"
                         } rounded-full border-2 p-[0.125rem]`}
@@ -756,50 +916,57 @@ export default function PartyFindPostIdPage() {
                           className="h-[1.5625rem] w-[1.5625rem] rounded-full bg-contain bg-center bg-no-repeat"
                           style={{
                             backgroundImage: `url('${generateJobIconPath(
-                              s.character.job
+                              s.partyFindApplyState.character.job
                             )}')`,
                           }}
                         />
                       </div>
-                      {s.isAuthor && (
-                        <div className="material-symbols-outlined absolute right-[-5px] top-[-5px] text-[1.125rem] text-loa-party-leader-star">
-                          star
-                        </div>
-                      )}
+                      {data.partyFindPost &&
+                        s.partyFindApplyState.character.roster.userId ===
+                          data.partyFindPost.authorId && (
+                          <div className="material-symbols-outlined absolute right-[-5px] top-[-5px] text-[1.125rem] text-loa-party-leader-star">
+                            star
+                          </div>
+                        )}
                     </div>,
                     <div
                       className="flex items-center justify-start text-[0.9375rem] font-[500] leading-[1.25rem]"
                       key={index * 4 + 1}
                     >
-                      {s.character.name}
+                      {s.partyFindApplyState.character.name}
                     </div>,
                     <div
                       className="flex items-center justify-start text-[0.9375rem] font-[500] leading-[1.25rem]"
                       key={index * 4 + 2}
                     >
-                      {t(s.character.job, { ns: "dictionary\\job" })}
+                      {t(s.partyFindApplyState.character.job, {
+                        ns: "dictionary\\job",
+                      })}
                     </div>,
                     <div
                       className="flex items-center justify-start text-[0.9375rem] font-[500] leading-[1.25rem]"
                       key={index * 4 + 3}
                     >
-                      {`LV.${s.character.itemLevel.toFixed(2)}`}
+                      {`LV.${s.partyFindApplyState.character.itemLevel.toFixed(
+                        2
+                      )}`}
                     </div>,
                   ];
                 })}
             </div>
           </div>
           {data.user &&
-            applyErrorMessage !== "author" && [
+            applyText !== "author" && [
               <Button
-                disabled={applyErrorMessage !== ""}
+                disabled={applyDisabled}
+                key={1}
                 onClick={() => {
-                  if (applyErrorMessage === "")
-                    setIsCharacterSelectionOpen(true);
+                  if (applyText === "apply" || applyText === "leave")
+                    setIsApplyModalOpen(true);
                 }}
                 style={{
                   additionalClass: "",
-                  backgroundColorClass: "bg-loa-green",
+                  backgroundColorClass: applyColor,
                   cornerRadius: "0.9375rem",
                   disabledBackgroundColorClass: "bg-loa-inactive",
                   disabledTextColorClass: "text-loa-grey",
@@ -810,154 +977,267 @@ export default function PartyFindPostIdPage() {
                   py: "1.25rem",
                   textColorClass: "text-loa-white",
                 }}
-                text={t(
-                  applyErrorMessage === "" ? "apply" : applyErrorMessage,
-                  {
-                    ns: "routes\\party-find-post\\id",
-                  }
-                )}
+                text={t(applyText, { ns: "routes\\party-find-post\\id" })}
               />,
-              <Modal
-                closeWhenClickedOutside={allowCharacterSelectionToClose}
-                isOpened={applyErrorMessage === "" && isCharacterSelectionOpen}
-                setIsOpened={setIsCharacterSelectionOpen}
-                style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-              >
-                <div className="flex w-[36.25rem] flex-col gap-[3.125rem] overflow-visible rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
-                  <div>
-                    <div className="float-right">
-                      <div
-                        className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
-                        onClick={() => {
-                          setIsCharacterSelectionOpen(false);
-                        }}
-                      >
-                        close
+              applyText === "apply" && (
+                <Modal
+                  closeWhenClickedOutside={allowApplyModalToClose}
+                  isOpened={applyText === "apply" && isApplyModalOpen}
+                  key={2}
+                  setIsOpened={setIsApplyModalOpen}
+                  style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                >
+                  <div className="flex w-[36.25rem] flex-col gap-[3.125rem] overflow-visible rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
+                    <div>
+                      <div className="float-right">
+                        <div
+                          className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
+                          onClick={() => {
+                            setIsApplyModalOpen(false);
+                          }}
+                        >
+                          close
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
-                      {t("characterSelectTitle", {
-                        ns: "routes\\party-find-post\\id",
-                      })}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-[1.5625rem]">
-                    <div className="w-full whitespace-normal">
-                      <div className="w-full text-[1.25rem] font-[400] leading-[1.25rem]">
-                        {t("characterSelectMessage", {
-                          ns: "routes\\party-find-post\\id",
-                        })}
-                      </div>
-                      <div className="w-full text-[0.875rem] font-[400] leading-[1.25rem]">
-                        {t("characterSelectRegionMessage", {
+                      <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
+                        {t("characterSelectTitle", {
                           ns: "routes\\party-find-post\\id",
                         })}
                       </div>
                     </div>
-                    <Dropdown
-                      invalid={!character}
-                      items={characters}
-                      locale={data.locale}
-                      onChange={setCharacter}
-                      selected={character}
-                      style={{
-                        panel: {
-                          alignment: "center",
-                          anchor: "center",
-                          backgroundColorClass: "bg-loa-panel",
-                          borderColorClass: "border-loa-button",
-                          borderWidth: "0.0875rem",
-                          cornerRadius: "0.9375rem",
-                          item: {
+                    <div className="flex flex-col gap-[1.5625rem]">
+                      <div className="w-full whitespace-normal">
+                        <div className="w-full text-[1.25rem] font-[400] leading-[1.25rem]">
+                          {t("characterSelectMessage", {
+                            ns: "routes\\party-find-post\\id",
+                          })}
+                        </div>
+                        <div className="w-full text-[0.875rem] font-[400] leading-[1.25rem]">
+                          {t("characterSelectRegionMessage", {
+                            ns: "routes\\party-find-post\\id",
+                          })}
+                        </div>
+                      </div>
+                      <Dropdown
+                        invalid={!character}
+                        items={characters}
+                        locale={data.locale}
+                        onChange={setCharacter}
+                        selected={character}
+                        style={{
+                          panel: {
+                            alignment: "center",
+                            anchor: "center",
+                            backgroundColorClass: "bg-loa-panel",
+                            borderColorClass: "border-loa-button",
+                            borderWidth: "0.0875rem",
+                            cornerRadius: "0.9375rem",
+                            item: {
+                              fontSize: "0.875rem",
+                              fontWeight: "500",
+                              lineHeight: "1.25rem",
+                              px: "1.25rem",
+                              py: "0.625rem",
+                              separator: {
+                                colorClass: "border-loa-button",
+                                margin: "0.4375rem",
+                              },
+                            },
+                            margin: 0.2917,
+                            maxHeight: 17.5,
+                          },
+                          selectButton: {
+                            backgroundColorClass: "bg-loa-inactive",
+                            cornerRadius: "0.9375rem",
                             fontSize: "0.875rem",
                             fontWeight: "500",
+                            gap: "",
+                            inactiveTextColorClass: "text-loa-grey",
+                            invalid: {
+                              outlineColorClass: "outline-loa-red",
+                              outlineWidth: "0.175rem",
+                            },
                             lineHeight: "1.25rem",
                             px: "1.25rem",
                             py: "0.625rem",
-                            separator: {
-                              colorClass: "border-loa-button",
-                              margin: "0.4375rem",
-                            },
                           },
-                          margin: 0.2917,
-                          maxHeight: 17.5,
-                        },
-                        selectButton: {
-                          backgroundColorClass: "bg-loa-inactive",
-                          cornerRadius: "0.9375rem",
-                          fontSize: "0.875rem",
-                          fontWeight: "500",
-                          gap: "",
-                          inactiveTextColorClass: "text-loa-grey",
-                          invalid: {
-                            outlineColorClass: "outline-loa-red",
-                            outlineWidth: "0.175rem",
-                          },
-                          lineHeight: "1.25rem",
-                          px: "1.25rem",
-                          py: "0.625rem",
-                        },
-                      }}
-                    />
-                    <Button
-                      disabled={!character || !isCharacterSubmitButtonEnabled}
-                      onClick={() => {
-                        if (
-                          _isCharacterSubmitButtonEnabled &&
-                          character &&
-                          data.partyFindPost
-                        ) {
-                          _isCharacterSubmitButtonEnabled = false;
-                          setIsCharacterSubmitButtonEnabled(false);
-                          setAllowCharacterSelectionToClose(false);
+                        }}
+                      />
+                      <Button
+                        disabled={!character || !isApplyModalButtonEnabled}
+                        onClick={() => {
+                          if (
+                            _isApplyModalButtonEnabled &&
+                            character &&
+                            data.partyFindPost
+                          ) {
+                            _isApplyModalButtonEnabled = false;
+                            setIsApplyModalButtonEnabled(false);
+                            setAllowApplyModalToClose(false);
 
-                          const actionBody: ApplyActionBody = {
-                            characterId: character.id ?? "",
-                            partyFindPostId: data.partyFindPost.id ?? "",
-                            userId: data.user?.id ?? "",
-                          };
+                            const actionBody: ApplyActionBody = {
+                              characterId: character.id ?? "",
+                              partyFindPostId: data.partyFindPost.id ?? "",
+                              userId: data.user?.id ?? "",
+                            };
 
-                          fetch(
-                            `/api/party-find-post/${
-                              data.partyFindPost?.id ?? ""
-                            }/apply`,
-                            {
-                              method: "POST",
-                              credentials: "same-origin",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify(actionBody),
-                            }
-                          )
-                            .catch(() => {})
-                            .finally(() => {
-                              if (data.partyFindPost) {
-                                navigate(
-                                  `/party-find-post/${data.partyFindPost.id}`
-                                );
-                              } else {
-                                navigate("/");
+                            fetch(
+                              `/api/party-find-post/${
+                                data.partyFindPost?.id ?? ""
+                              }/apply`,
+                              {
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(actionBody),
                               }
-                            });
-                        }
-                      }}
-                      style={{
-                        additionalClass: "",
-                        backgroundColorClass: "bg-loa-green",
-                        cornerRadius: "0.9375rem",
-                        disabledBackgroundColorClass: "bg-loa-inactive",
-                        disabledTextColorClass: "text-loa-grey",
-                        fontSize: "1.25rem",
-                        fontWeight: "700",
-                        lineHeight: "1.25rem",
-                        px: "",
-                        py: "1.25rem",
-                        textColorClass: "text-loa-white",
-                      }}
-                      text={t("apply", { ns: "routes\\party-find-post\\id" })}
-                    />
+                            )
+                              .catch(() => {})
+                              .finally(() => {
+                                setIsApplyModalOpen(false);
+                                _isApplyModalButtonEnabled = true;
+                                setIsApplyModalButtonEnabled(true);
+                                setAllowApplyModalToClose(true);
+
+                                if (data.partyFindPost) {
+                                  navigate(
+                                    `/party-find-post/${data.partyFindPost.id}`
+                                  );
+                                } else {
+                                  navigate("/");
+                                }
+                              });
+                          }
+                        }}
+                        style={{
+                          additionalClass: "",
+                          backgroundColorClass: "bg-loa-green",
+                          cornerRadius: "0.9375rem",
+                          disabledBackgroundColorClass: "bg-loa-inactive",
+                          disabledTextColorClass: "text-loa-grey",
+                          fontSize: "1.25rem",
+                          fontWeight: "700",
+                          lineHeight: "1.25rem",
+                          px: "",
+                          py: "1.25rem",
+                          textColorClass: "text-loa-white",
+                        }}
+                        text={t("apply", { ns: "routes\\party-find-post\\id" })}
+                      />
+                    </div>
                   </div>
-                </div>
-              </Modal>,
+                </Modal>
+              ),
+              applyText === "leave" &&
+                userApplyState &&
+                userApplyState.state === PartyFindApplyStateValue.ACCEPTED && (
+                  <Modal
+                    closeWhenClickedOutside={allowApplyModalToClose}
+                    isOpened={applyText === "leave" && isApplyModalOpen}
+                    key={3}
+                    setIsOpened={setIsApplyModalOpen}
+                    style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                  >
+                    <div className="flex w-[36.25rem] flex-col gap-[3.125rem] overflow-visible rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
+                      <div>
+                        <div className="float-right">
+                          <div
+                            className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
+                            onClick={() => {
+                              setIsApplyModalOpen(false);
+                            }}
+                          >
+                            close
+                          </div>
+                        </div>
+                        <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
+                          {t("leaveTitle", {
+                            ns: "routes\\party-find-post\\id",
+                          })}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-[1.5625rem]">
+                        <div className="flex items-center justify-center gap-[0.3125rem] truncate text-[1.5rem] font-[700] leading-[1.875rem]">
+                          <div className="text-loa-party-leader-star">
+                            {t(userApplyState.character.job, {
+                              ns: "dictionary\\job",
+                            })}
+                          </div>
+                          <span>{userApplyState.character.name}</span>
+                        </div>
+                        <div className="w-full whitespace-normal text-[1.25rem] font-[400] leading-[1.25rem]">
+                          {t("leaveMessage", {
+                            ns: "routes\\party-find-post\\id",
+                          })}
+                        </div>
+                        <Button
+                          disabled={!isApplyModalButtonEnabled}
+                          onClick={() => {
+                            if (
+                              _isApplyModalButtonEnabled &&
+                              data.partyFindPost
+                            ) {
+                              _isApplyModalButtonEnabled = false;
+                              setIsApplyModalButtonEnabled(false);
+                              setAllowApplyModalToClose(false);
+
+                              const actionBody: LeaveActionBody = {
+                                characterId: userApplyState.character.id,
+                                partyFindPostId: data.partyFindPost.id ?? "",
+                                userId: data.user?.id ?? "",
+                              };
+
+                              fetch(
+                                `/api/party-find-post/${
+                                  data.partyFindPost?.id ?? ""
+                                }/leave`,
+                                {
+                                  method: "POST",
+                                  credentials: "same-origin",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                  },
+                                  body: JSON.stringify(actionBody),
+                                }
+                              )
+                                .catch(() => {})
+                                .finally(() => {
+                                  setIsApplyModalOpen(false);
+                                  _isApplyModalButtonEnabled = true;
+                                  setIsApplyModalButtonEnabled(true);
+                                  setAllowApplyModalToClose(true);
+
+                                  if (data.partyFindPost) {
+                                    navigate(
+                                      `/party-find-post/${data.partyFindPost.id}`
+                                    );
+                                  } else {
+                                    navigate("/");
+                                  }
+                                });
+                            }
+                          }}
+                          style={{
+                            additionalClass: "",
+                            backgroundColorClass: "bg-loa-red",
+                            cornerRadius: "0.9375rem",
+                            disabledBackgroundColorClass: "bg-loa-inactive",
+                            disabledTextColorClass: "text-loa-grey",
+                            fontSize: "1.25rem",
+                            fontWeight: "700",
+                            lineHeight: "1.25rem",
+                            px: "",
+                            py: "1.25rem",
+                            textColorClass: "text-loa-white",
+                          }}
+                          text={t("leave", {
+                            ns: "routes\\party-find-post\\id",
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </Modal>
+                ),
             ]}
         </div>
       </div>
