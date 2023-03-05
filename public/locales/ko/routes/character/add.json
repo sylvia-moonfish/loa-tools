@@ -1,0 +1,9 @@
+{
+  "selectJob": "직업을 선택하세요",
+  "enterName": "이름을 입력하세요",
+  "selectRegion": "지역을 선택하세요",
+  "selectServer": "서버를 선택하세요",
+  "selectEngraving": "착용한 각인을 선택하세요",
+  "mainCharacter": "대표 캐릭터 (서버당 한 캐릭터만 설정 가능합니다.)",
+  "submit": "등록하기"
+}

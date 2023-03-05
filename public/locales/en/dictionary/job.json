@@ -1,0 +1,26 @@
+{
+  "DESTROYER": "Destroyer",
+  "GUNLANCER": "Gunlancer",
+  "BERSERKER": "Berserker",
+  "PALADIN": "Paladin",
+
+  "STRIKER": "Striker",
+
+  "WARDANCER": "Wardancer",
+  "SCRAPPER": "Scrapper",
+  "SOULFIST": "Soulfist",
+  "GLAIVIER": "Glaivier",
+
+  "DEADEYE": "Deadeye",
+  "ARTILLERIST": "Artillerist",
+  "SHARPSHOOTER": "Sharpshooter",
+
+  "GUNSLINGER": "Gunslinger",
+
+  "BARD": "Bard",
+  "ARCANIST": "Arcanist",
+  "SORCERESS": "Sorceress",
+
+  "DEATHBLADE": "Deathblade",
+  "SHADOWHUNTER": "Shadowhunter"
+}

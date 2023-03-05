@@ -1,0 +1,9 @@
+{
+  "selectJob": "Select job",
+  "enterName": "Enter character name",
+  "selectRegion": "Select region",
+  "selectServer": "Select server",
+  "selectEngraving": "Select engraving",
+  "mainCharacter": "Main Character (1 per server)",
+  "submit": "Submit"
+}
