@@ -5,7 +5,7 @@
 Learn more about [Remix Stacks](https://remix.run/stacks).
 
 ```
-npx create-remix --template remix-run/blues-stack
+npx create-remix@latest --template remix-run/blues-stack
 ```
 
 ## What's in the stack
@@ -30,9 +30,15 @@ Not a fan of bits of the stack? Fork it, change it, and use `npx create-remix --
 
 Click this button to create a [Gitpod](https://gitpod.io) workspace with the project set up, Postgres started, and Fly pre-installed
 
-[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/from-referrer/)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/remix-run/blues-stack/tree/main)
 
 ## Development
+
+- This step only applies if you've opted out of having the CLI install dependencies for you:
+
+  ```sh
+  npx remix init
+  ```
 
 - Start the Postgres Database in [Docker](https://www.docker.com/get-started):
 
@@ -96,9 +102,11 @@ Prior to your first deployment, you'll need to do a few things:
 - Create two apps on Fly, one for staging and one for production:
 
   ```sh
-  fly create loa-tools-8d3d
-  fly create loa-tools-8d3d-staging
+  fly apps create loa-tools-3f61
+  fly apps create loa-tools-3f61-staging
   ```
+
+  > **Note:** Once you've successfully created an app, double-check the `fly.toml` file to ensure that the `app` key is the name of the production app you created. This Stack [automatically appends a unique suffix at init](https://github.com/remix-run/blues-stack/blob/4c2f1af416b539187beb8126dd16f6bc38f47639/remix.init/index.js#L29) which may not match the apps you created on Fly. You will likely see [404 errors in your Github Actions CI logs](https://community.fly.io/t/404-failure-with-deployment-with-remix-blues-stack/4526/3) if you have this mismatch.
 
 - Initialize Git.
 
@@ -117,14 +125,14 @@ Prior to your first deployment, you'll need to do a few things:
 - Add a `SESSION_SECRET` to your fly app secrets, to do this you can run the following commands:
 
   ```sh
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-8d3d
-  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-8d3d-staging
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-3f61
+  fly secrets set SESSION_SECRET=$(openssl rand -hex 32) --app loa-tools-3f61-staging
   ```
 
   > **Note:** When creating the staging secret, you may get a warning from the Fly CLI that looks like this:
   >
   > ```
-  > WARN app flag 'loa-tools-8d3d-staging' does not match app name in config file 'loa-tools-8d3d'
+  > WARN app flag 'loa-tools-3f61-staging' does not match app name in config file 'loa-tools-3f61'
   > ```
   >
   > This simply means that the current directory contains a config that references the production app we created in the first step. Ignore this warning and proceed to create the secret.
@@ -134,11 +142,11 @@ Prior to your first deployment, you'll need to do a few things:
 - Create a database for both your staging and production environments. Run the following:
 
   ```sh
-  fly postgres create --name loa-tools-8d3d-db
-  fly postgres attach --postgres-app loa-tools-8d3d-db --app loa-tools-8d3d
+  fly postgres create --name loa-tools-3f61-db
+  fly postgres attach --app loa-tools-3f61 loa-tools-3f61-db
 
-  fly postgres create --name loa-tools-8d3d-staging-db
-  fly postgres attach --postgres-app loa-tools-8d3d-staging-db --app loa-tools-8d3d-staging
+  fly postgres create --name loa-tools-3f61-staging-db
+  fly postgres attach --app loa-tools-3f61-staging loa-tools-3f61-staging-db
   ```
 
   > **Note:** You'll get the same warning for the same reason when attaching the staging database that you did in the `fly set secret` step above. No worries. Proceed!
