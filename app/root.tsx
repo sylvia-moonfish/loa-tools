@@ -109,7 +109,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       })
     : undefined;
 
-  return json<LoaderData>({
+  return json({
     alarms,
     locale: (await i18next.getLocale(request)) as LocaleType,
     user: user ?? undefined,
@@ -117,7 +117,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function App() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<typeof loader>();
   const location = useLocation();
   const { i18n } = useTranslation();
 

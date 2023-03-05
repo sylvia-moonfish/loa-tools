@@ -384,10 +384,20 @@ export default function ToolsPartyFinderIndexPage() {
     setDayFilter: React.Dispatch<React.SetStateAction<boolean>>;
   }[] = [];
 
-  for (let i = 0; i < 7; i++) {
-    const [dayFilter, setDayFilter] = React.useState(false);
-    dayFilterList.push({ dayFilter, setDayFilter });
-  }
+  const [dayFilter0, setDayFilter0] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter0, setDayFilter: setDayFilter0 });
+  const [dayFilter1, setDayFilter1] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter1, setDayFilter: setDayFilter1 });
+  const [dayFilter2, setDayFilter2] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter2, setDayFilter: setDayFilter2 });
+  const [dayFilter3, setDayFilter3] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter3, setDayFilter: setDayFilter3 });
+  const [dayFilter4, setDayFilter4] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter4, setDayFilter: setDayFilter4 });
+  const [dayFilter5, setDayFilter5] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter5, setDayFilter: setDayFilter5 });
+  const [dayFilter6, setDayFilter6] = React.useState(false);
+  dayFilterList.push({ dayFilter: dayFilter6, setDayFilter: setDayFilter6 });
 
   const _times = [];
   for (let i = 0; i < 24; i++) {

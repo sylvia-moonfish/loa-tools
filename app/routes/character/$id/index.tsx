@@ -108,6 +108,14 @@ export default function CharacterIdIndexPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [isDeleteWarningOpened, setIsDeleteWarningOpened] =
+    React.useState(false);
+  const [allowDeleteWarningClose, setAllowDeleteWarningClose] =
+    React.useState(true);
+  let _isConfirmDeleteEnabled = true;
+  const [isConfirmDeleteEnabled, setIsConfirmDeleteEnabled] =
+    React.useState(true);
+
   if (data.character) {
     const iconPath = generateJobIconPath(data.character.job);
     const updatedAtTime = new Date(data.character.updatedAt);
@@ -152,14 +160,6 @@ export default function CharacterIdIndexPage() {
         engravingPanel.push(undefined);
       }
     }
-
-    const [isDeleteWarningOpened, setIsDeleteWarningOpened] =
-      React.useState(false);
-    const [allowDeleteWarningClose, setAllowDeleteWarningClose] =
-      React.useState(true);
-    let _isConfirmDeleteEnabled = true;
-    const [isConfirmDeleteEnabled, setIsConfirmDeleteEnabled] =
-      React.useState(true);
 
     return (
       <div className="mx-auto my-[2.5rem] flex w-[46.875rem] flex-col">

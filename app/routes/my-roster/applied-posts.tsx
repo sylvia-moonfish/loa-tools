@@ -26,6 +26,8 @@ type LoaderData = {
   user: NonNullable<Awaited<ReturnType<typeof getUser>>>;
 };
 
+type AppliedPosts = Awaited<ReturnType<typeof getPostsByUserId>>;
+
 const getAbyssalDungeon = async () => {
   return await prisma.abyssalDungeon.findFirst({
     select: {
@@ -258,7 +260,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUser(_user.id);
   if (!user) return redirect("/");
 
-  return json<LoaderData>({
+  return json({
     abyssalDungeon: await getAbyssalDungeon(),
     abyssRaid: await getAbyssRaid(),
     appliedPosts: await getPostsByUserId(user.id),
@@ -272,7 +274,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function MyRosterAppliedPostsPage() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<typeof loader>();
   const { t } = useTranslation();
 
   return (
@@ -302,7 +304,7 @@ export default function MyRosterAppliedPostsPage() {
           </Link>
         </div>
         <div className="flex flex-col gap-[1.25rem]">
-          {data.appliedPosts.map((p, index) => {
+          {(data.appliedPosts as AppliedPosts).map((p, index) => {
             const applyState = p.applyStates.find(
               (a) => a.character.roster.userId === data.user.id
             );

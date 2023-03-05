@@ -335,6 +335,26 @@ export default function PartyFindPostIdPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [character, setCharacter] = React.useState<ItemType | undefined>(
+    undefined
+  );
+
+  const [isDeleteWarningOpen, setIsDeleteWarningOpen] = React.useState(false);
+  const [allowDeleteWarningToClose, setAllowDeleteWarningToClose] =
+    React.useState(true);
+  const [isDeleteButtonEnabled, setIsDeleteButtonEnabled] =
+    React.useState(true);
+  let _isDeleteButtonEnabled = true;
+
+  const [showPopup, setShowPopup] = React.useState(false);
+
+  const [isApplyModalOpen, setIsApplyModalOpen] = React.useState(false);
+  const [allowApplyModalToClose, setAllowApplyModalToClose] =
+    React.useState(true);
+  const [isApplyModalButtonEnabled, setIsApplyModalButtonEnabled] =
+    React.useState(true);
+  let _isApplyModalButtonEnabled = true;
+
   if (data.partyFindPost) {
     const authorJob = data.partyFindPost.partyFindSlots.find(
       (s) =>
@@ -377,22 +397,6 @@ export default function PartyFindPostIdPage() {
 
     const contentByType = getContentByType(data.partyFindPost);
 
-    const [isDeleteWarningOpen, setIsDeleteWarningOpen] = React.useState(false);
-    const [allowDeleteWarningToClose, setAllowDeleteWarningToClose] =
-      React.useState(true);
-    const [isDeleteButtonEnabled, setIsDeleteButtonEnabled] =
-      React.useState(true);
-    let _isDeleteButtonEnabled = true;
-
-    const [showPopup, setShowPopup] = React.useState(false);
-
-    const [isApplyModalOpen, setIsApplyModalOpen] = React.useState(false);
-    const [allowApplyModalToClose, setAllowApplyModalToClose] =
-      React.useState(true);
-    const [isApplyModalButtonEnabled, setIsApplyModalButtonEnabled] =
-      React.useState(true);
-    let _isApplyModalButtonEnabled = true;
-
     const _characters =
       data.user?.rosters
         .sort((a, b) => a.server.name.localeCompare(b.server.name))
@@ -423,9 +427,6 @@ export default function PartyFindPostIdPage() {
           }] lv.${c.itemLevel.toFixed(0)} ${c.roster.server.name}`,
         },
       }));
-    const [character, setCharacter] = React.useState<ItemType | undefined>(
-      undefined
-    );
 
     const userApplyState = data.partyFindPost.applyStates.find(
       (a) => data.user && a.character.roster.userId === data.user.id

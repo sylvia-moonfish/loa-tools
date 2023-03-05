@@ -28,6 +28,9 @@ type LoaderData = {
   user: NonNullable<Awaited<ReturnType<typeof getUser>>>;
 };
 
+type User = NonNullable<Awaited<ReturnType<typeof getUser>>>;
+type MyPosts = Awaited<ReturnType<typeof getPostsByAuthorId>>;
+
 const getAbyssalDungeon = async () => {
   return await prisma.abyssalDungeon.findFirst({
     select: {
@@ -362,7 +365,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const session = await getSession(request);
   if (!session.accessToken) return redirect("/");
 
-  return json<LoaderData>({
+  return json({
     accessToken: session.accessToken,
     abyssalDungeon: await getAbyssalDungeon(),
     abyssRaid: await getAbyssRaid(),
@@ -377,11 +380,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function MyRosterMyPostsPage() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData<typeof loader>();
   const { t } = useTranslation();
 
   const _characters =
-    data.user.rosters
+    (data.user as User).rosters
       .sort((a, b) => a.server.name.localeCompare(b.server.name))
       .sort((a, b) => a.server.region.name.localeCompare(b.server.region.name))
       .map((r) =>
@@ -414,7 +417,7 @@ export default function MyRosterMyPostsPage() {
     id: d?.id ?? "",
     text: { en: d?.nameEn ?? "", ko: d?.nameKo ?? "" },
     tiers:
-      d?.tabs.map((t) => ({
+      d?.tabs.map((t: any) => ({
         id: t.id,
         text: {
           en: `${t.nameEn}${
@@ -428,7 +431,7 @@ export default function MyRosterMyPostsPage() {
               : ""
           }`,
         },
-        stages: t.stages.map((s) => ({
+        stages: t.stages.map((s: any) => ({
           id: s.id,
           text: { en: s.nameEn, ko: s.nameKo },
         })),
@@ -452,7 +455,7 @@ export default function MyRosterMyPostsPage() {
           />
         </div>
         <div className="flex flex-col gap-[1.25rem]">
-          {data.myPosts.map((p, index) => {
+          {(data.myPosts as MyPosts).map((p, index) => {
             return (
               <ExpandablePanel
                 contentTypes={contentTypes}
