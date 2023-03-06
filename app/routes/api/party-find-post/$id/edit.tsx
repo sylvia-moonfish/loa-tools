@@ -1,6 +1,5 @@
 import type { ActionFunction } from "@remix-run/node";
 import type { ItemType } from "~/components/dropdown";
-import { PartyFindContentType } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { requireUser } from "~/session.server";
@@ -71,60 +70,13 @@ export const action: ActionFunction = async ({ params, request }) => {
           errorMessage: "commonError",
         });
 
-      // Determine content type and group size.
-      let contentType = undefined;
-      let groupSize = 4;
-
-      switch (actionBody.contentType.text?.en) {
-        case "Chaos Dungeon":
-          if (
-            await prisma.chaosDungeonStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            })
-          )
-            contentType = PartyFindContentType.CHAOS_DUNGEON;
-          break;
-        case "Guardian Raid":
-          if (
-            await prisma.guardianRaidStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            })
-          )
-            contentType = PartyFindContentType.GUARDIAN_RAID;
-          break;
-        case "Abyssal Dungeon":
-          const abyssalDungeonStage =
-            await prisma.abyssalDungeonStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            });
-          if (abyssalDungeonStage) {
-            contentType = PartyFindContentType.ABYSSAL_DUNGEON;
-            groupSize = abyssalDungeonStage.groupSize;
-          }
-          break;
-        case "Abyss Raid":
-          if (
-            await prisma.abyssRaidStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            })
-          ) {
-            contentType = PartyFindContentType.ABYSS_RAID;
-            groupSize = 8;
-          }
-          break;
-        case "Legion Raid":
-          const legionRaidStage = await prisma.legionRaidStage.findFirst({
-            where: { id: actionBody.contentStageId },
-          });
-          if (legionRaidStage) {
-            contentType = PartyFindContentType.LEGION_RAID;
-            groupSize = legionRaidStage.groupSize;
-          }
-          break;
-      }
-
       // Validate: If content type could not be determined, abort.
-      if (!contentType)
+      const contentStage = await prisma.contentStage.findFirst({
+        where: { id: actionBody.contentStageId },
+        select: { id: true, contentType: true },
+      });
+
+      if (!contentStage)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
@@ -134,33 +86,13 @@ export const action: ActionFunction = async ({ params, request }) => {
       await prisma.partyFindPost.update({
         where: { id: partyFindPostDb.id },
         data: {
-          contentType,
+          contentType: contentStage.contentType,
           isPracticeParty: actionBody.isPracticeParty,
           isReclearParty: actionBody.isReclearParty,
           title: actionBody.partyTitle,
           startTime: new Date(actionBody.startDate),
           recurring: actionBody.isRecurring,
-
-          chaosDungeonId:
-            contentType === PartyFindContentType.CHAOS_DUNGEON
-              ? actionBody.contentStageId
-              : null,
-          guardianRaidId:
-            contentType === PartyFindContentType.GUARDIAN_RAID
-              ? actionBody.contentStageId
-              : null,
-          abyssalDungeonId:
-            contentType === PartyFindContentType.ABYSSAL_DUNGEON
-              ? actionBody.contentStageId
-              : null,
-          abyssRaidId:
-            contentType === PartyFindContentType.ABYSS_RAID
-              ? actionBody.contentStageId
-              : null,
-          legionRaidId:
-            contentType === PartyFindContentType.LEGION_RAID
-              ? actionBody.contentStageId
-              : null,
+          contentStageId: contentStage.id,
         },
       });
 

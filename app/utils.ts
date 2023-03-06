@@ -1,5 +1,5 @@
 import type { User } from "@prisma/client";
-import { Job, JobType, PartyFindContentType } from "@prisma/client";
+import { Job, JobType } from "@prisma/client";
 import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
 
@@ -111,42 +111,6 @@ export function generateProperLocaleDateString(locale: string, date: Date) {
       return `${dayString}/${monthString}/${yearString}`;
     case "ko":
       return `${yearString}/${monthString}/${dayString}`;
-  }
-}
-
-export function getContentByType(partyFindPost: any) {
-  switch (partyFindPost?.contentType) {
-    case PartyFindContentType.CHAOS_DUNGEON:
-      return {
-        contentStage: partyFindPost?.chaosDungeon,
-        contentTab: partyFindPost?.chaosDungeon?.chaosDungeonTab,
-        contentType: partyFindPost?.chaosDungeon?.chaosDungeonTab?.chaosDungeon,
-      };
-    case PartyFindContentType.GUARDIAN_RAID:
-      return {
-        contentStage: partyFindPost?.guardianRaid,
-        contentTab: partyFindPost?.guardianRaid?.guardianRaidTab,
-        contentType: partyFindPost?.guardianRaid?.guardianRaidTab?.guardianRaid,
-      };
-    case PartyFindContentType.ABYSSAL_DUNGEON:
-      return {
-        contentStage: partyFindPost?.abyssalDungeon,
-        contentTab: partyFindPost?.abyssalDungeon?.abyssalDungeonTab,
-        contentType:
-          partyFindPost?.abyssalDungeon?.abyssalDungeonTab?.abyssalDungeon,
-      };
-    case PartyFindContentType.ABYSS_RAID:
-      return {
-        contentStage: partyFindPost?.abyssRaid,
-        contentTab: partyFindPost?.abyssRaid?.abyssRaidTab,
-        contentType: partyFindPost?.abyssRaid?.abyssRaidTab?.abyssRaid,
-      };
-    case PartyFindContentType.LEGION_RAID:
-      return {
-        contentStage: partyFindPost?.legionRaid,
-        contentTab: partyFindPost?.legionRaid?.legionRaidTab,
-        contentType: partyFindPost?.legionRaid?.legionRaidTab?.legionRaid,
-      };
   }
 }
 

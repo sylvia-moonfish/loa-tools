@@ -21,110 +21,31 @@ import {
   generateJobIconPath,
   generateProperLocaleDateString,
   getColorCodeFromDifficulty,
-  getContentByType,
   printTime,
   putFromAndToOnRight,
 } from "~/utils";
 
 type LoaderData = {
-  abyssalDungeon: Awaited<ReturnType<typeof getAbyssalDungeon>>;
-  abyssRaid: Awaited<ReturnType<typeof getAbyssRaid>>;
-  chaosDungeon: Awaited<ReturnType<typeof getChaosDungeon>>;
-  guardianRaid: Awaited<ReturnType<typeof getGuardianRaid>>;
-  legionRaid: Awaited<ReturnType<typeof getLegionRaid>>;
+  contents: Awaited<ReturnType<typeof getContents>>;
   locale: LocaleType;
   regions: Awaited<ReturnType<typeof getAllRegions>>;
   user: Awaited<ReturnType<typeof getUser>>;
 };
 
-const getAbyssalDungeon = async () => {
-  return await prisma.abyssalDungeon.findFirst({
+const getContents = async () => {
+  return await prisma.content.findMany({
     select: {
       id: true,
       nameEn: true,
       nameKo: true,
-      tabs: {
+      contentTabs: {
         select: {
           id: true,
           nameEn: true,
           nameKo: true,
           difficultyNameEn: true,
           difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getAbyssRaid = async () => {
-  return await prisma.abyssRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getChaosDungeon = async () => {
-  return await prisma.chaosDungeon.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getGuardianRaid = async () => {
-  return await prisma.guardianRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getLegionRaid = async () => {
-  return await prisma.legionRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
+          contentStages: { select: { id: true, nameEn: true, nameKo: true } },
         },
       },
     },
@@ -163,11 +84,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const user = await getUserFromRequest(request);
 
   return json<LoaderData>({
-    abyssalDungeon: await getAbyssalDungeon(),
-    abyssRaid: await getAbyssRaid(),
-    chaosDungeon: await getChaosDungeon(),
-    guardianRaid: await getGuardianRaid(),
-    legionRaid: await getLegionRaid(),
+    contents: await getContents(),
     locale: (await i18next.getLocale(request)) as LocaleType,
     regions: await getAllRegions(),
     user: user ? await getUser(user.id) : null,
@@ -179,7 +96,7 @@ let abortController = new AbortController();
 
 export default function ToolsPartyFinderIndexPage() {
   const { t } = useTranslation();
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData() as unknown as LoaderData;
 
   // Flattening out the characters this user has for all rosters.
   const _characters =
@@ -312,34 +229,24 @@ export default function ToolsPartyFinderIndexPage() {
   const contentTypes: (ItemType & {
     tiers: (ItemType & { stages: ItemType[] })[];
   })[] = [contentTypeUnselector].concat(
-    [
-      data.chaosDungeon,
-      data.guardianRaid,
-      data.abyssalDungeon,
-      data.abyssRaid,
-      data.legionRaid,
-    ].map((d) => {
+    data.contents.map((d) => {
       return {
-        id: d?.id ?? "",
-        text: { en: d?.nameEn ?? "", ko: d?.nameKo ?? "" },
+        id: d.id,
+        text: { en: d.nameEn, ko: d.nameKo },
         tiers: [contentTierUnselector].concat(
-          d?.tabs.map((t) => {
+          d.contentTabs.map((t) => {
             return {
               id: t.id,
               text: {
                 en: `${t.nameEn}${
-                  (t as any).difficultyNameEn
-                    ? ` [${(t as any).difficultyNameEn}]`
-                    : ""
+                  t.difficultyNameEn ? ` [${t.difficultyNameEn}]` : ""
                 }`,
                 ko: `${t.nameKo}${
-                  (t as any).difficultyNameKo
-                    ? ` [${(t as any).difficultyNameKo}]`
-                    : ""
+                  t.difficultyNameKo ? ` [${t.difficultyNameKo}]` : ""
                 }`,
               },
               stages: [contentStageUnselector].concat(
-                t.stages.map((s) => {
+                t.contentStages.map((s) => {
                   return { id: s.id, text: { en: s.nameEn, ko: s.nameKo } };
                 })
               ),
@@ -1376,7 +1283,6 @@ export default function ToolsPartyFinderIndexPage() {
           )}
           <div className="flex w-full flex-col gap-[1.25rem]">
             {partyFindPosts.map((partyFindPost, index) => {
-              const content = getContentByType(partyFindPost);
               const convertedDate = new Date(partyFindPost.startTime);
               const dateString = generateProperLocaleDateString(
                 data.locale,
@@ -1397,12 +1303,14 @@ export default function ToolsPartyFinderIndexPage() {
                 >
                   <div className="flex w-[7.625rem] flex-col">
                     <div className="h-[2.5rem] overflow-hidden whitespace-normal text-[0.9375rem] font-[700] leading-[1.25rem]">
-                      {content &&
-                        content.contentType &&
+                      {
                         {
-                          en: content.contentType.nameEn,
-                          ko: content.contentType.nameKo,
-                        }[data.locale]}
+                          en: partyFindPost.contentStage.contentTab.content
+                            .nameEn,
+                          ko: partyFindPost.contentStage.contentTab.content
+                            .nameKo,
+                        }[data.locale]
+                      }
                     </div>
                     <div className="text-[0.9375rem] font-[500] leading-[1.25rem]">
                       {partyFindPost.isPracticeParty &&
@@ -1418,37 +1326,39 @@ export default function ToolsPartyFinderIndexPage() {
                   <div className="flex w-[9.9375rem] flex-col">
                     <div className="h-[2.5rem] overflow-hidden whitespace-normal text-[0.9375rem] font-[700] leading-[1.25rem]">
                       <span>
-                        {content &&
-                          content.contentTab &&
+                        {
                           {
-                            en: content.contentTab.nameEn,
-                            ko: content.contentTab.nameKo,
-                          }[data.locale]}
+                            en: partyFindPost.contentStage.contentTab.nameEn,
+                            ko: partyFindPost.contentStage.contentTab.nameKo,
+                          }[data.locale]
+                        }
                       </span>
-                      {content &&
-                        content.contentTab &&
-                        content.contentTab.difficultyNameEn && (
-                          <span
-                            className={getColorCodeFromDifficulty(
-                              content.contentTab.difficultyNameEn
-                            )}
-                          >
-                            {` [${
-                              {
-                                en: content.contentTab.difficultyNameEn,
-                                ko: content.contentTab.difficultyNameKo,
-                              }[data.locale]
-                            }]`}
-                          </span>
-                        )}
+                      {partyFindPost.contentStage.contentTab
+                        .difficultyNameEn && (
+                        <span
+                          className={getColorCodeFromDifficulty(
+                            partyFindPost.contentStage.contentTab
+                              .difficultyNameEn
+                          )}
+                        >
+                          {` [${
+                            {
+                              en: partyFindPost.contentStage.contentTab
+                                .difficultyNameEn,
+                              ko: partyFindPost.contentStage.contentTab
+                                .difficultyNameKo,
+                            }[data.locale]
+                          }]`}
+                        </span>
+                      )}
                     </div>
                     <div className="truncate text-[0.9375rem] font-[500] leading-[1.25rem]">
-                      {content &&
-                        content.contentStage &&
+                      {
                         {
-                          en: content.contentStage.nameEn,
-                          ko: content.contentStage.nameKo,
-                        }[data.locale]}
+                          en: partyFindPost.contentStage.nameEn,
+                          ko: partyFindPost.contentStage.nameKo,
+                        }[data.locale]
+                      }
                     </div>
                   </div>
                   <div className="flex w-[19.9375rem] flex-col gap-[0.4375rem]">

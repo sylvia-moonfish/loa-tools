@@ -1,6 +1,5 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { LocaleType } from "~/i18n";
-import { PartyFindApplyStateValue } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
@@ -15,112 +14,13 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
 };
 
 type LoaderData = {
-  abyssalDungeon: Awaited<ReturnType<typeof getAbyssalDungeon>>;
-  abyssRaid: Awaited<ReturnType<typeof getAbyssRaid>>;
   appliedPosts: Awaited<ReturnType<typeof getPostsByUserId>>;
-  chaosDungeon: Awaited<ReturnType<typeof getChaosDungeon>>;
-  guardianRaid: Awaited<ReturnType<typeof getGuardianRaid>>;
-  legionRaid: Awaited<ReturnType<typeof getLegionRaid>>;
   locale: LocaleType;
   title: string;
   user: NonNullable<Awaited<ReturnType<typeof getUser>>>;
 };
 
 type AppliedPosts = Awaited<ReturnType<typeof getPostsByUserId>>;
-
-const getAbyssalDungeon = async () => {
-  return await prisma.abyssalDungeon.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getAbyssRaid = async () => {
-  return await prisma.abyssRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getChaosDungeon = async () => {
-  return await prisma.chaosDungeon.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getGuardianRaid = async () => {
-  return await prisma.guardianRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getLegionRaid = async () => {
-  return await prisma.legionRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
 
 const getPostsByUserId = async (id: string) => {
   return await prisma.partyFindPost.findMany({
@@ -136,97 +36,23 @@ const getPostsByUserId = async (id: string) => {
       contentType: true,
       startTime: true,
       recurring: true,
-
-      chaosDungeon: {
+      contentStage: {
         select: {
           id: true,
           nameEn: true,
           nameKo: true,
-          chaosDungeonTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              chaosDungeon: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      guardianRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          guardianRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              guardianRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      abyssalDungeon: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssalDungeonTab: {
+          contentTab: {
             select: {
               id: true,
               nameEn: true,
               nameKo: true,
               difficultyNameEn: true,
               difficultyNameKo: true,
-              abyssalDungeon: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
+              content: { select: { id: true, nameEn: true, nameKo: true } },
             },
           },
         },
       },
-      abyssRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              abyssRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      legionRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          legionRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              difficultyNameEn: true,
-              difficultyNameKo: true,
-              legionRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-
       applyStates: {
         select: {
           id: true,
@@ -261,12 +87,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   if (!user) return redirect("/");
 
   return json({
-    abyssalDungeon: await getAbyssalDungeon(),
-    abyssRaid: await getAbyssRaid(),
     appliedPosts: await getPostsByUserId(user.id),
-    chaosDungeon: await getChaosDungeon(),
-    guardianRaid: await getGuardianRaid(),
-    legionRaid: await getLegionRaid(),
     locale: (await i18next.getLocale(request)) as LocaleType,
     title: `${t("appliedPostsTitle")} | ${t("shortTitle")}`,
     user,

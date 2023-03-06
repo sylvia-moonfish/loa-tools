@@ -17,108 +17,27 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
 
 type LoaderData = {
   accessToken: string;
-  abyssalDungeon: Awaited<ReturnType<typeof getAbyssalDungeon>>;
-  abyssRaid: Awaited<ReturnType<typeof getAbyssRaid>>;
-  chaosDungeon: Awaited<ReturnType<typeof getChaosDungeon>>;
-  guardianRaid: Awaited<ReturnType<typeof getGuardianRaid>>;
-  legionRaid: Awaited<ReturnType<typeof getLegionRaid>>;
+  contents: Awaited<ReturnType<typeof getContents>>;
   locale: LocaleType;
   myPosts: Awaited<ReturnType<typeof getPostsByAuthorId>>;
   title: string;
   user: NonNullable<Awaited<ReturnType<typeof getUser>>>;
 };
 
-type User = NonNullable<Awaited<ReturnType<typeof getUser>>>;
-type MyPosts = Awaited<ReturnType<typeof getPostsByAuthorId>>;
-
-const getAbyssalDungeon = async () => {
-  return await prisma.abyssalDungeon.findFirst({
+const getContents = async () => {
+  return await prisma.content.findMany({
     select: {
       id: true,
       nameEn: true,
       nameKo: true,
-      tabs: {
+      contentTabs: {
         select: {
           id: true,
           nameEn: true,
           nameKo: true,
           difficultyNameEn: true,
           difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getAbyssRaid = async () => {
-  return await prisma.abyssRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getChaosDungeon = async () => {
-  return await prisma.chaosDungeon.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getGuardianRaid = async () => {
-  return await prisma.guardianRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getLegionRaid = async () => {
-  return await prisma.legionRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
+          contentStages: { select: { id: true, nameEn: true, nameKo: true } },
         },
       },
     },
@@ -138,102 +57,27 @@ const getPostsByAuthorId = async (id: string) => {
       startTime: true,
       recurring: true,
       title: true,
-
-      chaosDungeon: {
+      contentStage: {
         select: {
           id: true,
           nameEn: true,
           nameKo: true,
-          chaosDungeonTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              chaosDungeon: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      guardianRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          guardianRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              guardianRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      abyssalDungeon: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssalDungeonTab: {
+          contentTab: {
             select: {
               id: true,
               nameEn: true,
               nameKo: true,
               difficultyNameEn: true,
               difficultyNameKo: true,
-              abyssalDungeon: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
+              content: { select: { id: true, nameEn: true, nameKo: true } },
             },
           },
         },
       },
-      abyssRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              abyssRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      legionRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          legionRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              difficultyNameEn: true,
-              difficultyNameKo: true,
-              legionRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-
       authorId: true,
       server: {
         select: { id: true, region: { select: { id: true, shortName: true } } },
       },
-
       partyFindSlots: {
         select: {
           id: true,
@@ -365,13 +209,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   const session = await getSession(request);
   if (!session.accessToken) return redirect("/");
 
-  return json({
+  return json<LoaderData>({
     accessToken: session.accessToken,
-    abyssalDungeon: await getAbyssalDungeon(),
-    abyssRaid: await getAbyssRaid(),
-    chaosDungeon: await getChaosDungeon(),
-    guardianRaid: await getGuardianRaid(),
-    legionRaid: await getLegionRaid(),
+    contents: await getContents(),
     locale: (await i18next.getLocale(request)) as LocaleType,
     myPosts: await getPostsByAuthorId(user.id),
     title: `${t("myPostsTitle")} | ${t("shortTitle")}`,
@@ -380,11 +220,11 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function MyRosterMyPostsPage() {
-  const data = useLoaderData<typeof loader>();
+  const data = useLoaderData() as unknown as LoaderData;
   const { t } = useTranslation();
 
   const _characters =
-    (data.user as User).rosters
+    data.user.rosters
       .sort((a, b) => a.server.name.localeCompare(b.server.name))
       .sort((a, b) => a.server.region.name.localeCompare(b.server.region.name))
       .map((r) =>
@@ -407,31 +247,21 @@ export default function MyRosterMyPostsPage() {
 
   const contentTypes: (ItemType & {
     tiers: (ItemType & { stages: ItemType[] })[];
-  })[] = [
-    data.chaosDungeon,
-    data.guardianRaid,
-    data.abyssalDungeon,
-    data.abyssRaid,
-    data.legionRaid,
-  ].map((d) => ({
-    id: d?.id ?? "",
-    text: { en: d?.nameEn ?? "", ko: d?.nameKo ?? "" },
+  })[] = data.contents.map((d) => ({
+    id: d.id,
+    text: { en: d.nameEn, ko: d.nameKo },
     tiers:
-      d?.tabs.map((t: any) => ({
+      d.contentTabs.map((t) => ({
         id: t.id,
         text: {
           en: `${t.nameEn}${
-            (t as any).difficultyNameEn
-              ? ` [${(t as any).difficultyNameEn}]`
-              : ""
+            t.difficultyNameEn ? ` [${t.difficultyNameEn}]` : ""
           }`,
           ko: `${t.nameKo}${
-            (t as any).difficultyNameKo
-              ? ` [${(t as any).difficultyNameKo}]`
-              : ""
+            t.difficultyNameKo ? ` [${t.difficultyNameKo}]` : ""
           }`,
         },
-        stages: t.stages.map((s: any) => ({
+        stages: t.contentStages.map((s) => ({
           id: s.id,
           text: { en: s.nameEn, ko: s.nameKo },
         })),
@@ -455,7 +285,7 @@ export default function MyRosterMyPostsPage() {
           />
         </div>
         <div className="flex flex-col gap-[1.25rem]">
-          {(data.myPosts as MyPosts).map((p, index) => {
+          {data.myPosts.map((p, index) => {
             return (
               <ExpandablePanel
                 contentTypes={contentTypes}

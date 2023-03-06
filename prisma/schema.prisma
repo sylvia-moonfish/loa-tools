@@ -213,119 +213,28 @@ enum Job {
   SHADOWHUNTER
 }
 
-model ChaosDungeon {
+enum ContentType {
+  CHAOS_DUNGEON
+  GUARDIAN_RAID
+  ABYSSAL_DUNGEON
+  ABYSS_RAID
+  LEGION_RAID
+}
+
+model Content {
   id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  nameEn String
-  nameKo String
+  nameEn      String
+  nameKo      String
+  contentType ContentType
 
-  tabs ChaosDungeonTab[]
+  contentTabs ContentTab[]
 }
 
-model ChaosDungeonTab {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index  Int
-  nameEn String
-  nameKo String
-
-  chaosDungeon   ChaosDungeon @relation(fields: [chaosDungeonId], references: [id])
-  chaosDungeonId String
-
-  stages ChaosDungeonStage[]
-
-  @@unique([index, chaosDungeonId])
-}
-
-model ChaosDungeonStage {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index  Int
-  nameEn String
-  nameKo String
-  tier   Int
-  level  Int
-
-  chaosDungeonTab   ChaosDungeonTab @relation(fields: [chaosDungeonTabId], references: [id])
-  chaosDungeonTabId String
-
-  partyFindPosts PartyFindPost[]
-
-  @@unique([index, chaosDungeonTabId])
-}
-
-model GuardianRaid {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  nameEn String
-  nameKo String
-
-  tabs GuardianRaidTab[]
-}
-
-model GuardianRaidTab {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index  Int
-  nameEn String
-  nameKo String
-
-  guardianRaid   GuardianRaid @relation(fields: [guardianRaidId], references: [id])
-  guardianRaidId String
-
-  stages GuardianRaidStage[]
-
-  @@unique([index, guardianRaidId])
-}
-
-model GuardianRaidStage {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index  Int
-  nameEn String
-  nameKo String
-  tier   Int
-  level  Int
-
-  guardianRaidTab   GuardianRaidTab @relation(fields: [guardianRaidTabId], references: [id])
-  guardianRaidTabId String
-
-  partyFindPosts PartyFindPost[]
-
-  @@unique([index, guardianRaidTabId])
-}
-
-model AbyssalDungeon {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  nameEn String
-  nameKo String
-
-  tabs AbyssalDungeonTab[]
-}
-
-model AbyssalDungeonTab {
+model ContentTab {
   id String @id @default(cuid())
 
   createdAt DateTime @default(now())
@@ -336,137 +245,36 @@ model AbyssalDungeonTab {
   nameKo           String
   difficultyNameEn String?
   difficultyNameKo String?
+  contentType      ContentType
 
-  abyssalDungeon   AbyssalDungeon @relation(fields: [abyssalDungeonId], references: [id])
-  abyssalDungeonId String
+  content   Content @relation(fields: [contentId], references: [id])
+  contentId String
 
-  stages AbyssalDungeonStage[]
+  contentStages ContentStage[]
 
-  @@unique([index, abyssalDungeonId])
+  @@unique([index, contentId])
 }
 
-model AbyssalDungeonStage {
+model ContentStage {
   id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  index     Int
-  nameEn    String
-  nameKo    String
-  tier      Int
-  level     Int
-  groupSize Int
+  index       Int
+  nameEn      String
+  nameKo      String
+  tier        Int
+  level       Int
+  groupSize   Int?
+  contentType ContentType
 
-  abyssalDungeonTab   AbyssalDungeonTab @relation(fields: [abyssalDungeonTabId], references: [id])
-  abyssalDungeonTabId String
+  contentTab   ContentTab @relation(fields: [contentTabId], references: [id])
+  contentTabId String
 
   partyFindPosts PartyFindPost[]
 
-  @@unique([index, abyssalDungeonTabId])
-}
-
-model AbyssRaid {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  nameEn String
-  nameKo String
-
-  tabs AbyssRaidTab[]
-}
-
-model AbyssRaidTab {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index  Int
-  nameEn String
-  nameKo String
-
-  abyssRaid   AbyssRaid @relation(fields: [abyssRaidId], references: [id])
-  abyssRaidId String
-
-  stages AbyssRaidStage[]
-
-  @@unique([index, abyssRaidId])
-}
-
-model AbyssRaidStage {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index  Int
-  nameEn String
-  nameKo String
-  tier   Int
-  level  Int
-
-  abyssRaidTab   AbyssRaidTab @relation(fields: [abyssRaidTabId], references: [id])
-  abyssRaidTabId String
-
-  partyFindPosts PartyFindPost[]
-
-  @@unique([index, abyssRaidTabId])
-}
-
-model LegionRaid {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  nameEn String
-  nameKo String
-
-  tabs LegionRaidTab[]
-}
-
-model LegionRaidTab {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index            Int
-  nameEn           String
-  nameKo           String
-  difficultyNameEn String
-  difficultyNameKo String
-
-  legionRaid   LegionRaid @relation(fields: [legionRaidId], references: [id])
-  legionRaidId String
-
-  stages LegionRaidStage[]
-
-  @@unique([index, legionRaidId])
-}
-
-model LegionRaidStage {
-  id String @id @default(cuid())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  index     Int
-  nameEn    String
-  nameKo    String
-  tier      Int
-  level     Int
-  groupSize Int
-
-  legionRaidTab   LegionRaidTab @relation(fields: [legionRaidTabId], references: [id])
-  legionRaidTabId String
-
-  partyFindPosts PartyFindPost[]
-
-  @@unique([index, legionRaidTabId])
+  @@unique([index, contentTabId])
 }
 
 model PartyFindPost {
@@ -476,27 +284,15 @@ model PartyFindPost {
   updatedAt DateTime @updatedAt
 
   state           PartyFindPostState
-  contentType     PartyFindContentType
+  contentType     ContentType
   isPracticeParty Boolean
   isReclearParty  Boolean
   title           String
   startTime       DateTime
   recurring       Boolean
 
-  chaosDungeon   ChaosDungeonStage? @relation(fields: [chaosDungeonId], references: [id])
-  chaosDungeonId String?
-
-  guardianRaid   GuardianRaidStage? @relation(fields: [guardianRaidId], references: [id])
-  guardianRaidId String?
-
-  abyssalDungeon   AbyssalDungeonStage? @relation(fields: [abyssalDungeonId], references: [id])
-  abyssalDungeonId String?
-
-  abyssRaid   AbyssRaidStage? @relation(fields: [abyssRaidId], references: [id])
-  abyssRaidId String?
-
-  legionRaid   LegionRaidStage? @relation(fields: [legionRaidId], references: [id])
-  legionRaidId String?
+  contentStage   ContentStage @relation(fields: [contentStageId], references: [id])
+  contentStageId String
 
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
@@ -513,14 +309,6 @@ enum PartyFindPostState {
   FULL
   RERECRUITING
   EXPIRED
-}
-
-enum PartyFindContentType {
-  CHAOS_DUNGEON
-  GUARDIAN_RAID
-  ABYSSAL_DUNGEON
-  ABYSS_RAID
-  LEGION_RAID
 }
 
 model PartyFindSlot {

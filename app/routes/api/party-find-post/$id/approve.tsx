@@ -1,9 +1,9 @@
 import type { ActionFunction } from "@remix-run/node";
 import {
   AlarmMessageType,
+  ContentType,
   JobType,
   PartyFindApplyStateValue,
-  PartyFindContentType,
   PartyFindPostState,
 } from "@prisma/client";
 import { json } from "@remix-run/node";
@@ -51,6 +51,7 @@ export const action: ActionFunction = async ({ params, request }) => {
           contentType: true,
           startTime: true,
           authorId: true,
+          contentStageId: true,
         },
       });
 
@@ -192,37 +193,13 @@ export const action: ActionFunction = async ({ params, request }) => {
       }
 
       // Check if this character applied to any other post for the same weekly content and cancel them.
-      // Figure out the "id" column name for the weekly content.
-      let baseName = undefined;
-      switch (partyFindPostDb.contentType) {
-        case PartyFindContentType.ABYSSAL_DUNGEON:
-          baseName = "abyssalDungeonId";
-          break;
-        case PartyFindContentType.ABYSS_RAID:
-          baseName = "abyssRaidId";
-          break;
-        case PartyFindContentType.LEGION_RAID:
-          baseName = "legionRaidId";
-          break;
-      }
-
       // If the content type for this post is not a weekly content, skip and return.
-      if (!baseName) return json({});
-
-      // Create a dynamic selector instance from the content type's id column name.
-      const selector: { [attr: string]: any } = {};
-      selector[baseName] = true;
-      // This will look like this: i.e. { legionRaidId: true }
-
-      // Find the content id based on the selector above.
-      const where = await prisma.partyFindPost.findFirst({
-        where: { id: partyFindPostDb.id },
-        select: selector,
-      });
-      // This will look like this: i.e. { legionRaidId: 'Some actual id!' }
-
-      // Make sure id is retrieve correctly.
-      if (!where) return json({});
+      if (
+        partyFindPostDb.contentType !== ContentType.ABYSSAL_DUNGEON &&
+        partyFindPostDb.contentType !== ContentType.ABYSS_RAID &&
+        partyFindPostDb.contentType !== ContentType.LEGION_RAID
+      )
+        return json({});
 
       // Make the Date instance from start time of the post.
       const startDate = new Date(partyFindPostDb.startTime);
@@ -259,7 +236,7 @@ export const action: ActionFunction = async ({ params, request }) => {
         where: {
           id: { not: applyStateDb.id },
           partyFindPost: {
-            ...where,
+            contentStageId: partyFindPostDb.contentStageId,
             startTime: { lt: nextMaintenance, gte: prevMaintenance },
             contentType: partyFindPostDb.contentType,
             id: { not: partyFindPostDb.id },

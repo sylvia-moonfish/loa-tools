@@ -1,5 +1,8 @@
 import type {
   Character,
+  Content,
+  ContentStage,
+  ContentTab,
   PartyFindApplyState,
   PartyFindPost,
 } from "@prisma/client";
@@ -9,7 +12,6 @@ import { Link } from "@remix-run/react";
 import { useTranslation } from "react-i18next";
 import {
   generateProperLocaleDateString,
-  getContentByType,
   getColorCodeFromDifficulty,
   printTime,
   putFromAndToOnRight,
@@ -31,17 +33,27 @@ export default function ExpandablePanel(props: {
     contentType: PartyFindPost["contentType"];
     startTime: PartyFindPost["startTime"];
     recurring: PartyFindPost["recurring"];
-
-    chaosDungeon?: any;
-    guardianRaid?: any;
-    abyssalDungeon?: any;
-    abyssRaid?: any;
-    legionRaid?: any;
+    contentStage: {
+      id: ContentStage["id"];
+      nameEn: ContentStage["nameEn"];
+      nameKo: ContentStage["nameKo"];
+      contentTab: {
+        id: ContentTab["id"];
+        nameEn: ContentTab["nameEn"];
+        nameKo: ContentTab["nameKo"];
+        difficultyNameEn: ContentTab["difficultyNameEn"];
+        difficultyNameKo: ContentTab["difficultyNameKo"];
+        content: {
+          id: Content["id"];
+          nameEn: Content["nameEn"];
+          nameKo: Content["nameKo"];
+        };
+      };
+    };
   };
 }) {
   const { t } = useTranslation();
 
-  const content = getContentByType(props.partyFindPost);
   const startDate = new Date(props.partyFindPost.startTime);
   const startDateString = generateProperLocaleDateString(
     props.locale,
@@ -147,44 +159,44 @@ export default function ExpandablePanel(props: {
         </div>
         <div className="flex flex-grow flex-col">
           <div className="overflow-hidden whitespace-normal text-[0.9375rem] font-[400] leading-[1.25rem]">
-            {content &&
-              content.contentType &&
+            {
               {
-                en: content.contentType.nameEn,
-                ko: content.contentType.nameKo,
-              }[props.locale]}
+                en: props.partyFindPost.contentStage.contentTab.content.nameEn,
+                ko: props.partyFindPost.contentStage.contentTab.content.nameKo,
+              }[props.locale]
+            }
           </div>
           <div className="overflow-hidden whitespace-normal text-[0.9375rem] font-[400] leading-[1.25rem]">
             <span>
-              {content &&
-                content.contentTab &&
+              {
                 {
-                  en: content.contentTab.nameEn,
-                  ko: content.contentTab.nameKo,
-                }[props.locale]}
+                  en: props.partyFindPost.contentStage.contentTab.nameEn,
+                  ko: props.partyFindPost.contentStage.contentTab.nameKo,
+                }[props.locale]
+              }
             </span>
-            {content &&
-              content.contentTab &&
-              content.contentTab.difficultyNameEn && (
-                <span
-                  className={getColorCodeFromDifficulty(
-                    content.contentTab.difficultyNameEn
-                  )}
-                >{` [${
-                  {
-                    en: content.contentTab.difficultyNameEn,
-                    ko: content.contentTab.difficultyNameKo,
-                  }[props.locale]
-                }]`}</span>
-              )}
+            {props.partyFindPost.contentStage.contentTab.difficultyNameEn && (
+              <span
+                className={getColorCodeFromDifficulty(
+                  props.partyFindPost.contentStage.contentTab.difficultyNameEn
+                )}
+              >{` [${
+                {
+                  en: props.partyFindPost.contentStage.contentTab
+                    .difficultyNameEn,
+                  ko: props.partyFindPost.contentStage.contentTab
+                    .difficultyNameKo,
+                }[props.locale]
+              }]`}</span>
+            )}
           </div>
           <div className="truncate text-[0.9375rem] font-[400] leading-[1.25rem]">
-            {content &&
-              content.contentStage &&
+            {
               {
-                en: content.contentStage.nameEn,
-                ko: content.contentStage.nameKo,
-              }[props.locale]}
+                en: props.partyFindPost.contentStage.nameEn,
+                ko: props.partyFindPost.contentStage.nameKo,
+              }[props.locale]
+            }
           </div>
         </div>
         <div className="flex items-center justify-center">

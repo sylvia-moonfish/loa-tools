@@ -1,5 +1,8 @@
 import type {
   Character,
+  Content,
+  ContentStage,
+  ContentTab,
   Engraving,
   EngravingSlot,
   PartyFindApplyState,
@@ -23,7 +26,6 @@ import Button from "~/components/button";
 import Modal from "~/components/modal";
 import {
   generateProperLocaleDateString,
-  getContentByType,
   getColorCodeFromDifficulty,
   getJobTypeFromJob,
   printTime,
@@ -85,11 +87,23 @@ export default function ExpandablePanel(props: {
     recurring: PartyFindPost["recurring"];
     title: PartyFindPost["title"];
 
-    chaosDungeon?: any;
-    guardianRaid?: any;
-    abyssalDungeon?: any;
-    abyssRaid?: any;
-    legionRaid?: any;
+    contentStage: {
+      id: ContentStage["id"];
+      nameEn: ContentStage["nameEn"];
+      nameKo: ContentStage["nameKo"];
+      contentTab: {
+        id: ContentTab["id"];
+        nameEn: ContentTab["nameEn"];
+        nameKo: ContentTab["nameKo"];
+        difficultyNameEn: ContentTab["difficultyNameEn"];
+        difficultyNameKo: ContentTab["difficultyNameKo"];
+        content: {
+          id: Content["id"];
+          nameEn: Content["nameEn"];
+          nameKo: Content["nameKo"];
+        };
+      };
+    };
 
     authorId: PartyFindPost["authorId"];
     server: {
@@ -107,7 +121,6 @@ export default function ExpandablePanel(props: {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const content = getContentByType(props.partyFindPost);
   const startDate = new Date(props.partyFindPost.startTime);
   const startDateString = generateProperLocaleDateString(
     props.locale,
@@ -142,17 +155,17 @@ export default function ExpandablePanel(props: {
   }
 
   const initContentType = props.contentTypes.find(
-    (c) => c.id === content?.contentType?.id
+    (c) => c.id === props.partyFindPost.contentStage.contentTab.content.id
   );
 
   const initContentTiers = initContentType?.tiers ?? [];
   const initContentTier = initContentTiers.find(
-    (c) => c.id === content?.contentTab?.id
+    (c) => c.id === props.partyFindPost.contentStage.contentTab.id
   );
 
   const initContentStages = initContentTier?.stages ?? [];
   const initContentStage = initContentStages.find(
-    (c) => c.id === content?.contentStage?.id
+    (c) => c.id === props.partyFindPost.contentStage.id
   );
 
   const [isOpened, setIsOpened] = React.useState(false);
@@ -174,12 +187,12 @@ export default function ExpandablePanel(props: {
       >
         <div className="flex w-[9.25rem] flex-col">
           <div className="h-[2.5rem] overflow-hidden whitespace-normal text-[0.9375rem] font-[700] leading-[1.25rem]">
-            {content &&
-              content.contentType &&
+            {
               {
-                en: content.contentType.nameEn,
-                ko: content.contentType.nameKo,
-              }[props.locale]}
+                en: props.partyFindPost.contentStage.contentTab.content.nameEn,
+                ko: props.partyFindPost.contentStage.contentTab.content.nameKo,
+              }[props.locale]
+            }
           </div>
           <div className="text-[0.9375rem] font-[500] leading-[1.25rem]">
             {props.partyFindPost.isPracticeParty &&
@@ -191,35 +204,35 @@ export default function ExpandablePanel(props: {
         <div className="flex w-[10.75rem] flex-col">
           <div className="h-[2.5rem] overflow-hidden whitespace-normal text-[0.9375rem] font-[700] leading-[1.25rem]">
             <span>
-              {content &&
-                content.contentTab &&
+              {
                 {
-                  en: content.contentTab.nameEn,
-                  ko: content.contentTab.nameKo,
-                }[props.locale]}
+                  en: props.partyFindPost.contentStage.contentTab.nameEn,
+                  ko: props.partyFindPost.contentStage.contentTab.nameKo,
+                }[props.locale]
+              }
             </span>
-            {content &&
-              content.contentTab &&
-              content.contentTab.difficultyNameEn && (
-                <span
-                  className={getColorCodeFromDifficulty(
-                    content.contentTab.difficultyNameEn
-                  )}
-                >{` [${
-                  {
-                    en: content.contentTab.difficultyNameEn,
-                    ko: content.contentTab.difficultyNameKo,
-                  }[props.locale]
-                }]`}</span>
-              )}
+            {props.partyFindPost.contentStage.contentTab.difficultyNameEn && (
+              <span
+                className={getColorCodeFromDifficulty(
+                  props.partyFindPost.contentStage.contentTab.difficultyNameEn
+                )}
+              >{` [${
+                {
+                  en: props.partyFindPost.contentStage.contentTab
+                    .difficultyNameEn,
+                  ko: props.partyFindPost.contentStage.contentTab
+                    .difficultyNameKo,
+                }[props.locale]
+              }]`}</span>
+            )}
           </div>
           <div className="truncate text-[0.9375rem] font-[500] leading-[1.25rem]">
-            {content &&
-              content.contentStage &&
+            {
               {
-                en: content.contentStage.nameEn,
-                ko: content.contentStage.nameKo,
-              }[props.locale]}
+                en: props.partyFindPost.contentStage.nameEn,
+                ko: props.partyFindPost.contentStage.nameKo,
+              }[props.locale]
+            }
           </div>
         </div>
         <div className="flex flex-col">

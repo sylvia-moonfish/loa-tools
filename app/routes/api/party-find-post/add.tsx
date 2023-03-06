@@ -1,9 +1,9 @@
 import type { ActionFunction } from "@remix-run/node";
 import type { ItemType } from "~/components/dropdown";
 import {
+  ContentType,
   JobType,
   PartyFindApplyStateValue,
-  PartyFindContentType,
   PartyFindPostState,
 } from "@prisma/client";
 import { json } from "@remix-run/node";
@@ -64,58 +64,33 @@ export const action: ActionFunction = async ({ request }) => {
         });
 
       // Get the content type and the required group size.
-      let contentType = undefined;
-      let groupSize = 4;
+      const contentStage = await prisma.contentStage.findFirst({
+        where: { id: actionBody.contentStageId },
+        select: { id: true, contentType: true, groupSize: true },
+      });
 
-      switch (actionBody.contentType.text?.en) {
-        case "Chaos Dungeon":
-          if (
-            await prisma.chaosDungeonStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            })
-          )
-            contentType = PartyFindContentType.CHAOS_DUNGEON;
+      if (!contentStage)
+        return json<ActionData>({
+          success: false,
+          errorMessage: "commonError",
+        });
+
+      let groupSize: number | null = 4;
+
+      switch (contentStage.contentType) {
+        case ContentType.CHAOS_DUNGEON:
+        case ContentType.GUARDIAN_RAID:
           break;
-        case "Guardian Raid":
-          if (
-            await prisma.guardianRaidStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            })
-          )
-            contentType = PartyFindContentType.GUARDIAN_RAID;
+        case ContentType.ABYSSAL_DUNGEON:
+        case ContentType.LEGION_RAID:
+          groupSize = contentStage.groupSize;
           break;
-        case "Abyssal Dungeon":
-          const abyssalDungeonStage =
-            await prisma.abyssalDungeonStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            });
-          if (abyssalDungeonStage) {
-            contentType = PartyFindContentType.ABYSSAL_DUNGEON;
-            groupSize = abyssalDungeonStage.groupSize;
-          }
-          break;
-        case "Abyss Raid":
-          if (
-            await prisma.abyssRaidStage.findFirst({
-              where: { id: actionBody.contentStageId },
-            })
-          ) {
-            contentType = PartyFindContentType.ABYSS_RAID;
-            groupSize = 8;
-          }
-          break;
-        case "Legion Raid":
-          const legionRaidStage = await prisma.legionRaidStage.findFirst({
-            where: { id: actionBody.contentStageId },
-          });
-          if (legionRaidStage) {
-            contentType = PartyFindContentType.LEGION_RAID;
-            groupSize = legionRaidStage.groupSize;
-          }
+        case ContentType.ABYSS_RAID:
+          groupSize = 8;
           break;
       }
 
-      if (!contentType)
+      if (!groupSize)
         return json<ActionData>({
           success: false,
           errorMessage: "commonError",
@@ -141,34 +116,13 @@ export const action: ActionFunction = async ({ request }) => {
       const partyFindPostDb = await prisma.partyFindPost.create({
         data: {
           state: PartyFindPostState.RECRUITING,
-          contentType,
+          contentType: contentStage.contentType,
           isPracticeParty: actionBody.isPracticeParty,
           isReclearParty: actionBody.isReclearParty,
           title: actionBody.partyTitle,
           startTime: new Date(actionBody.startDate),
           recurring: actionBody.isRecurring,
-
-          chaosDungeonId:
-            contentType === PartyFindContentType.CHAOS_DUNGEON
-              ? actionBody.contentStageId
-              : undefined,
-          guardianRaidId:
-            contentType === PartyFindContentType.GUARDIAN_RAID
-              ? actionBody.contentStageId
-              : undefined,
-          abyssalDungeonId:
-            contentType === PartyFindContentType.ABYSSAL_DUNGEON
-              ? actionBody.contentStageId
-              : undefined,
-          abyssRaidId:
-            contentType === PartyFindContentType.ABYSS_RAID
-              ? actionBody.contentStageId
-              : undefined,
-          legionRaidId:
-            contentType === PartyFindContentType.LEGION_RAID
-              ? actionBody.contentStageId
-              : undefined,
-
+          contentStageId: contentStage.id,
           authorId: user.id,
           serverId: characterDb.roster.serverId,
         },

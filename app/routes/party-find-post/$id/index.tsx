@@ -20,7 +20,6 @@ import {
   elapsedTimeSpaced,
   generateJobIconPath,
   generateProperLocaleDateString,
-  getContentByType,
   getJobTypeFromJob,
   printTime,
   printTimeElapsed,
@@ -32,105 +31,27 @@ export const meta: MetaFunction = ({ data }: { data: LoaderData }) => {
 };
 
 type LoaderData = {
-  abyssalDungeon: Awaited<ReturnType<typeof getAbyssalDungeon>>;
-  abyssRaid: Awaited<ReturnType<typeof getAbyssRaid>>;
-  chaosDungeon: Awaited<ReturnType<typeof getChaosDungeon>>;
-  guardianRaid: Awaited<ReturnType<typeof getGuardianRaid>>;
-  legionRaid: Awaited<ReturnType<typeof getLegionRaid>>;
+  contents: Awaited<ReturnType<typeof getContents>>;
   locale: LocaleType;
   partyFindPost: Awaited<ReturnType<typeof getPartyFindPost>>;
   title: string;
   user: Awaited<ReturnType<typeof getUser>>;
 };
 
-const getAbyssalDungeon = async () => {
-  return await prisma.abyssalDungeon.findFirst({
+const getContents = async () => {
+  return await prisma.content.findMany({
     select: {
       id: true,
       nameEn: true,
       nameKo: true,
-      tabs: {
+      contentTabs: {
         select: {
           id: true,
           nameEn: true,
           nameKo: true,
           difficultyNameEn: true,
           difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getAbyssRaid = async () => {
-  return await prisma.abyssRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getChaosDungeon = async () => {
-  return await prisma.chaosDungeon.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getGuardianRaid = async () => {
-  return await prisma.guardianRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
-        },
-      },
-    },
-  });
-};
-
-const getLegionRaid = async () => {
-  return await prisma.legionRaid.findFirst({
-    select: {
-      id: true,
-      nameEn: true,
-      nameKo: true,
-      tabs: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          difficultyNameEn: true,
-          difficultyNameKo: true,
-          stages: { select: { id: true, nameEn: true, nameKo: true } },
+          contentStages: { select: { id: true, nameEn: true, nameKo: true } },
         },
       },
     },
@@ -151,89 +72,19 @@ const getPartyFindPost = async (id: string) => {
       startTime: true,
       recurring: true,
 
-      chaosDungeon: {
+      contentStage: {
         select: {
           id: true,
           nameEn: true,
           nameKo: true,
-          chaosDungeonTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              chaosDungeon: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      guardianRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          guardianRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              guardianRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      abyssalDungeon: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssalDungeonTab: {
+          contentTab: {
             select: {
               id: true,
               nameEn: true,
               nameKo: true,
               difficultyNameEn: true,
               difficultyNameKo: true,
-              abyssalDungeon: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      abyssRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          abyssRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              abyssRaid: {
-                select: { id: true, nameEn: true, nameKo: true },
-              },
-            },
-          },
-        },
-      },
-      legionRaid: {
-        select: {
-          id: true,
-          nameEn: true,
-          nameKo: true,
-          legionRaidTab: {
-            select: {
-              id: true,
-              nameEn: true,
-              nameKo: true,
-              difficultyNameEn: true,
-              difficultyNameKo: true,
-              legionRaid: {
+              content: {
                 select: { id: true, nameEn: true, nameKo: true },
               },
             },
@@ -318,11 +169,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const user = await getUserFromRequest(request);
 
   return json<LoaderData>({
-    abyssalDungeon: await getAbyssalDungeon(),
-    abyssRaid: await getAbyssRaid(),
-    chaosDungeon: await getChaosDungeon(),
-    guardianRaid: await getGuardianRaid(),
-    legionRaid: await getLegionRaid(),
+    contents: await getContents(),
     locale: (await i18next.getLocale(request)) as LocaleType,
     partyFindPost,
     title: `${partyFindPost.title} | ${t("shortTitle")}`,
@@ -331,7 +178,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 };
 
 export default function PartyFindPostIdPage() {
-  const data = useLoaderData<LoaderData>();
+  const data = useLoaderData() as unknown as LoaderData;
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -394,8 +241,6 @@ export default function PartyFindPostIdPage() {
       startTime.getHours(),
       startTime.getMinutes()
     );
-
-    const contentByType = getContentByType(data.partyFindPost);
 
     const _characters =
       data.user?.rosters
@@ -471,31 +316,21 @@ export default function PartyFindPostIdPage() {
 
     const contentTypes: (ItemType & {
       tiers: (ItemType & { stages: ItemType[] })[];
-    })[] = [
-      data.chaosDungeon,
-      data.guardianRaid,
-      data.abyssalDungeon,
-      data.abyssRaid,
-      data.legionRaid,
-    ].map((d) => ({
-      id: d?.id ?? "",
-      text: { en: d?.nameEn ?? "", ko: d?.nameKo ?? "" },
+    })[] = data.contents.map((d) => ({
+      id: d.id,
+      text: { en: d.nameEn, ko: d.nameKo },
       tiers:
-        d?.tabs.map((t) => ({
+        d.contentTabs.map((t) => ({
           id: t.id,
           text: {
             en: `${t.nameEn}${
-              (t as any).difficultyNameEn
-                ? ` [${(t as any).difficultyNameEn}]`
-                : ""
+              t.difficultyNameEn ? ` [${t.difficultyNameEn}]` : ""
             }`,
             ko: `${t.nameKo}${
-              (t as any).difficultyNameKo
-                ? ` [${(t as any).difficultyNameKo}]`
-                : ""
+              t.difficultyNameKo ? ` [${t.difficultyNameKo}]` : ""
             }`,
           },
-          stages: t.stages.map((s) => ({
+          stages: t.contentStages.map((s) => ({
             id: s.id,
             text: { en: s.nameEn, ko: s.nameKo },
           })),
@@ -503,17 +338,17 @@ export default function PartyFindPostIdPage() {
     }));
 
     const initContentType = contentTypes.find(
-      (c) => c.id === contentByType?.contentType?.id
+      (c) => c.id === data.partyFindPost?.contentStage.contentTab.content.id
     );
 
     const initContentTiers = initContentType?.tiers ?? [];
     const initContentTier = initContentTiers.find(
-      (c) => c.id === contentByType?.contentTab?.id
+      (c) => c.id === data.partyFindPost?.contentStage.contentTab.id
     );
 
     const initContentStages = initContentTier?.stages ?? [];
     const initContentStage = initContentStages.find(
-      (c) => c.id === contentByType?.contentStage?.id
+      (c) => c.id === data.partyFindPost?.contentStage.id
     );
 
     return (
@@ -754,8 +589,8 @@ export default function PartyFindPostIdPage() {
               </div>
               <div className="text-[1rem] font-[700] leading-[1.25rem]">
                 {{
-                  en: contentByType?.contentType?.nameEn,
-                  ko: contentByType?.contentType?.nameKo,
+                  en: data.partyFindPost.contentStage.contentTab.content.nameEn,
+                  ko: data.partyFindPost.contentStage.contentTab.content.nameKo,
                 }[data.locale] ?? ""}
               </div>
               <div className="text-[1rem] font-[400] leading-[1.25rem]">
@@ -773,32 +608,33 @@ export default function PartyFindPostIdPage() {
               <div className="text-[1rem] font-[700] leading-[1.25rem]">
                 <span>
                   {{
-                    en: contentByType?.contentTab?.nameEn,
-                    ko: contentByType?.contentTab?.nameKo,
+                    en: data.partyFindPost.contentStage.contentTab.nameEn,
+                    ko: data.partyFindPost.contentStage.contentTab.nameKo,
                   }[data.locale] ?? ""}
                 </span>
-                {contentByType &&
-                  contentByType.contentTab &&
-                  contentByType.contentTab.difficultyNameEn && (
-                    <span
-                      className={`${
-                        contentByType.contentTab.difficultyNameEn.toLowerCase() ===
-                        "normal"
-                          ? "text-loa-green"
-                          : ""
-                      }${
-                        contentByType.contentTab.difficultyNameEn.toLowerCase() ===
-                        "hard"
-                          ? "text-loa-red"
-                          : ""
-                      }`}
-                    >{` [${
-                      {
-                        en: contentByType.contentTab.difficultyNameEn,
-                        ko: contentByType.contentTab.difficultyNameKo,
-                      }[data.locale]
-                    }]`}</span>
-                  )}
+                {data.partyFindPost.contentStage.contentTab
+                  .difficultyNameEn && (
+                  <span
+                    className={`${
+                      data.partyFindPost.contentStage.contentTab.difficultyNameEn.toLowerCase() ===
+                      "normal"
+                        ? "text-loa-green"
+                        : ""
+                    }${
+                      data.partyFindPost.contentStage.contentTab.difficultyNameEn.toLowerCase() ===
+                      "hard"
+                        ? "text-loa-red"
+                        : ""
+                    }`}
+                  >{` [${
+                    {
+                      en: data.partyFindPost.contentStage.contentTab
+                        .difficultyNameEn,
+                      ko: data.partyFindPost.contentStage.contentTab
+                        .difficultyNameKo,
+                    }[data.locale]
+                  }]`}</span>
+                )}
               </div>
               <div className="text-[1rem] font-[400] leading-[1.25rem]">
                 {t("region", { ns: "routes\\party-find-post\\id" })}
@@ -811,8 +647,8 @@ export default function PartyFindPostIdPage() {
               </div>
               <div className="text-[1rem] font-[700] leading-[1.25rem]">
                 {{
-                  en: contentByType?.contentStage?.nameEn,
-                  ko: contentByType?.contentStage?.nameKo,
+                  en: data.partyFindPost.contentStage.nameEn,
+                  ko: data.partyFindPost.contentStage.nameKo,
                 }[data.locale] ?? ""}
               </div>
               <div className="text-[1rem] font-[400] leading-[1.25rem]">

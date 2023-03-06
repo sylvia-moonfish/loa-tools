@@ -1,20 +1,8 @@
 import type {
-  AbyssalDungeon,
-  AbyssalDungeonStage,
-  AbyssalDungeonTab,
-  AbyssRaid,
-  AbyssRaidStage,
-  AbyssRaidTab,
-  ChaosDungeon,
-  ChaosDungeonStage,
-  ChaosDungeonTab,
   Character,
-  GuardianRaid,
-  GuardianRaidStage,
-  GuardianRaidTab,
-  LegionRaid,
-  LegionRaidStage,
-  LegionRaidTab,
+  Content,
+  ContentStage,
+  ContentTab,
   PartyFindApplyState,
   PartyFindPost,
   PartyFindSlot,
@@ -42,82 +30,20 @@ export type FilteredPartyFindPosts = {
   title: PartyFindPost["title"];
   startTime: PartyFindPost["startTime"];
   recurring: PartyFindPost["recurring"];
-  chaosDungeon: {
-    id: ChaosDungeonStage["id"];
-    nameEn: ChaosDungeonStage["nameEn"];
-    nameKo: ChaosDungeonStage["nameKo"];
-    chaosDungeonTab: {
-      id: ChaosDungeonTab["id"];
-      nameEn: ChaosDungeonTab["nameEn"];
-      nameKo: ChaosDungeonTab["nameKo"];
-      chaosDungeon: {
-        id: ChaosDungeon["id"];
-        nameEn: ChaosDungeon["nameEn"];
-        nameKo: ChaosDungeon["nameKo"];
-      };
-    };
-  };
-  guardianRaid: {
-    id: GuardianRaidStage["id"];
-    nameEn: GuardianRaidStage["nameEn"];
-    nameKo: GuardianRaidStage["nameKo"];
-    guardianRaidTab: {
-      id: GuardianRaidTab["id"];
-      nameEn: GuardianRaidTab["nameEn"];
-      nameKo: GuardianRaidTab["nameKo"];
-      guardianRaid: {
-        id: GuardianRaid["id"];
-        nameEn: GuardianRaid["nameEn"];
-        nameKo: GuardianRaid["nameKo"];
-      };
-    };
-  };
-  abyssalDungeon: {
-    id: AbyssalDungeonStage["id"];
-    nameEn: AbyssalDungeonStage["nameEn"];
-    nameKo: AbyssalDungeonStage["nameKo"];
-    abyssalDungeonTab: {
-      id: AbyssalDungeonTab["id"];
-      nameEn: AbyssalDungeonTab["nameEn"];
-      nameKo: AbyssalDungeonTab["nameKo"];
-      difficultyNameEn: AbyssalDungeonTab["difficultyNameEn"];
-      difficultyNameKo: AbyssalDungeonTab["difficultyNameKo"];
-      abyssalDungeon: {
-        id: AbyssalDungeon["id"];
-        nameEn: AbyssalDungeon["nameEn"];
-        nameKo: AbyssalDungeon["nameKo"];
-      };
-    };
-  };
-  abyssRaid: {
-    id: AbyssRaidStage["id"];
-    nameEn: AbyssRaidStage["nameEn"];
-    nameKo: AbyssRaidStage["nameKo"];
-    abyssRaidTab: {
-      id: AbyssRaidTab["id"];
-      nameEn: AbyssRaidTab["nameEn"];
-      nameKo: AbyssRaidTab["nameKo"];
-      abyssRaid: {
-        id: AbyssRaid["id"];
-        nameEn: AbyssRaid["nameEn"];
-        nameKo: AbyssRaid["nameKo"];
-      };
-    };
-  };
-  legionRaid: {
-    id: LegionRaidStage["id"];
-    nameEn: LegionRaidStage["nameEn"];
-    nameKo: LegionRaidStage["nameKo"];
-    legionRaidTab: {
-      id: LegionRaidTab["id"];
-      nameEn: LegionRaidTab["nameEn"];
-      nameKo: LegionRaidTab["nameKo"];
-      difficultyNameEn: LegionRaidTab["difficultyNameEn"];
-      difficultyNameKo: LegionRaidTab["difficultyNameKo"];
-      legionRaid: {
-        id: LegionRaid["id"];
-        nameEn: LegionRaid["nameEn"];
-        nameKo: LegionRaid["nameKo"];
+  contentStage: {
+    id: ContentStage["id"];
+    nameEn: ContentStage["nameEn"];
+    nameKo: ContentStage["nameKo"];
+    contentTab: {
+      id: ContentTab["id"];
+      nameEn: ContentTab["nameEn"];
+      nameKo: ContentTab["nameKo"];
+      difficultyNameEn?: ContentTab["difficultyNameEn"];
+      difficultyNameKo?: ContentTab["difficultyNameKo"];
+      content: {
+        id: Content["id"];
+        nameEn: Content["nameEn"];
+        nameKo: Content["nameKo"];
       };
     };
   };
@@ -161,84 +87,22 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
         "PartyFindPost"."startTime",
         "PartyFindPost"."recurring",
         json_build_object(
-          'id', "ChaosDungeonStage"."id",
-          'nameEn', "ChaosDungeonStage"."nameEn",
-          'nameKo', "ChaosDungeonStage"."nameKo",
-          'chaosDungeonTab', json_build_object(
-            'id', "ChaosDungeonTab"."id",
-            'nameEn', "ChaosDungeonTab"."nameEn",
-            'nameKo', "ChaosDungeonTab"."nameKo",
-            'chaosDungeon', json_build_object(
-              'id', "ChaosDungeon"."id",
-              'nameEn', "ChaosDungeon"."nameEn",
-              'nameKo', "ChaosDungeon"."nameKo"
+          'id', "ContentStage"."id",
+          'nameEn', "ContentStage"."nameEn",
+          'nameKo', "ContentStage"."nameKo",
+          'contentTab', json_build_object(
+            'id', "ContentTab"."id",
+            'nameEn', "ContentTab"."nameEn",
+            'nameKo', "ContentTab"."nameKo",
+            'difficultyNameEn', "ContentTab"."difficultyNameEn",
+            'difficultyNameKo', "ContentTab"."difficultyNameKo",
+            'content', json_build_object(
+              'id', "Content"."id",
+              'nameEn', "Content"."nameEn",
+              'nameKo', "Content"."nameKo"
             )
           )
-        ) AS "chaosDungeon",
-        json_build_object(
-          'id', "GuardianRaidStage"."id",
-          'nameEn', "GuardianRaidStage"."nameEn",
-          'nameKo', "GuardianRaidStage"."nameKo",
-          'guardianRaidTab', json_build_object(
-            'id', "GuardianRaidTab"."id",
-            'nameEn', "GuardianRaidTab"."nameEn",
-            'nameKo', "GuardianRaidTab"."nameKo",
-            'guardianRaid', json_build_object(
-              'id', "GuardianRaid"."id",
-              'nameEn', "GuardianRaid"."nameEn",
-              'nameKo', "GuardianRaid"."nameKo"
-            )
-          )
-        ) AS "guardianRaid",
-        json_build_object(
-          'id', "AbyssalDungeonStage"."id",
-          'nameEn', "AbyssalDungeonStage"."nameEn",
-          'nameKo', "AbyssalDungeonStage"."nameKo",
-          'abyssalDungeonTab', json_build_object(
-            'id', "AbyssalDungeonTab"."id",
-            'nameEn', "AbyssalDungeonTab"."nameEn",
-            'nameKo', "AbyssalDungeonTab"."nameKo",
-            'difficultyNameEn', "AbyssalDungeonTab"."difficultyNameEn",
-            'difficultyNameKo', "AbyssalDungeonTab"."difficultyNameKo",
-            'abyssalDungeon', json_build_object(
-              'id', "AbyssalDungeon"."id",
-              'nameEn', "AbyssalDungeon"."nameEn",
-              'nameKo', "AbyssalDungeon"."nameKo"
-            )
-          )
-        ) AS "abyssalDungeon",
-        json_build_object(
-          'id', "AbyssRaidStage"."id",
-          'nameEn', "AbyssRaidStage"."nameEn",
-          'nameKo', "AbyssRaidStage"."nameKo",
-          'abyssRaidTab', json_build_object(
-            'id', "AbyssRaidTab"."id",
-            'nameEn', "AbyssRaidTab"."nameEn",
-            'nameKo', "AbyssRaidTab"."nameKo",
-            'abyssRaid', json_build_object(
-              'id', "AbyssRaid"."id",
-              'nameEn', "AbyssRaid"."nameEn",
-              'nameKo', "AbyssRaid"."nameKo"
-            )
-          )
-        ) AS "abyssRaid",
-        json_build_object(
-          'id', "LegionRaidStage"."id",
-          'nameEn', "LegionRaidStage"."nameEn",
-          'nameKo', "LegionRaidStage"."nameKo",
-          'legionRaidTab', json_build_object(
-            'id', "LegionRaidTab"."id",
-            'nameEn', "LegionRaidTab"."nameEn",
-            'nameKo', "LegionRaidTab"."nameKo",
-            'difficultyNameEn', "LegionRaidTab"."difficultyNameEn",
-            'difficultyNameKo', "LegionRaidTab"."difficultyNameKo",
-            'legionRaid', json_build_object(
-              'id', "LegionRaid"."id",
-              'nameEn', "LegionRaid"."nameEn",
-              'nameKo', "LegionRaid"."nameKo"
-            )
-          )
-        ) AS "legionRaid",
+        ) AS "contentStage",
         "PartyFindPost"."authorId",
         json_build_object(
           'id', "Server"."id",
@@ -291,69 +155,17 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
         "public"."PartyFindPost"
   
       LEFT JOIN
-        "public"."ChaosDungeonStage"
+        "public"."ContentStage"
         ON
-          "ChaosDungeonStage"."id" = "PartyFindPost"."chaosDungeonId"
+          "ContentStage"."id" = "PartyFindPost"."contentStageId"
       LEFT JOIN
-        "public"."ChaosDungeonTab"
+        "public"."ContentTab"
         ON
-          "ChaosDungeonTab"."id" = "ChaosDungeonStage"."chaosDungeonTabId"
+          "ContentTab"."id" = "ContentStage"."contentTabId"
       LEFT JOIN
-        "public"."ChaosDungeon"
+        "public"."Content"
         ON
-          "ChaosDungeon"."id" = "ChaosDungeonTab"."chaosDungeonId"
-  
-      LEFT JOIN
-        "public"."GuardianRaidStage"
-        ON
-          "GuardianRaidStage"."id" = "PartyFindPost"."guardianRaidId"
-      LEFT JOIN
-        "public"."GuardianRaidTab"
-        ON
-          "GuardianRaidTab"."id" = "GuardianRaidStage"."guardianRaidTabId"
-      LEFT JOIN
-        "public"."GuardianRaid"
-        ON
-          "GuardianRaid"."id" = "GuardianRaidTab"."guardianRaidId"
-  
-      LEFT JOIN
-        "public"."AbyssalDungeonStage"
-        ON
-          "AbyssalDungeonStage"."id" = "PartyFindPost"."abyssalDungeonId"
-      LEFT JOIN
-        "public"."AbyssalDungeonTab"
-        ON
-          "AbyssalDungeonTab"."id" = "AbyssalDungeonStage"."abyssalDungeonTabId"
-      LEFT JOIN
-        "public"."AbyssalDungeon"
-        ON
-          "AbyssalDungeon"."id" = "AbyssalDungeonTab"."abyssalDungeonId"
-  
-      LEFT JOIN
-        "public"."AbyssRaidStage"
-        ON
-          "AbyssRaidStage"."id" = "PartyFindPost"."abyssRaidId"
-      LEFT JOIN
-        "public"."AbyssRaidTab"
-        ON
-          "AbyssRaidTab"."id" = "AbyssRaidStage"."abyssRaidTabId"
-      LEFT JOIN
-        "public"."AbyssRaid"
-        ON
-          "AbyssRaid"."id" = "AbyssRaidTab"."abyssRaidId"
-  
-      LEFT JOIN
-        "public"."LegionRaidStage"
-        ON
-          "LegionRaidStage"."id" = "PartyFindPost"."legionRaidId"
-      LEFT JOIN
-        "public"."LegionRaidTab"
-        ON
-          "LegionRaidTab"."id" = "LegionRaidStage"."legionRaidTabId"
-      LEFT JOIN
-        "public"."LegionRaid"
-        ON
-          "LegionRaid"."id" = "LegionRaidTab"."legionRaidId"
+          "Content"."id" = "ContentTab"."contentId"
   
       LEFT JOIN
         "public"."Server"
@@ -412,49 +224,41 @@ export const action: ActionFunction = async ({ request }) => {
   // Generate content type filter conditionals.
   if (payload.contentTypeFilter) {
     let contentType = undefined;
-    let tableBaseName: string | undefined = undefined;
 
     switch (payload.contentTypeFilter.text.en) {
       case "Chaos Dungeon":
         contentType = "CHAOS_DUNGEON";
-        tableBaseName = "ChaosDungeon";
         break;
       case "Guardian Raid":
         contentType = "GUARDIAN_RAID";
-        tableBaseName = "GuardianRaid";
         break;
       case "Abyssal Dungeon":
         contentType = "ABYSSAL_DUNGEON";
-        tableBaseName = "AbyssalDungeon";
         break;
       case "Abyss Raid":
         contentType = "ABYSS_RAID";
-        tableBaseName = "AbyssRaid";
         break;
       case "Legion Raid":
         contentType = "LEGION_RAID";
-        tableBaseName = "LegionRaid";
         break;
     }
 
-    if (contentType && tableBaseName) {
+    if (contentType) {
       const miniClauses = [`"PartyFindPost"."contentType" = '${contentType}'`];
 
       if (payload.contentTypeFilter) {
-        miniClauses.push(
-          `"${tableBaseName}"."id" = '${payload.contentTypeFilter.id}'`
-        );
+        miniClauses.push(`"Content"."id" = '${payload.contentTypeFilter.id}'`);
       }
 
       if (payload.contentTierFilter) {
         miniClauses.push(
-          `"${tableBaseName}Tab"."id" = '${payload.contentTierFilter.id}'`
+          `"ContentTab"."id" = '${payload.contentTierFilter.id}'`
         );
       }
 
       if (payload.contentStageFilter) {
         miniClauses.push(
-          `"${tableBaseName}Stage"."id" = '${payload.contentStageFilter.id}'`
+          `"ContentStage"."id" = '${payload.contentStageFilter.id}'`
         );
       }
 
