@@ -84,6 +84,9 @@ export default function ExpandablePanel(props: {
       case PartyFindApplyStateValue.EXPIRED:
         statusColor = "bg-loa-red";
         break;
+      case PartyFindApplyStateValue.DELETED:
+        statusColor = "bg-loa-red";
+        break;
     }
   }
 

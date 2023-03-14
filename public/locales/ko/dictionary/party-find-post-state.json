@@ -2,5 +2,6 @@
   "RECRUITING": "모집중",
   "FULL": "모집완료",
   "RERECRUITING": "재모집중",
-  "EXPIRED": "기간만료"
+  "EXPIRED": "기간만료",
+  "DELETED": "삭제됨"
 }

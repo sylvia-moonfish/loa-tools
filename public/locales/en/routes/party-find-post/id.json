@@ -36,6 +36,7 @@
   "alreadyApplied": "Already applied",
   "noCharacter": "Not applyable",
   "apply": "Apply",
+  "deleted": "Deleted",
   "characterSelectTitle": "Character Select",
   "characterSelectMessage": "Select your character to apply to this post.",
   "characterSelectRegionMessage": "(Only the characters in the same region as the post are shown.)",

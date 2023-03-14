@@ -1,3 +1,4 @@
+import { PartyFindApplyStateValue, PartyFindPostState } from "@prisma/client";
 import type { ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
@@ -31,18 +32,17 @@ export const action: ActionFunction = async ({ params, request }) => {
       // Validate: Check if the user making this delete request is the post's author.
       if (partyFindPostDb.authorId !== user.id) return json({});
 
-      // Delete all the apply states for this post.
-      await prisma.partyFindApplyState.deleteMany({
+      // Update all the apply states for this post to DELETED.
+      await prisma.partyFindApplyState.updateMany({
         where: { partyFindPostId: partyFindPostDb.id },
+        data: { state: PartyFindApplyStateValue.DELETED },
       });
 
-      // Delete all the slots for this post.
-      await prisma.partyFindSlot.deleteMany({
-        where: { partyFindPostId: partyFindPostDb.id },
+      // Update the post itself to DELETED state.
+      await prisma.partyFindPost.update({
+        where: { id: partyFindPostDb.id },
+        data: { state: PartyFindPostState.DELETED },
       });
-
-      // Delete the post itself.
-      await prisma.partyFindPost.delete({ where: { id: partyFindPostDb.id } });
     } catch (e) {
       console.log(e);
     }

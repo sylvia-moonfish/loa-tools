@@ -2,5 +2,6 @@
   "WAITING": "Waiting",
   "ACCEPTED": "Approved",
   "REJECTED": "Rejected",
-  "EXPIRED": "Expired"
+  "EXPIRED": "Expired",
+  "DELETED": "Deleted"
 }

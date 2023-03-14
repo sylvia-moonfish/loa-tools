@@ -309,6 +309,7 @@ enum PartyFindPostState {
   FULL
   RERECRUITING
   EXPIRED
+  DELETED
 }
 
 model PartyFindSlot {
@@ -359,6 +360,7 @@ enum PartyFindApplyStateValue {
   ACCEPTED
   REJECTED
   EXPIRED
+  DELETED
 }
 
 model Alarm {

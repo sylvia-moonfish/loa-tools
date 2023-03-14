@@ -151,6 +151,9 @@ export default function ExpandablePanel(props: {
       case PartyFindPostState.EXPIRED:
         statusColor = "bg-loa-red";
         break;
+      case PartyFindPostState.DELETED:
+        statusColor = "bg-loa-red";
+        break;
     }
   }
 
@@ -179,9 +182,17 @@ export default function ExpandablePanel(props: {
   return (
     <div className="relative">
       <div
-        className="absolute flex max-h-[6.25rem] min-h-[6.25rem] w-full cursor-pointer gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]"
+        className={`${
+          props.partyFindPost.state !== PartyFindPostState.DELETED
+            ? "cursor-pointer"
+            : ""
+        } absolute flex max-h-[6.25rem] min-h-[6.25rem] w-full gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]`}
         onClick={() => {
-          setIsOpened(!isOpened);
+          if (props.partyFindPost.state === PartyFindPostState.DELETED) {
+            setIsOpened(false);
+          } else {
+            setIsOpened(!isOpened);
+          }
         }}
         style={{ zIndex: 2 }}
       >
@@ -587,6 +598,7 @@ export default function ExpandablePanel(props: {
                               .catch(() => {})
                               .finally(() => {
                                 props.setLoading(false);
+                                setIsDeleteWarningOpen(false);
                                 navigate("/my-roster/my-posts");
                               });
                           }

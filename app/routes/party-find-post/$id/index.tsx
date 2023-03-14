@@ -282,13 +282,22 @@ export default function PartyFindPostIdPage() {
       | "author"
       | "leave"
       | "alreadyApplied"
-      | "noCharacter" = "apply";
+      | "noCharacter"
+      | "deleted" = "apply";
     let applyColor: "bg-loa-green" | "bg-loa-red" | "bg-loa-button" =
       "bg-loa-button";
     let applyDisabled: boolean = false;
 
     if (data.user) {
-      if (data.partyFindPost.authorId === data.user.id) applyText = "author";
+      if (
+        userApplyState &&
+        userApplyState.state === PartyFindApplyStateValue.DELETED
+      ) {
+        applyText = "deleted";
+        applyColor = "bg-loa-red";
+        applyDisabled = true;
+      } else if (data.partyFindPost.authorId === data.user.id)
+        applyText = "author";
       else if (
         userApplyState &&
         userApplyState.state === PartyFindApplyStateValue.ACCEPTED
@@ -412,124 +421,130 @@ export default function PartyFindPostIdPage() {
               }
             )} ${updatedAtElapsedTimeString} ${updatedAtDateString} ${updatedAtTimeString}`}</div>
           </div>
-          {data.user && data.user.id === data.partyFindPost.authorId && (
-            <div className="flex gap-[0.625rem]">
-              {
-                <EditPartyButton
-                  backgroundColor="bg-loa-button"
-                  contentTypes={contentTypes}
-                  initContentType={initContentType}
-                  initContentTier={initContentTier}
-                  initContentTiers={initContentTiers}
-                  initContentStage={initContentStage}
-                  initContentStages={initContentStages}
-                  initIsPracticeParty={data.partyFindPost.isPracticeParty}
-                  initIsReclearParty={data.partyFindPost.isReclearParty}
-                  initIsRecurring={data.partyFindPost.recurring}
-                  initStartDate={new Date(data.partyFindPost.startTime)
-                    .toISOString()
-                    .slice(0, -1)}
-                  initTitle={data.partyFindPost.title}
-                  locale={data.locale}
-                  partyFindPostId={data.partyFindPost.id}
-                  userId={data.user.id}
+          {data.user &&
+            data.user.id === data.partyFindPost.authorId &&
+            applyText !== "deleted" && (
+              <div className="flex gap-[0.625rem]">
+                {
+                  <EditPartyButton
+                    backgroundColor="bg-loa-button"
+                    contentTypes={contentTypes}
+                    initContentType={initContentType}
+                    initContentTier={initContentTier}
+                    initContentTiers={initContentTiers}
+                    initContentStage={initContentStage}
+                    initContentStages={initContentStages}
+                    initIsPracticeParty={data.partyFindPost.isPracticeParty}
+                    initIsReclearParty={data.partyFindPost.isReclearParty}
+                    initIsRecurring={data.partyFindPost.recurring}
+                    initStartDate={new Date(data.partyFindPost.startTime)
+                      .toISOString()
+                      .slice(0, -1)}
+                    initTitle={data.partyFindPost.title}
+                    locale={data.locale}
+                    partyFindPostId={data.partyFindPost.id}
+                    userId={data.user.id}
+                  />
+                }
+                <Button
+                  onClick={() => {
+                    setIsDeleteWarningOpen(true);
+                  }}
+                  style={{
+                    additionalClass: "",
+                    backgroundColorClass: "bg-loa-red",
+                    cornerRadius: "0.9375rem",
+                    fontSize: "1rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.9375rem",
+                    py: "0.9375rem",
+                    textColorClass: "text-loa-white",
+                  }}
+                  text={t("delete", { ns: "routes\\party-find-post\\id" })}
                 />
-              }
-              <Button
-                onClick={() => {
-                  setIsDeleteWarningOpen(true);
-                }}
-                style={{
-                  additionalClass: "",
-                  backgroundColorClass: "bg-loa-red",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "1rem",
-                  fontWeight: "500",
-                  lineHeight: "1.25rem",
-                  px: "0.9375rem",
-                  py: "0.9375rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={t("delete", { ns: "routes\\party-find-post\\id" })}
-              />
-              <Modal
-                closeWhenClickedOutside={allowDeleteWarningToClose}
-                isOpened={isDeleteWarningOpen}
-                setIsOpened={setIsDeleteWarningOpen}
-                style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
-              >
-                <div className="flex w-[36.25rem] flex-col gap-[3.125rem] rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
-                  <div>
-                    <div className="float-right">
-                      <div
-                        className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
-                        onClick={() => {
-                          setIsDeleteWarningOpen(false);
-                        }}
-                      >
-                        close
+                <Modal
+                  closeWhenClickedOutside={allowDeleteWarningToClose}
+                  isOpened={isDeleteWarningOpen}
+                  setIsOpened={setIsDeleteWarningOpen}
+                  style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                >
+                  <div className="flex w-[36.25rem] flex-col gap-[3.125rem] rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
+                    <div>
+                      <div className="float-right">
+                        <div
+                          className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
+                          onClick={() => {
+                            setIsDeleteWarningOpen(false);
+                          }}
+                        >
+                          close
+                        </div>
+                      </div>
+                      <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
+                        {t("deleteTitle", {
+                          ns: "routes\\party-find-post\\id",
+                        })}
                       </div>
                     </div>
-                    <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
-                      {t("deleteTitle", { ns: "routes\\party-find-post\\id" })}
+                    <div className="flex flex-col gap-[1.5625rem]">
+                      <div className="w-full whitespace-normal text-[1.25rem] font-[400] leading-[1.25rem]">
+                        {t("confirmDelete", {
+                          ns: "routes\\party-find-post\\id",
+                        })}
+                      </div>
+                      <Button
+                        disabled={!isDeleteButtonEnabled}
+                        onClick={() => {
+                          if (_isDeleteButtonEnabled) {
+                            _isDeleteButtonEnabled = false;
+                            setIsDeleteButtonEnabled(false);
+                            setAllowDeleteWarningToClose(false);
+
+                            const actionBody: DeleteActionBody = {
+                              partyFindPostId: data.partyFindPost?.id ?? "",
+                              userId: data.user?.id ?? "",
+                            };
+
+                            fetch(
+                              `/api/party-find-post/${
+                                data.partyFindPost?.id ?? ""
+                              }/delete`,
+                              {
+                                method: "POST",
+                                credentials: "same-origin",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(actionBody),
+                              }
+                            )
+                              .catch(() => {})
+                              .finally(() => {
+                                navigate("/my-roster/my-posts");
+                              });
+                          }
+                        }}
+                        style={{
+                          additionalClass: "",
+                          backgroundColorClass: "bg-loa-red",
+                          cornerRadius: "0.9375rem",
+                          disabledBackgroundColorClass: "bg-loa-inactive",
+                          disabledTextColorClass: "text-loa-grey",
+                          fontSize: "1.25rem",
+                          fontWeight: "700",
+                          lineHeight: "1.25rem",
+                          px: "",
+                          py: "1.25rem",
+                          textColorClass: "text-loa-white",
+                        }}
+                        text={t("delete", {
+                          ns: "routes\\party-find-post\\id",
+                        })}
+                      />
                     </div>
                   </div>
-                  <div className="flex flex-col gap-[1.5625rem]">
-                    <div className="w-full whitespace-normal text-[1.25rem] font-[400] leading-[1.25rem]">
-                      {t("confirmDelete", {
-                        ns: "routes\\party-find-post\\id",
-                      })}
-                    </div>
-                    <Button
-                      disabled={!isDeleteButtonEnabled}
-                      onClick={() => {
-                        if (_isDeleteButtonEnabled) {
-                          _isDeleteButtonEnabled = false;
-                          setIsDeleteButtonEnabled(false);
-                          setAllowDeleteWarningToClose(false);
-
-                          const actionBody: DeleteActionBody = {
-                            partyFindPostId: data.partyFindPost?.id ?? "",
-                            userId: data.user?.id ?? "",
-                          };
-
-                          fetch(
-                            `/api/party-find-post/${
-                              data.partyFindPost?.id ?? ""
-                            }/delete`,
-                            {
-                              method: "POST",
-                              credentials: "same-origin",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify(actionBody),
-                            }
-                          )
-                            .catch(() => {})
-                            .finally(() => {
-                              navigate("/my-roster/my-posts");
-                            });
-                        }
-                      }}
-                      style={{
-                        additionalClass: "",
-                        backgroundColorClass: "bg-loa-red",
-                        cornerRadius: "0.9375rem",
-                        disabledBackgroundColorClass: "bg-loa-inactive",
-                        disabledTextColorClass: "text-loa-grey",
-                        fontSize: "1.25rem",
-                        fontWeight: "700",
-                        lineHeight: "1.25rem",
-                        px: "",
-                        py: "1.25rem",
-                        textColorClass: "text-loa-white",
-                      }}
-                      text={t("delete", { ns: "routes\\party-find-post\\id" })}
-                    />
-                  </div>
-                </div>
-              </Modal>
-            </div>
-          )}
+                </Modal>
+              </div>
+            )}
         </div>
         <div className="mt-[1.25rem] flex flex-col gap-[1.25rem]">
           <div className="flex justify-end">
