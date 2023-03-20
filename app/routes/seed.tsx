@@ -390,6 +390,18 @@ export const loader: LoaderFunction = async ({ request }) => {
               tier: 3,
               level: 1475,
             },
+            {
+              nameEn: "Level 1 Void",
+              nameKo: "공허 1단계",
+              tier: 3,
+              level: 1490,
+            },
+            {
+              nameEn: "Level 2 Void",
+              nameKo: "공허 2단계",
+              tier: 3,
+              level: 1520,
+            },
           ],
         },
       ],
@@ -499,6 +511,12 @@ export const loader: LoaderFunction = async ({ request }) => {
               nameKo: "쿤겔라니움",
               tier: 3,
               level: 1460,
+            },
+            {
+              nameEn: "Caliligos",
+              nameKo: "칼엘리고스",
+              tier: 3,
+              level: 1490,
             },
           ],
         },
@@ -622,6 +640,100 @@ export const loader: LoaderFunction = async ({ request }) => {
               nameKo: "3관문",
               tier: 3,
               level: 1460,
+              groupSize: 8,
+            },
+          ],
+        },
+        {
+          nameEn: "Vykas",
+          nameKo: "비아키스",
+          difficultyNameEn: "Inferno",
+          difficultyNameKo: "헬",
+          contentStages: [
+            {
+              nameEn: "All Gates",
+              nameKo: "전 관문",
+              tier: 3,
+              level: 1460,
+              groupSize: 8,
+            },
+          ],
+        },
+        {
+          nameEn: "Kakul-Saydon",
+          nameKo: "쿠크세이튼",
+          difficultyNameEn: "Normal",
+          difficultyNameKo: "노말",
+          contentStages: [
+            {
+              nameEn: "Gate 1",
+              nameKo: "1관문",
+              tier: 3,
+              level: 1475,
+              groupSize: 4,
+            },
+            {
+              nameEn: "Gate 2",
+              nameKo: "2관문",
+              tier: 3,
+              level: 1475,
+              groupSize: 4,
+            },
+            {
+              nameEn: "Gate 3",
+              nameKo: "3관문",
+              tier: 3,
+              level: 1475,
+              groupSize: 4,
+            },
+          ],
+        },
+        {
+          nameEn: "Brelshaza",
+          nameKo: "아브렐슈드",
+          difficultyNameEn: "Normal",
+          difficultyNameKo: "노말",
+          contentStages: [
+            {
+              nameEn: "Gate 1",
+              nameKo: "1관문",
+              tier: 3,
+              level: 1490,
+              groupSize: 8,
+            },
+            {
+              nameEn: "Gate 2",
+              nameKo: "2관문",
+              tier: 3,
+              level: 1490,
+              groupSize: 8,
+            },
+            {
+              nameEn: "Gate 3",
+              nameKo: "3관문",
+              tier: 3,
+              level: 1500,
+              groupSize: 8,
+            },
+            {
+              nameEn: "Gate 4",
+              nameKo: "4관문",
+              tier: 3,
+              level: 1500,
+              groupSize: 8,
+            },
+            {
+              nameEn: "Gate 5",
+              nameKo: "5관문",
+              tier: 3,
+              level: 1520,
+              groupSize: 8,
+            },
+            {
+              nameEn: "Gate 6",
+              nameKo: "6관문",
+              tier: 3,
+              level: 1520,
               groupSize: 8,
             },
           ],
@@ -1276,6 +1388,24 @@ export const loader: LoaderFunction = async ({ request }) => {
       job: Job.SHARPSHOOTER,
     },
 
+    // MACHINIST
+    {
+      nameEn: "Arthetinean Skill",
+      nameKo: "아르데타인의 기술",
+      isPositive: true,
+      iconPath: "/icons/engravings/arthetinean_skill.webp",
+      type: EngravingType.CLASS,
+      job: Job.MACHINIST,
+    },
+    {
+      nameEn: "Evolutionary Legacy",
+      nameKo: "진화의 유산",
+      isPositive: true,
+      iconPath: "/icons/engravings/evolutionary_legacy.webp",
+      type: EngravingType.CLASS,
+      job: Job.MACHINIST,
+    },
+
     // GUNSLINGER
     {
       nameEn: "Peacemaker",
@@ -1310,6 +1440,24 @@ export const loader: LoaderFunction = async ({ request }) => {
       iconPath: "/icons/engravings/desperate_salvation.webp",
       type: EngravingType.CLASS,
       job: Job.BARD,
+    },
+
+    // SUMMONER
+    {
+      nameEn: "Communication Overflow",
+      nameKo: "넘치는 교감",
+      isPositive: true,
+      iconPath: "/icons/engravings/communication_overflow.webp",
+      type: EngravingType.CLASS,
+      job: Job.SUMMONER,
+    },
+    {
+      nameEn: "Master Summoner",
+      nameKo: "상급 소환사",
+      isPositive: true,
+      iconPath: "/icons/engravings/master_summoner.webp",
+      type: EngravingType.CLASS,
+      job: Job.SUMMONER,
     },
 
     // ARCANIST
@@ -1382,6 +1530,43 @@ export const loader: LoaderFunction = async ({ request }) => {
       iconPath: "/icons/engravings/demonic_impulse.webp",
       type: EngravingType.CLASS,
       job: Job.SHADOWHUNTER,
+    },
+
+    // REAPER
+    {
+      nameEn: "Hunger",
+      nameKo: "갈증",
+      isPositive: true,
+      iconPath: "/icons/engravings/hunger.webp",
+      type: EngravingType.CLASS,
+      job: Job.REAPER,
+    },
+    {
+      nameEn: "Lunar Voice",
+      nameKo: "달의 소리",
+      isPositive: true,
+      iconPath: "/icons/engravings/lunar_voice.webp",
+      type: EngravingType.CLASS,
+      job: Job.REAPER,
+    },
+
+    // ARTIST
+
+    {
+      nameEn: "Full Bloom",
+      nameKo: "만개",
+      isPositive: true,
+      iconPath: "/icons/engravings/full_bloom.webp",
+      type: EngravingType.CLASS,
+      job: Job.ARTIST,
+    },
+    {
+      nameEn: "Recurrence",
+      nameKo: "회귀",
+      isPositive: true,
+      iconPath: "/icons/engravings/recurrence.webp",
+      type: EngravingType.CLASS,
+      job: Job.ARTIST,
     },
   ];
 

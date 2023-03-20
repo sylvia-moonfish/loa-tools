@@ -14,13 +14,18 @@
   "DEADEYE": "Deadeye",
   "ARTILLERIST": "Artillerist",
   "SHARPSHOOTER": "Sharpshooter",
+  "MACHINIST": "Machinist",
 
   "GUNSLINGER": "Gunslinger",
 
   "BARD": "Bard",
+  "SUMMONER": "Summoner",
   "ARCANIST": "Arcanist",
   "SORCERESS": "Sorceress",
 
   "DEATHBLADE": "Deathblade",
-  "SHADOWHUNTER": "Shadowhunter"
+  "SHADOWHUNTER": "Shadowhunter",
+  "REAPER": "Reaper",
+
+  "ARTIST": "Artist"
 }

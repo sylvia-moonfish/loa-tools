@@ -14,13 +14,18 @@
   "DEADEYE": "데빌헌터",
   "ARTILLERIST": "블래스터",
   "SHARPSHOOTER": "호크아이",
+  "MACHINIST": "스카우터",
 
   "GUNSLINGER": "건슬링어",
 
   "BARD": "바드",
+  "SUMMONER": "서머너",
   "ARCANIST": "아르카나",
   "SORCERESS": "소서리스",
 
   "DEATHBLADE": "블레이드",
-  "SHADOWHUNTER": "데모닉"
+  "SHADOWHUNTER": "데모닉",
+  "REAPER": "리퍼",
+
+  "ARTIST": "도화가"
 }

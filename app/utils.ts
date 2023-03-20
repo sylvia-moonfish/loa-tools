@@ -143,12 +143,16 @@ export function generateJobIconPath(job: Job) {
       return "/icons/job_icons/blaster.png";
     case Job.SHARPSHOOTER:
       return "/icons/job_icons/hawkeye.png";
+    case Job.MACHINIST:
+      return "/icons/job_icons/scouter.png";
 
     case Job.GUNSLINGER:
       return "/icons/job_icons/gunslinger.png";
 
     case Job.BARD:
       return "/icons/job_icons/bard.png";
+    case Job.SUMMONER:
+      return "/icons/job_icons/summoner.png";
     case Job.ARCANIST:
       return "/icons/job_icons/arcana.png";
     case Job.SORCERESS:
@@ -158,10 +162,15 @@ export function generateJobIconPath(job: Job) {
       return "/icons/job_icons/blade.png";
     case Job.SHADOWHUNTER:
       return "/icons/job_icons/demonic.png";
+    case Job.REAPER:
+      return "/icons/job_icons/reaper.png";
+
+    case Job.ARTIST:
+      return "/icons/job_icons/artist.png";
   }
 }
 
-export const supportJobs = ["PALADIN", "BARD"];
+export const supportJobs = ["PALADIN", "BARD", "ARTIST"];
 
 export function getJobTypeFromJob(job: Job) {
   return supportJobs.includes(job) ? JobType.SUPPORT : JobType.DPS;

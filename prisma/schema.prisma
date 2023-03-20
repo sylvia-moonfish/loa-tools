@@ -202,15 +202,20 @@ enum Job {
   DEADEYE
   ARTILLERIST
   SHARPSHOOTER
+  MACHINIST
 
   GUNSLINGER
 
   BARD
+  SUMMONER
   ARCANIST
   SORCERESS
 
   DEATHBLADE
   SHADOWHUNTER
+  REAPER
+
+  ARTIST
 }
 
 enum ContentType {
@@ -361,6 +366,7 @@ enum PartyFindApplyStateValue {
   REJECTED
   EXPIRED
   DELETED
+  WITHDRAWN
 }
 
 model Alarm {
