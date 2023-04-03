@@ -1,5 +1,5 @@
 import type { ActionFunction } from "@remix-run/node";
-import { PartyFindPostState } from "@prisma/client";
+import { PartyFindApplyStateValue, PartyFindPostState } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { requireUser } from "~/session.server";
@@ -32,13 +32,12 @@ export const action: ActionFunction = async ({ params, request }) => {
       // Validate: Check if the owner of this character is the user who is making this request.
       if (characterDb.roster.userId !== user.id) return json({});
 
-      // Delete all engraving slots for this character.
-      await prisma.engravingSlot.deleteMany({
-        where: { characterId: characterDb.id },
-      });
-
       // Find all posts this user created with this character.
       const partyFindPostsDb = await prisma.partyFindPost.findMany({
+        select: {
+          id: true,
+          state: true,
+        },
         where: {
           authorId: user.id,
           partyFindSlots: {
@@ -47,18 +46,53 @@ export const action: ActionFunction = async ({ params, request }) => {
         },
       });
 
-      // For each post, delete all apply states and slots, then delete post.
+      // Validate: If this character belongs to any post that the user posted that are not EXPIRED or DELETED,
+      // prevent the character deletion.
+      if (
+        partyFindPostsDb.some(
+          (partyFindPostDb) =>
+            !(
+              [
+                PartyFindPostState.EXPIRED,
+                PartyFindPostState.DELETED,
+              ] as PartyFindPostState[]
+            ).includes(partyFindPostDb.state)
+        )
+      )
+        return json({});
+
+      // Validate: Check the apply states this character made.
+      // If there's a post that this character got accepted into,
+      // prevent the character deletion.
+      const acceptedPostsDb = await prisma.partyFindPost.findMany({
+        where: {
+          partyFindSlots: {
+            some: {
+              partyFindApplyState: {
+                characterId: characterDb.id,
+                state: PartyFindApplyStateValue.ACCEPTED,
+              },
+            },
+          },
+        },
+      });
+      if (acceptedPostsDb.length > 0) return json({});
+
+      // Delete all engraving slots for this character.
+      await prisma.engravingSlot.deleteMany({
+        where: { characterId: characterDb.id },
+      });
+
+      // For each post, change all apply states to DELETED then update the post to DELETED.
       for (let i = 0; i < partyFindPostsDb.length; i++) {
-        await prisma.partyFindApplyState.deleteMany({
+        await prisma.partyFindApplyState.updateMany({
           where: { partyFindPostId: partyFindPostsDb[i].id },
+          data: { state: PartyFindApplyStateValue.DELETED },
         });
 
-        await prisma.partyFindSlot.deleteMany({
-          where: { partyFindPostId: partyFindPostsDb[i].id },
-        });
-
-        await prisma.partyFindPost.delete({
+        await prisma.partyFindPost.update({
           where: { id: partyFindPostsDb[i].id },
+          data: { state: PartyFindPostState.DELETED },
         });
       }
 

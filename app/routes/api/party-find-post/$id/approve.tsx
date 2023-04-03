@@ -51,7 +51,12 @@ export const action: ActionFunction = async ({ params, request }) => {
           contentType: true,
           startTime: true,
           authorId: true,
-          contentStageId: true,
+          contentStage: {
+            select: {
+              id: true,
+              contentTab: { select: { id: true, contentTabType: true } },
+            },
+          },
         },
       });
 
@@ -230,13 +235,13 @@ export const action: ActionFunction = async ({ params, request }) => {
         prevMaintenance.setDate(prevMaintenance.getDate() - 7);
 
       // Delete all apply states which:
-      // 1. Is for the same content AND
+      // 1. Is for the same content / content tab type AND
       // 2. Is in the same weekly reset week.
-      await prisma.partyFindApplyState.deleteMany({
+      let partyFindApplyStatesDb = await prisma.partyFindApplyState.findMany({
         where: {
           id: { not: applyStateDb.id },
           partyFindPost: {
-            contentStageId: partyFindPostDb.contentStageId,
+            contentStageId: partyFindPostDb.contentStage.id,
             startTime: { lt: nextMaintenance, gte: prevMaintenance },
             contentType: partyFindPostDb.contentType,
             id: { not: partyFindPostDb.id },
@@ -244,6 +249,75 @@ export const action: ActionFunction = async ({ params, request }) => {
           characterId: characterDb.id,
         },
       });
+
+      // If content tab type exists, cancel based on this.
+      if (partyFindPostDb.contentStage.contentTab.contentTabType) {
+        partyFindApplyStatesDb = await prisma.partyFindApplyState.findMany({
+          where: {
+            id: { not: applyStateDb.id },
+            partyFindPost: {
+              startTime: { lt: nextMaintenance, gte: prevMaintenance },
+              contentType: partyFindPostDb.contentType,
+              id: { not: partyFindPostDb.id },
+              contentStage: {
+                contentTab: {
+                  contentTabType:
+                    partyFindPostDb.contentStage.contentTab.contentTabType,
+                },
+              },
+            },
+            characterId: characterDb.id,
+            state: {
+              notIn: [
+                PartyFindApplyStateValue.DELETED,
+                PartyFindApplyStateValue.WITHDRAWN,
+              ],
+            },
+          },
+        });
+      }
+
+      for (let i = 0; i < partyFindApplyStatesDb.length; i++) {
+        // Update the state to WITHDRAWN.
+        await prisma.partyFindApplyState.update({
+          where: { id: partyFindApplyStatesDb[i].id },
+          data: { state: PartyFindApplyStateValue.WITHDRAWN },
+        });
+
+        // If attached to a slot, detach.
+        const slotId = partyFindApplyStatesDb[i].partyFindSlotId;
+        if (slotId) {
+          await prisma.partyFindSlot.update({
+            where: { id: slotId },
+            data: { partyFindApplyState: { disconnect: true } },
+          });
+        }
+
+        // If this post was full but the above update emptied a slot,
+        // change the state to RERECRUITING.
+        const partyFindPostDb = await prisma.partyFindPost.findFirst({
+          where: { id: partyFindApplyStatesDb[i].partyFindPostId },
+        });
+
+        if (
+          partyFindPostDb &&
+          partyFindPostDb.state === PartyFindPostState.FULL
+        ) {
+          const emptySlot = await prisma.partyFindSlot.findFirst({
+            where: {
+              partyFindPostId: partyFindPostDb.id,
+              partyFindApplyState: null,
+            },
+          });
+
+          if (emptySlot) {
+            await prisma.partyFindPost.update({
+              where: { id: partyFindPostDb.id },
+              data: { state: PartyFindPostState.RERECRUITING },
+            });
+          }
+        }
+      }
     } catch (e) {
       console.log(e);
     }

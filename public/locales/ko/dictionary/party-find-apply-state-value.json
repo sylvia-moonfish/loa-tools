@@ -3,5 +3,6 @@
   "ACCEPTED": "승인됨",
   "REJECTED": "거절됨",
   "EXPIRED": "기간만료",
-  "DELETED": "삭제됨"
+  "DELETED": "삭제됨",
+  "WITHDRAWN": "탈퇴함"
 }

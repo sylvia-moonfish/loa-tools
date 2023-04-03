@@ -251,6 +251,7 @@ model ContentTab {
   difficultyNameEn String?
   difficultyNameKo String?
   contentType      ContentType
+  contentTabType   ContentTabType?
 
   content   Content @relation(fields: [contentId], references: [id])
   contentId String
@@ -258,6 +259,13 @@ model ContentTab {
   contentStages ContentStage[]
 
   @@unique([index, contentId])
+}
+
+enum ContentTabType {
+  VALTAN
+  VYKAS
+  KAKUL_SAYDON
+  BRELSHAZA
 }
 
 model ContentStage {

@@ -66,17 +66,34 @@ export const action: ActionFunction = async ({ params, request }) => {
       // (Author cannot leave the group.)
       if (partyFindPostDb.authorId === user.id) return json({});
 
-      // Delete the apply state for this post that belongs to this character.
-      await prisma.partyFindApplyState.delete({
+      // Find the apply state that belongs to this character.
+      const partyFindApplyStateDb = await prisma.partyFindApplyState.findFirst({
         where: {
-          partyFindPostId_characterId: {
-            partyFindPostId: partyFindPostDb.id,
-            characterId: characterDb.id,
-          },
+          characterId: characterDb.id,
+          partyFindPostId: partyFindPostDb.id,
         },
       });
 
-      // If this post was full but the above update empied a slot,
+      // Validate: Check if the apply state exists for this character.
+      if (!partyFindApplyStateDb) return json({});
+
+      // Change the apply state for this post that belongs to this character to WITHDRAWN.
+      await prisma.partyFindApplyState.update({
+        where: {
+          id: partyFindApplyStateDb.id,
+        },
+        data: { state: PartyFindApplyStateValue.WITHDRAWN },
+      });
+
+      // If the apply state was attached to a slot, detach them.
+      if (partyFindApplyStateDb.partyFindSlotId) {
+        await prisma.partyFindSlot.update({
+          where: { id: partyFindApplyStateDb.partyFindSlotId },
+          data: { partyFindApplyState: { disconnect: true } },
+        });
+      }
+
+      // If this post was full but the above update emptied a slot,
       // change the state to RERECRUITING.
       if (partyFindPostDb.state === PartyFindPostState.FULL) {
         const emptySlot = await prisma.partyFindSlot.findFirst({

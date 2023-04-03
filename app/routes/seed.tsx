@@ -1,4 +1,9 @@
-import { ContentType, EngravingType, Job } from "@prisma/client";
+import {
+  ContentTabType,
+  ContentType,
+  EngravingType,
+  Job,
+} from "@prisma/client";
 import type { LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { prisma } from "~/db.server";
@@ -13,6 +18,7 @@ type DataType = {
     nameKo: string;
     difficultyNameEn?: string;
     difficultyNameKo?: string;
+    contentTabType?: ContentTabType;
     contentStages: {
       nameEn: string;
       nameKo: string;
@@ -532,6 +538,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "발탄",
           difficultyNameEn: "Normal",
           difficultyNameKo: "노말",
+          contentTabType: ContentTabType.VALTAN,
           contentStages: [
             {
               nameEn: "Gate 1",
@@ -554,6 +561,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "발탄",
           difficultyNameEn: "Hard",
           difficultyNameKo: "하드",
+          contentTabType: ContentTabType.VALTAN,
           contentStages: [
             {
               nameEn: "Gate 1",
@@ -576,6 +584,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "발탄",
           difficultyNameEn: "Inferno",
           difficultyNameKo: "헬",
+          contentTabType: ContentTabType.VALTAN,
           contentStages: [
             {
               nameEn: "All Gates",
@@ -591,6 +600,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "비아키스",
           difficultyNameEn: "Normal",
           difficultyNameKo: "노말",
+          contentTabType: ContentTabType.VYKAS,
           contentStages: [
             {
               nameEn: "Gate 1",
@@ -620,6 +630,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "비아키스",
           difficultyNameEn: "Hard",
           difficultyNameKo: "하드",
+          contentTabType: ContentTabType.VYKAS,
           contentStages: [
             {
               nameEn: "Gate 1",
@@ -649,6 +660,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "비아키스",
           difficultyNameEn: "Inferno",
           difficultyNameKo: "헬",
+          contentTabType: ContentTabType.VYKAS,
           contentStages: [
             {
               nameEn: "All Gates",
@@ -664,6 +676,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "쿠크세이튼",
           difficultyNameEn: "Normal",
           difficultyNameKo: "노말",
+          contentTabType: ContentTabType.KAKUL_SAYDON,
           contentStages: [
             {
               nameEn: "Gate 1",
@@ -693,6 +706,7 @@ export const loader: LoaderFunction = async ({ request }) => {
           nameKo: "아브렐슈드",
           difficultyNameEn: "Normal",
           difficultyNameKo: "노말",
+          contentTabType: ContentTabType.BRELSHAZA,
           contentStages: [
             {
               nameEn: "Gate 1",

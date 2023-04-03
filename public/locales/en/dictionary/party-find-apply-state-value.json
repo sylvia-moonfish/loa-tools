@@ -3,5 +3,6 @@
   "ACCEPTED": "Approved",
   "REJECTED": "Rejected",
   "EXPIRED": "Expired",
-  "DELETED": "Deleted"
+  "DELETED": "Deleted",
+  "WITHDRAWN": "Withdrawn"
 }
