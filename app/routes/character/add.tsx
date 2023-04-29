@@ -521,380 +521,112 @@ export default function CharacterAddPage() {
           </div>
         </div>
       </div>
-      <div className="mt-[2.0625rem] grid grid-cols-3 gap-[1rem]">
-        <div className="col-span-2 flex flex-col gap-[1.25rem]">
-          <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-              {t("basicInfo", { ns: "routes\\character\\id" })}
-            </div>
-            <div
-              style={{
-                columnGap: "1rem",
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-              }}
-            >
-              <div
-                style={{
-                  columnGap: "2.8125rem",
-                  display: "grid",
-                  gridTemplateColumns: "max-content auto",
-                  rowGap: "0.9375rem",
-                }}
-              >
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("rosterLevel", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateInt(true, rosterLevel, 300, 1)}
-                  onChange={(text) => {
-                    if (validateInt(false, text, 300, 1)) {
-                      setRosterLevel(parseInt(text).toString());
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={rosterLevel}
-                  type="number"
-                />
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("combatLevel", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateInt(true, combatLevel, 60, 1)}
-                  onChange={(text) => {
-                    if (validateInt(false, text, 60, 1)) {
-                      setCombatLevel(parseInt(text).toString());
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={combatLevel}
-                  type="number"
-                />
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("itemLevel", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateFloat(true, itemLevel, 2000, 0)}
-                  onChange={(text) => {
-                    if (validateFloat(false, text, 2000, 0)) {
-                      setItemLevel(parseFloat(text).toString());
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={itemLevel}
-                  type="number"
-                />
-              </div>
-              <div
-                style={{
-                  columnGap: "2.8125rem",
-                  display: "grid",
-                  gridTemplateColumns: "max-content auto",
-                  rowGap: "0.9375rem",
-                }}
-              >
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("guild", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateText(false, guild, 20)}
-                  onChange={(text) => {
-                    if (validateText(false, text, 20)) {
-                      setGuild(text);
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={guild}
-                  type="text"
-                />
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("pvp", { ns: "routes\\character\\id" })}
-                </div>
-                <div></div>
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("stronghold", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateText(false, stronghold, 20)}
-                  onChange={(text) => {
-                    if (validateText(false, text, 20)) {
-                      setStronghold(text);
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={stronghold}
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-              {t("combatStats", { ns: "routes\\character\\id" })}
-            </div>
-            <div
-              style={{
-                columnGap: "2.8125rem",
-                display: "grid",
-                gridTemplateColumns: "max-content auto max-content auto",
-                rowGap: "0.9375rem",
-              }}
-            >
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("crit", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, crit, 3000, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text, 3000, 0)) {
-                    setCrit(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={crit}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("specialization", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, specialization, 3000, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text, 3000, 0)) {
-                    setSpecialization(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={specialization}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("domination", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, domination, 3000, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text, 3000, 0)) {
-                    setDomination(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={domination}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("swiftness", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, swiftness, 3000, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text, 3000, 0)) {
-                    setSwiftness(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={swiftness}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("endurance", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, endurance, 3000, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text, 3000, 0)) {
-                    setEndurance(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={endurance}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("expertise", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, expertise, 3000, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text, 3000, 0)) {
-                    setExpertise(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={expertise}
-                type="number"
-              />
-            </div>
-          </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("basicInfo", { ns: "routes\\character\\id" })}
         </div>
-        <div className="col-span-1 flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-            {t("miscInfo", { ns: "routes\\character\\id" })}
+        <div
+          style={{
+            columnGap: "2.8125rem",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+          }}
+        >
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "max-content auto",
+              rowGap: "0.9375rem",
+            }}
+          >
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("rosterLevel", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateInt(true, rosterLevel, 300, 1)}
+              onChange={(text) => {
+                if (validateInt(false, text, 300, 1)) {
+                  setRosterLevel(parseInt(text).toString());
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={rosterLevel}
+              type="number"
+            />
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("combatLevel", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateInt(true, combatLevel, 60, 1)}
+              onChange={(text) => {
+                if (validateInt(false, text, 60, 1)) {
+                  setCombatLevel(parseInt(text).toString());
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={combatLevel}
+              type="number"
+            />
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("itemLevel", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateFloat(true, itemLevel, 2000, 0)}
+              onChange={(text) => {
+                if (validateFloat(false, text, 2000, 0)) {
+                  setItemLevel(parseFloat(text).toString());
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={itemLevel}
+              type="number"
+            />
           </div>
           <div
             style={{
@@ -905,29 +637,259 @@ export default function CharacterAddPage() {
             }}
           >
             <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-              {t("region", { ns: "routes\\character\\id" })}
+              {t("guild", { ns: "routes\\character\\id" })}
             </div>
-            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-              {data.regions.find((r) => r.id === region?.id)?.shortName}
-            </div>
+            <Input
+              invalid={!validateText(false, guild, 20)}
+              onChange={(text) => {
+                if (validateText(false, text, 20)) {
+                  setGuild(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={guild}
+              type="text"
+            />
             <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-              {t("server", { ns: "routes\\character\\id" })}
-            </div>
-            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-              {server?.text ? server.text[data.locale] : ""}
-            </div>
-            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-              {t("language", { ns: "routes\\character\\id" })}
+              {t("pvp", { ns: "routes\\character\\id" })}
             </div>
             <div></div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("stronghold", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateText(false, stronghold, 20)}
+              onChange={(text) => {
+                if (validateText(false, text, 20)) {
+                  setStronghold(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={stronghold}
+              type="text"
+            />
           </div>
-          <hr className="border-loa-button" />
-          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-            {t("comment", { ns: "routes\\character\\id" })}
-          </div>
-          <div className="flex-grow"></div>
         </div>
       </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("combatStats", { ns: "routes\\character\\id" })}
+        </div>
+        <div
+          style={{
+            columnGap: "2.8125rem",
+            display: "grid",
+            gridTemplateColumns: "max-content auto max-content auto",
+            rowGap: "0.9375rem",
+          }}
+        >
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("crit", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, crit, 3000, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text, 3000, 0)) {
+                setCrit(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={crit}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("specialization", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, specialization, 3000, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text, 3000, 0)) {
+                setSpecialization(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={specialization}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("domination", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, domination, 3000, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text, 3000, 0)) {
+                setDomination(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={domination}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("swiftness", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, swiftness, 3000, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text, 3000, 0)) {
+                setSwiftness(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={swiftness}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("endurance", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, endurance, 3000, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text, 3000, 0)) {
+                setEndurance(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={endurance}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("expertise", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, expertise, 3000, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text, 3000, 0)) {
+                setExpertise(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={expertise}
+            type="number"
+          />
+        </div>
+      </div>
+
       <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
         <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
           {t("engravings", { ns: "routes\\character\\id" })}
@@ -1068,6 +1030,98 @@ export default function CharacterAddPage() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("relicGear", { ns: "routes\\character\\id" })}
+        </div>
+        <div
+          style={{
+            columnGap: "3.375rem",
+            display: "grid",
+            gridTemplateColumns: "max-content auto",
+            rowGap: "0.9375rem",
+          }}
+        >
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("firstSet", { ns: "routes\\character\\id" })}
+          </div>
+          <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+            {data.regions.find((r) => r.id === region?.id)?.shortName}
+          </div>
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("secondSet", { ns: "routes\\character\\id" })}
+          </div>
+          <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+            {server?.text ? server.text[data.locale] : ""}
+          </div>
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("thirdSet", { ns: "routes\\character\\id" })}
+          </div>
+          <div></div>
+        </div>
+      </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div
+          style={{
+            columnGap: "2.8125rem",
+            display: "grid",
+            gridTemplateColumns: "max-content auto",
+            rowGap: "0.9375rem",
+          }}
+        >
+          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+            {t("miscInfo", { ns: "routes\\character\\id" })}
+          </div>
+        </div>
+        <div
+          style={{
+            columnGap: "2.8125rem",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+          }}
+        >
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "max-content auto",
+              rowGap: "0.9375rem",
+            }}
+          >
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("region", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+              {data.regions.find((r) => r.id === region?.id)?.shortName}
+            </div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("server", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+              {server?.text ? server.text[data.locale] : ""}
+            </div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("language", { ns: "routes\\character\\id" })}
+            </div>
+            <div></div>
+          </div>
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            }}
+          >
+            <div className="flex text-[1rem] font-[400] leading-[1.25rem]">
+              {t("comment", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+              {data.regions.find((r) => r.id === region?.id)?.shortName}
+            </div>
+          </div>
         </div>
       </div>
       <div className="mt-[1.25rem]">

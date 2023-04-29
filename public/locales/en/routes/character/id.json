@@ -24,5 +24,9 @@
   "server": "Server",
   "language": "Language",
   "comment": "Comment",
-  "engravings": "Engravings"
+  "engravings": "Engravings",
+  "relicGear": "Relic Gear",
+  "firstSet": "Set 1",
+  "secondSet": "Set 2",
+  "thirdSet": "Set 3"
 }
