@@ -24,5 +24,9 @@
   "server": "서버",
   "language": "언어",
   "comment": "인사말",
-  "engravings": "각인"
+  "engravings": "각인",
+  "relicGear": "유물 장비",
+  "firstSet": "1세트",
+  "secondSet": "2세트",
+  "thirdSet": "3세트"
 }
