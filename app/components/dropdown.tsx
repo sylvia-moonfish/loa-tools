@@ -43,7 +43,7 @@ export default function Dropdown(props: {
       cornerRadius: string;
       fontSize: string;
       fontWeight: string;
-      gap: string;
+      gap: string | undefined;
       inactiveTextColorClass: string;
       invalid?: { outlineColorClass: string; outlineWidth: string };
       lineHeight: string;
@@ -190,7 +190,7 @@ export default function Dropdown(props: {
           left: `${props.style.panel.alignment === "center" ? "50%" : ""}${
             props.style.panel.alignment === "right" ? "100%" : ""
           }`,
-          maxHeight: `${maxHeight}rem`,
+          maxHeight: maxHeight ? `${maxHeight}rem` : undefined,
           transform: `${
             props.style.panel.anchor === "center" ? "translate(-50%, 0)" : ""
           } ${
@@ -200,7 +200,7 @@ export default function Dropdown(props: {
               ? `translate(0, ${props.style.panel.margin}rem)`
               : `translate(0, -100%) translate(0, -${props.style.panel.margin}rem)`
           } ${isOpened ? "scale(1)" : "scale(1, 0)"}`,
-          top: `${isBottom ? "" : "0"}`,
+          top: isBottom ? undefined : "0",
           transformOrigin: isBottom ? "top" : "bottom",
         }}
       >

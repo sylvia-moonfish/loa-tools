@@ -90,7 +90,7 @@ export default function ContentFilter(props: {
             cornerRadius: "0.9375rem",
             fontSize: "0.875rem",
             fontWeight: "500",
-            gap: "",
+            gap: undefined,
             inactiveTextColorClass: "text-loa-grey",
             invalid: {
               outlineColorClass: "outline-loa-red",
@@ -138,7 +138,7 @@ export default function ContentFilter(props: {
             cornerRadius: "0.9375rem",
             fontSize: "0.875rem",
             fontWeight: "500",
-            gap: "",
+            gap: undefined,
             inactiveTextColorClass: "text-loa-grey",
             invalid: {
               outlineColorClass: "outline-loa-red",
@@ -186,7 +186,7 @@ export default function ContentFilter(props: {
             cornerRadius: "0.9375rem",
             fontSize: "0.875rem",
             fontWeight: "500",
-            gap: "",
+            gap: undefined,
             inactiveTextColorClass: "text-loa-grey",
             invalid: {
               outlineColorClass: "outline-loa-red",

@@ -2,13 +2,14 @@ import type { LoaderFunction } from "@remix-run/node";
 import type { ItemType } from "~/components/dropdown";
 import type { FilteredPartyFindPosts } from "~/routes/api/party-find-post/filter";
 import type { LocaleType } from "~/i18n";
-import { Job, JobType } from "@prisma/client";
+import { Job } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 import AddPartyButton from "~/components/tools/party-finder/add-party-button";
 import ContentFilter from "~/components/tools/party-finder/content-filter";
+import SlotCircle from "~/components/tools/party-finder/slot-circle";
 import Button from "~/components/button";
 import Checkbox from "~/components/checkbox";
 import Dropdown from "~/components/dropdown";
@@ -18,7 +19,6 @@ import i18next from "~/i18next.server";
 import { getUserFromRequest } from "~/session.server";
 import {
   convertStringToInt,
-  generateJobIconPath,
   generateProperLocaleDateString,
   getColorCodeFromDifficulty,
   printTime,
@@ -478,7 +478,7 @@ export default function ToolsPartyFinderIndexPage() {
                       cornerRadius: "0.9375rem",
                       fontSize: "0.875rem",
                       fontWeight: "500",
-                      gap: "",
+                      gap: undefined,
                       inactiveTextColorClass: "text-loa-grey",
                       lineHeight: "1.25rem",
                       px: "1.25rem",
@@ -593,7 +593,7 @@ export default function ToolsPartyFinderIndexPage() {
                   cornerRadius: "0.9375rem",
                   fontSize: "0.875rem",
                   fontWeight: "500",
-                  gap: "",
+                  gap: undefined,
                   inactiveTextColorClass: "text-loa-grey",
                   lineHeight: "1.25rem",
                   px: "1.25rem",
@@ -684,7 +684,7 @@ export default function ToolsPartyFinderIndexPage() {
                           l.setDayFilter(!l.dayFilter);
                         }}
                         style={{
-                          gap: "",
+                          gap: undefined,
                           box: {
                             backgroundColorClass: "bg-loa-white",
                             checkColorClass: "text-loa-body",
@@ -745,7 +745,7 @@ export default function ToolsPartyFinderIndexPage() {
                         cornerRadius: "0.9375rem",
                         fontSize: "0.875rem",
                         fontWeight: "500",
-                        gap: "",
+                        gap: undefined,
                         inactiveTextColorClass: "text-loa-grey",
                         lineHeight: "1.25rem",
                         px: "1.25rem",
@@ -801,7 +801,7 @@ export default function ToolsPartyFinderIndexPage() {
                         cornerRadius: "0.9375rem",
                         fontSize: "0.875rem",
                         fontWeight: "500",
-                        gap: "",
+                        gap: undefined,
                         inactiveTextColorClass: "text-loa-grey",
                         lineHeight: "1.25rem",
                         px: "1.25rem",
@@ -858,7 +858,7 @@ export default function ToolsPartyFinderIndexPage() {
                       cornerRadius: "0.9375rem",
                       fontSize: "0.875rem",
                       fontWeight: "500",
-                      gap: "",
+                      gap: undefined,
                       inactiveTextColorClass: "text-loa-grey",
                       lineHeight: "1.25rem",
                       px: "1.25rem",
@@ -902,7 +902,7 @@ export default function ToolsPartyFinderIndexPage() {
                       cornerRadius: "0.9375rem",
                       fontSize: "0.875rem",
                       fontWeight: "500",
-                      gap: "",
+                      gap: undefined,
                       inactiveTextColorClass: "text-loa-grey",
                       lineHeight: "1.25rem",
                       px: "1.25rem",
@@ -1367,72 +1367,18 @@ export default function ToolsPartyFinderIndexPage() {
                     </div>
                     <div className="flex h-[2rem] items-end gap-[0.3125rem]">
                       {partyFindPost.partyFindSlots.map((slot, index) => {
-                        let circle, star;
-
-                        if (
-                          slot.partyFindApplyState &&
-                          slot.partyFindApplyState.id
-                        ) {
-                          const iconPath = generateJobIconPath(
-                            slot.partyFindApplyState.character.job
-                          );
-
-                          circle = (
-                            <div
-                              className={`${
-                                slot.jobType === JobType.SUPPORT
-                                  ? "border-loa-green "
-                                  : "border-loa-red "
-                              }rounded-full border-2 px-[0.125rem] py-[0.125rem]`}
-                            >
-                              <div
-                                className="h-[1.5625rem] w-[1.5625rem] rounded-full bg-contain bg-center bg-no-repeat"
-                                style={{
-                                  backgroundImage: iconPath
-                                    ? `url('${iconPath}')`
-                                    : "",
-                                }}
-                              ></div>
-                            </div>
-                          );
-                        } else {
-                          circle = (
-                            <div
-                              className={`${
-                                slot.jobType === JobType.SUPPORT
-                                  ? "bg-loa-green "
-                                  : ""
-                              }${
-                                slot.jobType === JobType.DPS
-                                  ? "bg-loa-red "
-                                  : ""
-                              }${
-                                slot.jobType === JobType.ANY
-                                  ? "bg-loa-grey "
-                                  : ""
-                              }h-[2.0625rem] w-[2.0625rem] rounded-full`}
-                            />
-                          );
-                        }
-
-                        if (
-                          slot.partyFindApplyState &&
-                          slot.partyFindApplyState.id &&
-                          slot.partyFindApplyState.character.roster.userId ===
-                            partyFindPost.authorId
-                        ) {
-                          star = (
-                            <div className="material-symbols-outlined absolute right-[-5px] top-[-5px] text-[1.125rem] text-loa-party-leader-star">
-                              star
-                            </div>
-                          );
-                        }
-
                         return (
-                          <div className="relative" key={index}>
-                            {circle}
-                            {star}
-                          </div>
+                          <SlotCircle
+                            key={index}
+                            locale={data.locale}
+                            slot={slot}
+                            star={
+                              !!slot.partyFindApplyState &&
+                              !!slot.partyFindApplyState.id &&
+                              slot.partyFindApplyState.character.roster
+                                .userId === partyFindPost.authorId
+                            }
+                          />
                         );
                       })}
                     </div>

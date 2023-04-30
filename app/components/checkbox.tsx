@@ -4,7 +4,7 @@ export default function Checkbox(props: {
   isChecked: boolean;
   onClick: () => void;
   style: {
-    gap: string;
+    gap: string | undefined;
     box: {
       backgroundColorClass: string;
       checkColorClass: string;

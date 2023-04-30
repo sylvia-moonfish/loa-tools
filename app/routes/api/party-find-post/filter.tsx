@@ -3,6 +3,8 @@ import type {
   Content,
   ContentStage,
   ContentTab,
+  Engraving,
+  EngravingSlot,
   PartyFindApplyState,
   PartyFindPost,
   PartyFindSlot,
@@ -65,9 +67,23 @@ export type FilteredPartyFindPosts = {
       id: PartyFindApplyState["id"];
       character: {
         id: Character["id"];
+        name: Character["name"];
         job: Character["job"];
         itemLevel: Character["itemLevel"];
-        roster: { id: Roster["id"]; userId: Roster["userId"] };
+        engravingSlots: {
+          id: EngravingSlot["id"];
+          level: EngravingSlot["level"];
+          engraving: {
+            id: Engraving["id"];
+            nameEn: Engraving["nameEn"];
+            nameKo: Engraving["nameKo"];
+          };
+        }[];
+        roster: {
+          id: Roster["id"];
+          level: Roster["level"];
+          userId: Roster["userId"];
+        };
       };
     };
   }[];
@@ -115,41 +131,83 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
         ) AS "server",
         (
           SELECT
-            json_agg(
-              json_build_object(
-                'id', "PartyFindSlot"."id",
-                'index', "PartyFindSlot"."index",
-                'jobType', "PartyFindSlot"."jobType",
-                'partyFindApplyState', json_build_object(
-                  'id', "PartyFindApplyState"."id",
-                  'character', json_build_object(
-                    'id', "Character"."id",
-                    'job', "Character"."job",
-                    'itemLevel', "Character"."itemLevel",
-                    'roster', json_build_object(
-                      'id', "Roster"."id",
-                      'userId', "Roster"."userId"
-                    )
-                  )
-                )
-              ) ORDER BY "index" ASC
-            )
+            json_agg("_PartyFindSlot")
           FROM
-            "public"."PartyFindSlot"
-          LEFT JOIN
-            "public"."PartyFindApplyState"
-          ON
-            "PartyFindApplyState"."partyFindSlotId" = "PartyFindSlot"."id"
-          LEFT JOIN
-            "public"."Character"
-            ON
-              "Character"."id" = "PartyFindApplyState"."characterId"
-          LEFT JOIN
-            "public"."Roster"
-          ON
-            "Roster"."id" = "Character"."rosterId"
-          WHERE
-            "PartyFindSlot"."partyFindPostId" = "PartyFindPost"."id"
+            (
+              SELECT
+                "PartyFindSlot"."id",
+                "PartyFindSlot"."index",
+                "PartyFindSlot"."jobType",
+                (
+                  SELECT
+                    row_to_json("_PartyFindApplyState")
+                  FROM
+                    (
+                      SELECT
+                        "PartyFindApplyState"."id",
+                        (
+                          SELECT
+                            row_to_json("_Character")
+                          FROM
+                            (
+                              SELECT
+                                "Character"."id",
+                                "Character"."name",
+                                "Character"."job",
+                                "Character"."itemLevel",
+                                (
+                                  SELECT
+                                    json_agg("_EngravingSlot")
+                                  FROM
+                                    (
+                                      SELECT
+                                        "EngravingSlot"."id",
+                                        "EngravingSlot". "level",
+                                        json_build_object(
+                                          'id', "Engraving"."id",
+                                          'nameEn', "Engraving"."nameEn",
+                                          'nameKo', "Engraving"."nameKo"
+                                        ) AS "engraving"
+                                      FROM
+                                        "public"."EngravingSlot"
+                                      LEFT JOIN
+                                        "public"."Engraving"
+                                      ON
+                                        "Engraving"."id" = "EngravingSlot"."engravingId"
+                                      WHERE
+                                        "EngravingSlot"."characterId" = "Character"."id"
+                                      ORDER BY
+                                        "EngravingSlot"."index"
+                                    ) "_EngravingSlot"
+                                ) AS "engravingSlots",
+                                json_build_object(
+                                  'id', "Roster"."id",
+                                  'level', "Roster"."level",
+                                  'userId', "Roster"."userId"
+                                ) AS "roster"
+                              FROM
+                                "public"."Character"
+                              LEFT JOIN
+                                "public"."Roster"
+                              ON
+                                "Roster"."id" = "Character"."rosterId"
+                              WHERE
+                                "Character"."id" = "PartyFindApplyState"."characterId"
+                            ) "_Character"
+                        ) AS "character"
+                      FROM
+                        "public"."PartyFindApplyState"
+                      WHERE
+                        "PartyFindApplyState"."partyFindSlotId" = "PartyFindSlot"."id"
+                    ) "_PartyFindApplyState"
+                ) AS "partyFindApplyState"
+              FROM
+                "public"."PartyFindSlot"
+              WHERE
+                "PartyFindSlot"."partyFindPostId" = "PartyFindPost"."id"
+              ORDER BY
+                "PartyFindSlot"."index" ASC
+            ) "_PartyFindSlot"
         ) AS "partyFindSlots"
       FROM
         "public"."PartyFindPost"
