@@ -48,6 +48,7 @@ export const handle = {
     "components\\my-roster\\expandable-panel",
     "components\\tools\\party-finder\\add-party-button",
     "components\\tools\\party-finder\\content-filter",
+    "components\\tools\\party-finder\\info-overlay",
     "components\\header",
     "dictionary\\job",
     "dictionary\\locale",
