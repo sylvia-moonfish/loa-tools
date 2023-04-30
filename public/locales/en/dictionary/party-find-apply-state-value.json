@@ -1,0 +1,8 @@
+{
+  "WAITING": "Waiting",
+  "ACCEPTED": "Approved",
+  "REJECTED": "Rejected",
+  "EXPIRED": "Expired",
+  "DELETED": "Deleted",
+  "WITHDRAWN": "Withdrawn"
+}

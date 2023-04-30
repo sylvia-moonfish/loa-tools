@@ -8,31 +8,391 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  password Password?
-  notes    Note[]
+  discordId            String  @unique
+  discordUsername      String
+  discordDiscriminator String
+  discordAvatarHash    String?
+
+  languages Language[]
+
+  rosters        Roster[]
+  partyFindPosts PartyFindPost[]
+  alarms         Alarm[]
 }
 
-model Password {
-  hash String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String @unique
+enum Language {
+  KR
+  EN
 }
 
-model Note {
-  id    String @id @default(cuid())
-  title String
-  body  String
+model Region {
+  id String @id @default(cuid())
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  name      String @unique
+  abbr      String @unique
+  shortName String @unique
+
+  servers Server[]
+}
+
+model Server {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String @unique
+
+  region   Region @relation(fields: [regionId], references: [id])
+  regionId String
+
+  guilds         Guild[]
+  partyFindPosts PartyFindPost[]
+  rosters        Roster[]
+}
+
+model Guild {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+
+  server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  characters Character[]
+
+  @@unique([name, serverId])
+}
+
+model Roster {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  level      Int
+  stronghold Stronghold?
+
+  server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  user   User   @relation(fields: [userId], references: [id])
   userId String
+
+  characters Character[]
+
+  @@unique([serverId, userId])
+}
+
+model Stronghold {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name  String
+  level Int
+
+  roster   Roster @relation(fields: [rosterId], references: [id])
+  rosterId String @unique
+}
+
+model Character {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name      String
+  isPrimary Boolean
+  job       Job
+
+  onTimeBadge       Int
+  friendlyBadge     Int
+  professionalBadge Int
+
+  combatLevel Int
+  itemLevel   Float
+
+  comment String
+
+  crit           Int
+  specialization Int
+  domination     Int
+  swiftness      Int
+  endurance      Int
+  expertise      Int
+
+  roster   Roster @relation(fields: [rosterId], references: [id])
+  rosterId String
+
+  guild   Guild?  @relation(fields: [guildId], references: [id])
+  guildId String?
+
+  engravingSlots EngravingSlot[]
+  applyStates    PartyFindApplyState[]
+
+  @@unique([name, rosterId])
+}
+
+model Engraving {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  nameEn     String
+  nameKo     String
+  isPositive Boolean
+  iconPath   String
+  type       EngravingType
+  job        Job?
+
+  engravingSlots EngravingSlot[]
+}
+
+enum EngravingType {
+  COMBAT
+  CLASS
+}
+
+model EngravingSlot {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  index Int
+  level Int
+
+  engraving   Engraving @relation(fields: [engravingId], references: [id])
+  engravingId String
+
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+
+  @@unique([characterId, index])
+  @@unique([characterId, engravingId])
+}
+
+enum Job {
+  DESTROYER
+  GUNLANCER
+  BERSERKER
+  PALADIN
+
+  STRIKER
+
+  WARDANCER
+  SCRAPPER
+  SOULFIST
+  GLAIVIER
+
+  DEADEYE
+  ARTILLERIST
+  SHARPSHOOTER
+  MACHINIST
+
+  GUNSLINGER
+
+  BARD
+  SUMMONER
+  ARCANIST
+  SORCERESS
+
+  DEATHBLADE
+  SHADOWHUNTER
+  REAPER
+
+  ARTIST
+}
+
+enum ContentType {
+  CHAOS_DUNGEON
+  GUARDIAN_RAID
+  ABYSSAL_DUNGEON
+  ABYSS_RAID
+  LEGION_RAID
+}
+
+model Content {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  nameEn      String
+  nameKo      String
+  contentType ContentType
+
+  contentTabs ContentTab[]
+}
+
+model ContentTab {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  index            Int
+  nameEn           String
+  nameKo           String
+  difficultyNameEn String?
+  difficultyNameKo String?
+  contentType      ContentType
+  contentTabType   ContentTabType?
+
+  content   Content @relation(fields: [contentId], references: [id])
+  contentId String
+
+  contentStages ContentStage[]
+
+  @@unique([index, contentId])
+}
+
+enum ContentTabType {
+  VALTAN
+  VYKAS
+  KAKUL_SAYDON
+  BRELSHAZA
+}
+
+model ContentStage {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  index       Int
+  nameEn      String
+  nameKo      String
+  tier        Int
+  level       Int
+  groupSize   Int?
+  contentType ContentType
+
+  contentTab   ContentTab @relation(fields: [contentTabId], references: [id])
+  contentTabId String
+
+  partyFindPosts PartyFindPost[]
+
+  @@unique([index, contentTabId])
+}
+
+model PartyFindPost {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  state           PartyFindPostState
+  contentType     ContentType
+  isPracticeParty Boolean
+  isReclearParty  Boolean
+  title           String
+  startTime       DateTime
+  recurring       Boolean
+
+  contentStage   ContentStage @relation(fields: [contentStageId], references: [id])
+  contentStageId String
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  server   Server @relation(fields: [serverId], references: [id])
+  serverId String
+
+  partyFindSlots PartyFindSlot[]
+  applyStates    PartyFindApplyState[]
+}
+
+enum PartyFindPostState {
+  RECRUITING
+  FULL
+  RERECRUITING
+  EXPIRED
+  DELETED
+}
+
+model PartyFindSlot {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  index   Int
+  jobType JobType
+
+  partyFindPost   PartyFindPost @relation(fields: [partyFindPostId], references: [id])
+  partyFindPostId String
+
+  partyFindApplyState PartyFindApplyState?
+
+  @@unique([index, partyFindPostId])
+}
+
+enum JobType {
+  DPS
+  SUPPORT
+  ANY
+}
+
+model PartyFindApplyState {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  state PartyFindApplyStateValue
+
+  partyFindPost   PartyFindPost @relation(fields: [partyFindPostId], references: [id])
+  partyFindPostId String
+
+  partyFindSlot   PartyFindSlot? @relation(fields: [partyFindSlotId], references: [id])
+  partyFindSlotId String?        @unique
+
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+
+  @@unique([partyFindPostId, characterId])
+}
+
+enum PartyFindApplyStateValue {
+  WAITING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  DELETED
+  WITHDRAWN
+}
+
+model Alarm {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  message AlarmMessageType
+  link    String
+  isRead  Boolean
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+}
+
+enum AlarmMessageType {
+  PARTY_FIND_POST_SOMEONE_APPLIED
+  PARTY_FIND_POST_RECRUIT_COMPLETE
+  PARTY_FIND_POST_APPROVED
 }
