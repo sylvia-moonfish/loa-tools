@@ -1,10 +1,12 @@
 import type { ItemType } from "~/components/dropdown";
 import type { LocaleType } from "~/i18n";
+import { Relic } from "@prisma/client";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
 
 export default function InfoOverlay(props: {
   enabled: boolean;
+  relicPieces: { id: string; number: number; relic: Relic }[];
   engravings: {
     engraving: { id: string; nameEn: string; nameKo: string };
     level: number;
@@ -94,14 +96,24 @@ export default function InfoOverlay(props: {
         </div>
         <hr className="border-loa-button" />
         <div className="flex flex-col gap-[0.9375rem]">
-          <div className="flex justify-between gap-[2.8125rem] text-[0.875rem]">
-            <div className="font-[400]">갈망</div>
-            <div className="font-[700]">2부위</div>
-          </div>
-          <div className="flex justify-between gap-[2.8125rem] text-[0.875rem]">
-            <div className="font-[400]">사멸</div>
-            <div className="font-[700]">4부위</div>
-          </div>
+          {props.relicPieces.map((relicPiece) => {
+            return (
+              <div
+                className="flex justify-between gap-[2.8125rem] text-[0.875rem]"
+                key={relicPiece.id}
+              >
+                <div className="font-[400]">
+                  {t(relicPiece.relic, { ns: "dictionary\\relic" })}
+                </div>
+                <div className="font-[700]">{`${relicPiece.number.toString()} ${t(
+                  "pieces",
+                  {
+                    ns: "routes\\character\\id",
+                  }
+                )}`}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

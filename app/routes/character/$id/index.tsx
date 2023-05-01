@@ -66,6 +66,7 @@ const getCharacter = async (id: string) => {
         },
       },
       guild: { select: { id: true, name: true } },
+      relicPieces: { select: { id: true, number: true, relic: true } },
       engravingSlots: {
         select: {
           id: true,
@@ -356,164 +357,282 @@ export default function CharacterIdIndexPage() {
             </span>
           </div>
         </div>
-        <div className="mt-[0.625rem] grid grid-cols-3 gap-[1rem]">
-          <div className="col-span-2 flex flex-col gap-[1.25rem]">
-            <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-              <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-                {t("basicInfo", { ns: "routes\\character\\id" })}
-              </div>
-              <div
-                style={{
-                  columnGap: "1rem",
-                  display: "grid",
-                  gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-                }}
-              >
-                <div
-                  style={{
-                    columnGap: "2rem",
-                    display: "grid",
-                    gridTemplateColumns: "max-content auto",
-                    rowGap: "0.9375rem",
-                  }}
-                >
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("rosterLevel", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">
-                      lv.{data.character.roster.level}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("combatLevel", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">
-                      lv.{data.character.combatLevel}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("itemLevel", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem] text-loa-pink">
-                    <span className="truncate">
-                      lv.{data.character.itemLevel.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    columnGap: "2rem",
-                    display: "grid",
-                    gridTemplateColumns: "max-content auto",
-                    rowGap: "0.9375rem",
-                  }}
-                >
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("guild", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">
-                      {data.character.guild?.name ?? ""}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("pvp", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate"></span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("stronghold", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">
-                      {data.character.roster.stronghold?.name ?? ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-              <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-                {t("combatStats", { ns: "routes\\character\\id" })}
-              </div>
-              <div
-                style={{
-                  columnGap: "1rem",
-                  display: "grid",
-                  gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-                }}
-              >
-                <div
-                  style={{
-                    columnGap: "2rem",
-                    display: "grid",
-                    gridTemplateColumns: "max-content auto",
-                    rowGap: "0.9375rem",
-                  }}
-                >
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("crit", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">{data.character.crit}</span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("domination", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">
-                      {data.character.domination}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("endurance", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">{data.character.endurance}</span>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    columnGap: "2rem",
-                    display: "grid",
-                    gridTemplateColumns: "max-content auto",
-                    rowGap: "0.9375rem",
-                  }}
-                >
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("specialization", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">
-                      {data.character.specialization}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("swiftness", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">{data.character.swiftness}</span>
-                  </div>
-                  <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {t("expertise", { ns: "routes\\character\\id" })}
-                  </div>
-                  <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
-                    <span className="truncate">{data.character.expertise}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+            {t("basicInfo", { ns: "routes\\character\\id" })}
           </div>
-          <div className="col-span-1 flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-              {t("miscInfo", { ns: "routes\\character\\id" })}
+          <div
+            style={{
+              columnGap: "1rem",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            }}
+          >
+            <div
+              style={{
+                columnGap: "2rem",
+                display: "grid",
+                gridTemplateColumns: "max-content auto",
+                rowGap: "0.9375rem",
+              }}
+            >
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("rosterLevel", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">
+                  lv.{data.character.roster.level}
+                </span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("combatLevel", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">
+                  lv.{data.character.combatLevel}
+                </span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("itemLevel", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem] text-loa-pink">
+                <span className="truncate">
+                  lv.{data.character.itemLevel.toFixed(2)}
+                </span>
+              </div>
             </div>
             <div
               style={{
                 columnGap: "2rem",
+                display: "grid",
+                gridTemplateColumns: "max-content auto",
+                rowGap: "0.9375rem",
+              }}
+            >
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("guild", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">
+                  {data.character.guild?.name ?? ""}
+                </span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("pvp", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate"></span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("stronghold", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">
+                  {data.character.roster.stronghold?.name ?? ""}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+            {t("combatStats", { ns: "routes\\character\\id" })}
+          </div>
+          <div
+            style={{
+              columnGap: "1rem",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            }}
+          >
+            <div
+              style={{
+                columnGap: "2rem",
+                display: "grid",
+                gridTemplateColumns: "max-content auto",
+                rowGap: "0.9375rem",
+              }}
+            >
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("crit", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">{data.character.crit}</span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("domination", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">{data.character.domination}</span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("endurance", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">{data.character.endurance}</span>
+              </div>
+            </div>
+            <div
+              style={{
+                columnGap: "2rem",
+                display: "grid",
+                gridTemplateColumns: "max-content auto",
+                rowGap: "0.9375rem",
+              }}
+            >
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("specialization", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">
+                  {data.character.specialization}
+                </span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("swiftness", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">{data.character.swiftness}</span>
+              </div>
+              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+                {t("expertise", { ns: "routes\\character\\id" })}
+              </div>
+              <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+                <span className="truncate">{data.character.expertise}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+            {t("engravings", { ns: "routes\\character\\id" })}
+          </div>
+          <div
+            style={{
+              columnGap: "3.375rem",
+              display: "grid",
+              gridAutoFlow: "column",
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+              gridTemplateRows:
+                "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
+              rowGap: "0.9375rem",
+            }}
+          >
+            {engravingPanel.map((e, index) => {
+              return (
+                <div className="flex items-center gap-[0.9375rem]" key={index}>
+                  <div
+                    className="h-[1.375rem] w-[1.375rem] rounded-full bg-contain bg-center bg-no-repeat"
+                    style={{
+                      backgroundColor: e ? undefined : "#d9d9d9",
+                      backgroundImage: e ? `url('${e.iconPath}')` : undefined,
+                    }}
+                  ></div>
+                  <div className="flex flex-grow items-center text-[1rem] font-[400] leading-[1.25rem]">
+                    {e ? e.name[data.locale] : "-"}
+                  </div>
+                  <div className="flex items-center">
+                    {e ? `lv.${e.level}` : "-"}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+            {t("relicGear", { ns: "routes\\character\\id" })}
+          </div>
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "max-content max-content auto",
+              rowGap: "0.9375rem",
+            }}
+          >
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("firstSet", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate">
+                {data.character.relicPieces.length > 0
+                  ? t(data.character.relicPieces[0].relic, {
+                      ns: "dictionary\\relic",
+                    })
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate">
+                {data.character.relicPieces.length > 0
+                  ? `${data.character.relicPieces[0].number} ${t("pieces", {
+                      ns: "routes\\character\\id",
+                    })}`
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("secondSet", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate">
+                {data.character.relicPieces.length > 1
+                  ? t(data.character.relicPieces[1].relic, {
+                      ns: "dictionary\\relic",
+                    })
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate">
+                {data.character.relicPieces.length > 1
+                  ? `${data.character.relicPieces[1].number} ${t("pieces", {
+                      ns: "routes\\character\\id",
+                    })}`
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("thirdSet", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate">
+                {data.character.relicPieces.length > 2
+                  ? t(data.character.relicPieces[2].relic, {
+                      ns: "dictionary\\relic",
+                    })
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate">
+                {data.character.relicPieces.length > 2
+                  ? `${data.character.relicPieces[2].number} ${t("pieces", {
+                      ns: "routes\\character\\id",
+                    })}`
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-center overflow-hidden text-[1rem] font-[700] leading-[1.25rem]">
+              <span className="truncate"></span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+            {t("miscInfo", { ns: "routes\\character\\id" })}
+          </div>
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            }}
+          >
+            <div
+              style={{
+                columnGap: "2.8125rem",
                 display: "grid",
                 gridTemplateColumns: "max-content auto",
                 rowGap: "0.9375rem",
@@ -542,47 +661,19 @@ export default function CharacterIdIndexPage() {
                 <span className="truncate"></span>
               </div>
             </div>
-            <hr className="border-loa-button" />
-            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-              {t("comment", { ns: "routes\\character\\id" })}
+            <div
+              style={{
+                columnGap: "2.8125rem",
+                display: "grid",
+                gridTemplateColumns: "max-content auto",
+                rowGap: "0.9375rem",
+              }}
+            >
+              <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+                {t("comment", { ns: "routes\\character\\id" })}
+              </div>
+              <div></div>
             </div>
-            <div className="flex-grow"></div>
-          </div>
-        </div>
-        <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-            {t("engravings", { ns: "routes\\character\\id" })}
-          </div>
-          <div
-            style={{
-              columnGap: "3.375rem",
-              display: "grid",
-              gridAutoFlow: "column",
-              gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-              gridTemplateRows:
-                "minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr)",
-              rowGap: "0.9375rem",
-            }}
-          >
-            {engravingPanel.map((e, index) => {
-              return (
-                <div className="flex items-center gap-[0.9375rem]" key={index}>
-                  <div
-                    className="h-[1.375rem] w-[1.375rem] rounded-full bg-contain bg-center bg-no-repeat"
-                    style={{
-                      backgroundColor: e ? "" : "#d9d9d9",
-                      backgroundImage: e ? `url('${e.iconPath}')` : "",
-                    }}
-                  ></div>
-                  <div className="flex flex-grow items-center text-[1rem] font-[400] leading-[1.25rem]">
-                    {e ? e.name[data.locale] : "-"}
-                  </div>
-                  <div className="flex items-center">
-                    {e ? `lv.${e.level}` : "-"}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </div>
