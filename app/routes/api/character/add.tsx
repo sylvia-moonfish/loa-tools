@@ -1,5 +1,5 @@
 import type { ActionFunction } from "@remix-run/node";
-import { Job } from "@prisma/client";
+import { Job, Relic } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { prisma } from "~/db.server";
 import { requireUser } from "~/session.server";
@@ -22,6 +22,7 @@ export type ActionBody = {
   swiftness: number;
   endurance: number;
   expertise: number;
+  relics: { id: string; number: number }[];
   engravings: { id: string; level: number }[];
   userId: string;
 };
@@ -181,6 +182,29 @@ export const action: ActionFunction = async ({ request }) => {
           success: false,
           errorMessage: "commonError",
         });
+
+      let relicSum = 0;
+
+      for (let i = 0; i < actionBody.relics.length; i++) {
+        const relic = actionBody.relics[i];
+
+        if (
+          relic.id !== "NONE" &&
+          relic.number > 0 &&
+          relicSum + relic.number <= 6 &&
+          (Object.values(Relic) as string[]).includes(relic.id)
+        ) {
+          const relicPiece = await prisma.relicPiece.create({
+            data: {
+              number: relic.number,
+              relic: relic.id as Relic,
+              characterId: character.id,
+            },
+          });
+
+          relicSum += relicPiece.number;
+        }
+      }
 
       let index = 1;
 

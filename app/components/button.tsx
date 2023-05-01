@@ -35,14 +35,16 @@ export default function Button(props: {
         if (!props.disabled && props.onClick) props.onClick();
       }}
       style={{
-        borderRadius: props.style.cornerRadius,
-        fontSize: props.style.fontSize,
-        fontWeight: props.style.fontWeight,
-        lineHeight: props.style.lineHeight,
-        paddingBottom: props.style.py,
-        paddingLeft: props.style.px,
-        paddingRight: props.style.px,
-        paddingTop: props.style.py,
+        borderRadius: props.style.cornerRadius
+          ? props.style.cornerRadius
+          : undefined,
+        fontSize: props.style.fontSize ? props.style.fontSize : undefined,
+        fontWeight: props.style.fontWeight ? props.style.fontWeight : undefined,
+        lineHeight: props.style.lineHeight ? props.style.lineHeight : undefined,
+        paddingBottom: props.style.py ? props.style.py : undefined,
+        paddingLeft: props.style.px ? props.style.px : undefined,
+        paddingRight: props.style.px ? props.style.px : undefined,
+        paddingTop: props.style.py ? props.style.py : undefined,
       }}
     >
       {props.text}

@@ -55,6 +55,7 @@ export const handle = {
     "dictionary\\party-find-apply-state-value",
     "dictionary\\party-find-content-type",
     "dictionary\\party-find-post-state",
+    "dictionary\\relic",
     "dictionary\\time-elapsed",
     "routes\\character\\add",
     "routes\\character\\id",
