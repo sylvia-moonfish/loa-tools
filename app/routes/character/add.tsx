@@ -1,7 +1,7 @@
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import type { ActionBody, ActionData } from "~/routes/api/character/add";
 import type { LocaleType } from "~/i18n";
-import { Job } from "@prisma/client";
+import { Job, Relic } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import * as React from "react";
@@ -123,6 +123,30 @@ export default function CharacterAddPage() {
   const [endurance, setEndurance] = React.useState("");
   const [expertise, setExpertise] = React.useState("");
 
+  const _relics = [
+    { i18n: { keyword: "NONE", namespace: "dictionary\\relic" }, id: "NONE" },
+  ];
+  Object.values(Relic).forEach((relic) => {
+    _relics.push({
+      i18n: { keyword: relic, namespace: "dictionary\\relic" },
+      id: relic,
+    });
+  });
+
+  const [relics, setRelics] = React.useState<ItemType[]>(_relics);
+  const [firstRelic, setFirstRelic] = React.useState<ItemType | undefined>(
+    _relics[0]
+  );
+  const [firstRelicNumber, setFirstRelicNumber] = React.useState("");
+  const [secondRelic, setSecondRelic] = React.useState<ItemType | undefined>(
+    _relics[0]
+  );
+  const [secondRelicNumber, setSecondRelicNumber] = React.useState("");
+  const [thirdRelic, setThirdRelic] = React.useState<ItemType | undefined>(
+    _relics[0]
+  );
+  const [thirdRelicNumber, setThirdRelicNumber] = React.useState("");
+
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(
     undefined
   );
@@ -207,6 +231,33 @@ export default function CharacterAddPage() {
     );
   };
 
+  const createRelicArray = () => {
+    const relicArray: { id: string; number: number }[] = [];
+
+    const firstRelicItem = createRelicItem(firstRelic, firstRelicNumber);
+    if (firstRelicItem) relicArray.push(firstRelicItem);
+
+    const secondRelicItem = createRelicItem(secondRelic, secondRelicNumber);
+    if (secondRelicItem) relicArray.push(secondRelicItem);
+
+    const thirdRelicItem = createRelicItem(thirdRelic, thirdRelicNumber);
+    if (thirdRelicItem) relicArray.push(thirdRelicItem);
+
+    return relicArray;
+  };
+
+  const createRelicItem = (relic: ItemType | undefined, number: string) => {
+    if (relic && relic.id !== "NONE" && number !== "") {
+      const parsedNumber = parseInt(number);
+
+      if (parsedNumber > 0) {
+        return { id: relic.id, number: parsedNumber };
+      }
+    }
+
+    return undefined;
+  };
+
   React.useEffect(() => {
     if (job) {
       const filteredItems = getFilteredItems("");
@@ -280,7 +331,7 @@ export default function CharacterAddPage() {
         <div
           className="h-[4.0625rem] w-[4.0625rem] rounded-full bg-contain bg-center bg-no-repeat"
           style={{
-            backgroundImage: jobIconPath ? `url('${jobIconPath}')` : "",
+            backgroundImage: jobIconPath ? `url('${jobIconPath}')` : undefined,
           }}
         ></div>
         <div className="ml-[1.5625rem] flex w-[27.9375rem] flex-col gap-[0.5rem]">
@@ -889,7 +940,6 @@ export default function CharacterAddPage() {
           />
         </div>
       </div>
-
       <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
         <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
           {t("engravings", { ns: "routes\\character\\id" })}
@@ -915,8 +965,10 @@ export default function CharacterAddPage() {
                 <div
                   className="h-[1.375rem] w-[1.375rem] rounded-full bg-contain bg-center bg-no-repeat"
                   style={{
-                    backgroundColor: iconPath ? "" : "#d9d9d9",
-                    backgroundImage: iconPath ? `url('${iconPath}')` : "",
+                    backgroundColor: iconPath ? undefined : "#d9d9d9",
+                    backgroundImage: iconPath
+                      ? `url('${iconPath}')`
+                      : undefined,
                   }}
                 ></div>
                 <div className="flex-grow">
@@ -1032,7 +1084,6 @@ export default function CharacterAddPage() {
           })}
         </div>
       </div>
-
       <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
         <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
           {t("relicGear", { ns: "routes\\character\\id" })}
@@ -1048,19 +1099,245 @@ export default function CharacterAddPage() {
           <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
             {t("firstSet", { ns: "routes\\character\\id" })}
           </div>
-          <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-            {data.regions.find((r) => r.id === region?.id)?.shortName}
+          <div className="flex items-center gap-[1rem] text-[1rem] font-[700] leading-[1.25rem]">
+            <Dropdown
+              items={relics}
+              locale={data.locale}
+              onChange={(item) => {
+                if (item && item.id === "NONE") {
+                  setFirstRelicNumber("");
+                }
+
+                setFirstRelic(item);
+              }}
+              placeholder={""}
+              selected={firstRelic}
+              style={{
+                panel: {
+                  alignment: "center",
+                  anchor: "center",
+                  backgroundColorClass: "bg-loa-panel",
+                  borderColorClass: "border-loa-button",
+                  borderWidth: "0.075rem",
+                  cornerRadius: "0.9375rem",
+                  item: {
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.625rem",
+                    py: "0.3125rem",
+                    separator: {
+                      colorClass: "border-loa-button",
+                      margin: "0.3125rem",
+                    },
+                  },
+                  margin: 0.25,
+                  maxHeight: 15,
+                },
+                selectButton: {
+                  backgroundColorClass: "bg-loa-inactive",
+                  cornerRadius: "0.9375rem",
+                  fontSize: "0.75rem",
+                  fontWeight: "500",
+                  gap: "0.625rem",
+                  inactiveTextColorClass: "text-loa-grey",
+                  invalid: {
+                    outlineColorClass: "outline-loa-red",
+                    outlineWidth: "0.15rem",
+                  },
+                  lineHeight: "1.25rem",
+                  px: "0.625rem",
+                  py: "0.3125rem",
+                },
+              }}
+            />
+            <Input
+              disabled={!firstRelic || (firstRelic && firstRelic.id === "NONE")}
+              onChange={(text) => {
+                let parsed = parseInt(text);
+
+                if (parsed > 0 && parsed <= 6) {
+                  setFirstRelicNumber(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-[3rem]",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={firstRelicNumber}
+              type="number"
+            />
           </div>
           <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
             {t("secondSet", { ns: "routes\\character\\id" })}
           </div>
-          <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-            {server?.text ? server.text[data.locale] : ""}
+          <div className="flex items-center gap-[1rem] text-[1rem] font-[700] leading-[1.25rem]">
+            <Dropdown
+              items={relics}
+              locale={data.locale}
+              onChange={(item) => {
+                if (item && item.id === "NONE") {
+                  setSecondRelicNumber("");
+                }
+
+                setSecondRelic(item);
+              }}
+              placeholder={""}
+              selected={secondRelic}
+              style={{
+                panel: {
+                  alignment: "center",
+                  anchor: "center",
+                  backgroundColorClass: "bg-loa-panel",
+                  borderColorClass: "border-loa-button",
+                  borderWidth: "0.075rem",
+                  cornerRadius: "0.9375rem",
+                  item: {
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.625rem",
+                    py: "0.3125rem",
+                    separator: {
+                      colorClass: "border-loa-button",
+                      margin: "0.3125rem",
+                    },
+                  },
+                  margin: 0.25,
+                  maxHeight: 15,
+                },
+                selectButton: {
+                  backgroundColorClass: "bg-loa-inactive",
+                  cornerRadius: "0.9375rem",
+                  fontSize: "0.75rem",
+                  fontWeight: "500",
+                  gap: "0.625rem",
+                  inactiveTextColorClass: "text-loa-grey",
+                  invalid: {
+                    outlineColorClass: "outline-loa-red",
+                    outlineWidth: "0.15rem",
+                  },
+                  lineHeight: "1.25rem",
+                  px: "0.625rem",
+                  py: "0.3125rem",
+                },
+              }}
+            />
+            <Input
+              disabled={
+                !secondRelic || (secondRelic && secondRelic.id === "NONE")
+              }
+              onChange={(text) => {
+                let parsed = parseInt(text);
+
+                if (parsed > 0 && parsed <= 6) {
+                  setSecondRelicNumber(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-[3rem]",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={secondRelicNumber}
+              type="number"
+            />
           </div>
           <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
             {t("thirdSet", { ns: "routes\\character\\id" })}
           </div>
-          <div></div>
+          <div className="flex items-center gap-[1rem] text-[1rem] font-[700] leading-[1.25rem]">
+            <Dropdown
+              items={relics}
+              locale={data.locale}
+              onChange={(item) => {
+                if (item && item.id === "NONE") {
+                  setThirdRelicNumber("");
+                }
+
+                setThirdRelic(item);
+              }}
+              placeholder={""}
+              selected={thirdRelic}
+              style={{
+                panel: {
+                  alignment: "center",
+                  anchor: "center",
+                  backgroundColorClass: "bg-loa-panel",
+                  borderColorClass: "border-loa-button",
+                  borderWidth: "0.075rem",
+                  cornerRadius: "0.9375rem",
+                  item: {
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.625rem",
+                    py: "0.3125rem",
+                    separator: {
+                      colorClass: "border-loa-button",
+                      margin: "0.3125rem",
+                    },
+                  },
+                  margin: 0.25,
+                  maxHeight: 15,
+                },
+                selectButton: {
+                  backgroundColorClass: "bg-loa-inactive",
+                  cornerRadius: "0.9375rem",
+                  fontSize: "0.75rem",
+                  fontWeight: "500",
+                  gap: "0.625rem",
+                  inactiveTextColorClass: "text-loa-grey",
+                  invalid: {
+                    outlineColorClass: "outline-loa-red",
+                    outlineWidth: "0.15rem",
+                  },
+                  lineHeight: "1.25rem",
+                  px: "0.625rem",
+                  py: "0.3125rem",
+                },
+              }}
+            />
+            <Input
+              disabled={!thirdRelic || (thirdRelic && thirdRelic.id === "NONE")}
+              onChange={(text) => {
+                let parsed = parseInt(text);
+
+                if (parsed > 0 && parsed <= 6) {
+                  setThirdRelicNumber(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-[3rem]",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={thirdRelicNumber}
+              type="number"
+            />
+          </div>
         </div>
       </div>
       <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
@@ -1118,9 +1395,7 @@ export default function CharacterAddPage() {
             <div className="flex text-[1rem] font-[400] leading-[1.25rem]">
               {t("comment", { ns: "routes\\character\\id" })}
             </div>
-            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-              {data.regions.find((r) => r.id === region?.id)?.shortName}
-            </div>
+            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]"></div>
           </div>
         </div>
       </div>
@@ -1148,6 +1423,7 @@ export default function CharacterAddPage() {
                 swiftness: parseInt(swiftness),
                 endurance: parseInt(endurance),
                 expertise: parseInt(expertise),
+                relics: createRelicArray(),
                 engravings: engravingPanel
                   .map((e) => {
                     if (e.engraving && parseInt(e.level) > 0) {

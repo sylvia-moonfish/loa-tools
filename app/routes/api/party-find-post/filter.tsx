@@ -9,6 +9,7 @@ import type {
   PartyFindPost,
   PartyFindSlot,
   Region,
+  RelicPiece,
   Roster,
   Server,
 } from "@prisma/client";
@@ -70,6 +71,11 @@ export type FilteredPartyFindPosts = {
         name: Character["name"];
         job: Character["job"];
         itemLevel: Character["itemLevel"];
+        relicPieces: {
+          id: RelicPiece["id"];
+          number: RelicPiece["number"];
+          relic: RelicPiece["relic"];
+        }[];
         engravingSlots: {
           id: EngravingSlot["id"];
           level: EngravingSlot["level"];
@@ -155,6 +161,21 @@ const getFilteredPartyFindPosts = async (filterClauses: string[]) => {
                                 "Character"."name",
                                 "Character"."job",
                                 "Character"."itemLevel",
+                                (
+                                  SELECT
+                                    json_agg("_RelicPiece")
+                                  FROM
+                                    (
+                                      SELECT
+                                        "RelicPiece"."id",
+                                        "RelicPiece"."number",
+                                        "RelicPiece"."relic"
+                                      FROM
+                                        "public"."RelicPiece"
+                                      WHERE
+                                        "RelicPiece"."characterId" = "Character"."id"
+                                    ) "_RelicPiece"
+                                ) AS "relicPieces",
                                 (
                                   SELECT
                                     json_agg("_EngravingSlot")

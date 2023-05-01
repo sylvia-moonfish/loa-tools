@@ -1,5 +1,5 @@
 import type { LocaleType } from "~/i18n";
-import { Job, JobType } from "@prisma/client";
+import { Job, JobType, Relic } from "@prisma/client";
 import * as React from "react";
 import InfoOverlay from "~/components/tools/party-finder/info-overlay";
 import { generateJobIconPath } from "~/utils";
@@ -17,6 +17,7 @@ export default function SlotCircle(props: {
         name: string;
         job: Job;
         itemLevel: number;
+        relicPieces: { id: string; number: number; relic: Relic }[];
         engravingSlots: {
           id: string;
           level: number;
@@ -31,7 +32,7 @@ export default function SlotCircle(props: {
   const [isAppliedSlot, setIsAppliedSlot] = React.useState(
     !!props.slot.partyFindApplyState && !!props.slot.partyFindApplyState.id
   );
-  const [overlayEnabled, setOverlayEnabled] = React.useState(true);
+  const [overlayEnabled, setOverlayEnabled] = React.useState(false);
 
   let circle, star;
 
@@ -91,6 +92,9 @@ export default function SlotCircle(props: {
       {isAppliedSlot && (
         <InfoOverlay
           enabled={overlayEnabled}
+          relicPieces={
+            props.slot.partyFindApplyState.character.relicPieces ?? []
+          }
           engravings={
             props.slot.partyFindApplyState.character.engravingSlots ?? []
           }

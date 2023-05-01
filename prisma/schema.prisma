@@ -140,10 +140,36 @@ model Character {
   guild   Guild?  @relation(fields: [guildId], references: [id])
   guildId String?
 
+  relicPieces    RelicPiece[]
   engravingSlots EngravingSlot[]
   applyStates    PartyFindApplyState[]
 
   @@unique([name, rosterId])
+}
+
+model RelicPiece {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  number Int
+  relic  Relic
+
+  character   Character @relation(fields: [characterId], references: [id])
+  characterId String
+}
+
+enum Relic {
+  SALVATION
+  DOMINION
+  BETRAYAL
+  YEARNING
+  DESTRUCTIVE
+  CHARMING
+  ENTROPY
+  NIGHTMARE
+  HALLUCINATION
 }
 
 model Engraving {

@@ -1,7 +1,7 @@
 import { LoaderFunction, MetaFunction, redirect } from "@remix-run/node";
 import type { ActionBody, ActionData } from "~/routes/api/character/$id/edit";
 import type { LocaleType } from "~/i18n";
-import { Job } from "@prisma/client";
+import { Job, Relic } from "@prisma/client";
 import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import * as React from "react";
@@ -67,6 +67,7 @@ const getCharacter = async (id: string) => {
         },
       },
       guild: { select: { id: true, name: true } },
+      relicPieces: { select: { id: true, number: true, relic: true } },
       engravingSlots: {
         select: {
           id: true,
@@ -226,6 +227,66 @@ export default function CharacterIdEditPage() {
     data.character?.expertise.toString() ?? ""
   );
 
+  const _relics = [
+    { i18n: { keyword: "NONE", namespace: "dictionary\\relic" }, id: "NONE" },
+  ];
+  Object.values(Relic).forEach((relic) => {
+    _relics.push({
+      i18n: { keyword: relic, namespace: "dictionary\\relic" },
+      id: relic,
+    });
+  });
+
+  const [relics, setRelics] = React.useState<ItemType[]>(_relics);
+  const [firstRelic, setFirstRelic] = React.useState<ItemType | undefined>(
+    data.character && data.character.relicPieces.length > 0
+      ? {
+          i18n: {
+            keyword: data.character.relicPieces[0].relic,
+            namespace: "dictionary\\relic",
+          },
+          id: data.character.relicPieces[0].relic,
+        }
+      : _relics[0]
+  );
+  const [firstRelicNumber, setFirstRelicNumber] = React.useState(
+    data.character && data.character.relicPieces.length > 0
+      ? data.character.relicPieces[0].number.toString()
+      : ""
+  );
+  const [secondRelic, setSecondRelic] = React.useState<ItemType | undefined>(
+    data.character && data.character.relicPieces.length > 1
+      ? {
+          i18n: {
+            keyword: data.character.relicPieces[1].relic,
+            namespace: "dictionary\\relic",
+          },
+          id: data.character.relicPieces[1].relic,
+        }
+      : _relics[0]
+  );
+  const [secondRelicNumber, setSecondRelicNumber] = React.useState(
+    data.character && data.character.relicPieces.length > 1
+      ? data.character.relicPieces[1].number.toString()
+      : ""
+  );
+  const [thirdRelic, setThirdRelic] = React.useState<ItemType | undefined>(
+    data.character && data.character.relicPieces.length > 2
+      ? {
+          i18n: {
+            keyword: data.character.relicPieces[2].relic,
+            namespace: "dictionary\\relic",
+          },
+          id: data.character.relicPieces[2].relic,
+        }
+      : _relics[0]
+  );
+  const [thirdRelicNumber, setThirdRelicNumber] = React.useState(
+    data.character && data.character.relicPieces.length > 2
+      ? data.character.relicPieces[2].number.toString()
+      : ""
+  );
+
   const [errorMessage, setErrorMessage] = React.useState<string | undefined>(
     undefined
   );
@@ -328,6 +389,33 @@ export default function CharacterIdEditPage() {
       validateInt(true, endurance, undefined, 0) &&
       validateInt(true, expertise, undefined, 0)
     );
+  };
+
+  const createRelicArray = () => {
+    const relicArray: { id: string; number: number }[] = [];
+
+    const firstRelicItem = createRelicItem(firstRelic, firstRelicNumber);
+    if (firstRelicItem) relicArray.push(firstRelicItem);
+
+    const secondRelicItem = createRelicItem(secondRelic, secondRelicNumber);
+    if (secondRelicItem) relicArray.push(secondRelicItem);
+
+    const thirdRelicItem = createRelicItem(thirdRelic, thirdRelicNumber);
+    if (thirdRelicItem) relicArray.push(thirdRelicItem);
+
+    return relicArray;
+  };
+
+  const createRelicItem = (relic: ItemType | undefined, number: string) => {
+    if (relic && relic.id !== "NONE" && number !== "") {
+      const parsedNumber = parseInt(number);
+
+      if (parsedNumber > 0) {
+        return { id: relic.id, number: parsedNumber };
+      }
+    }
+
+    return undefined;
   };
 
   React.useEffect(() => {
@@ -642,380 +730,112 @@ export default function CharacterIdEditPage() {
           </div>
         </div>
       </div>
-      <div className="mt-[2.0625rem] grid grid-cols-3 gap-[1rem]">
-        <div className="col-span-2 flex flex-col gap-[1.25rem]">
-          <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-              {t("basicInfo", { ns: "routes\\character\\id" })}
-            </div>
-            <div
-              style={{
-                columnGap: "1rem",
-                display: "grid",
-                gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-              }}
-            >
-              <div
-                style={{
-                  columnGap: "2.8125rem",
-                  display: "grid",
-                  gridTemplateColumns: "max-content auto",
-                  rowGap: "0.9375rem",
-                }}
-              >
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("rosterLevel", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateInt(true, rosterLevel, undefined, 1)}
-                  onChange={(text) => {
-                    if (validateInt(false, text)) {
-                      setRosterLevel(parseInt(text).toString());
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={rosterLevel}
-                  type="number"
-                />
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("combatLevel", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateInt(true, combatLevel, undefined, 1)}
-                  onChange={(text) => {
-                    if (validateInt(false, text)) {
-                      setCombatLevel(parseInt(text).toString());
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={combatLevel}
-                  type="number"
-                />
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("itemLevel", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateFloat(true, itemLevel, undefined, 0)}
-                  onChange={(text) => {
-                    if (validateFloat(false, text)) {
-                      setItemLevel(parseFloat(text).toString());
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={itemLevel}
-                  type="number"
-                />
-              </div>
-              <div
-                style={{
-                  columnGap: "2.8125rem",
-                  display: "grid",
-                  gridTemplateColumns: "max-content auto",
-                  rowGap: "0.9375rem",
-                }}
-              >
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("guild", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateText(false, guild, 20)}
-                  onChange={(text) => {
-                    if (validateText(false, text, 20)) {
-                      setGuild(text);
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={guild}
-                  type="text"
-                />
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("pvp", { ns: "routes\\character\\id" })}
-                </div>
-                <div></div>
-                <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                  {t("stronghold", { ns: "routes\\character\\id" })}
-                </div>
-                <Input
-                  invalid={!validateText(false, stronghold, 20)}
-                  onChange={(text) => {
-                    if (validateText(false, text, 20)) {
-                      setStronghold(text);
-                    }
-                  }}
-                  style={{
-                    additionalClass: "w-full",
-                    backgroundColorClass: "bg-loa-inactive",
-                    cornerRadius: "0.9375rem",
-                    fontSize: "0.75rem",
-                    fontWeight: "500",
-                    inactiveTextColorClass: "text-loa-grey",
-                    invalid: {
-                      outlineColorClass: "outline-loa-red",
-                      outlineWidth: "0.15rem",
-                    },
-                    lineHeight: "1.25rem",
-                    px: "0.625rem",
-                    py: "0.3125rem",
-                    textColorClass: "text-loa-white",
-                  }}
-                  text={stronghold}
-                  type="text"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-              {t("combatStats", { ns: "routes\\character\\id" })}
-            </div>
-            <div
-              style={{
-                columnGap: "2.8125rem",
-                display: "grid",
-                gridTemplateColumns: "max-content auto max-content auto",
-                rowGap: "0.9375rem",
-              }}
-            >
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("crit", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, crit, undefined, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, crit)) {
-                    setCrit(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={crit}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("specialization", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, specialization, undefined, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text)) {
-                    setSpecialization(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={specialization}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("domination", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, domination, undefined, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text)) {
-                    setDomination(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={domination}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("swiftness", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, swiftness, undefined, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text)) {
-                    setSwiftness(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={swiftness}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("endurance", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, endurance, undefined, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text)) {
-                    setEndurance(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={endurance}
-                type="number"
-              />
-              <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-                {t("expertise", { ns: "routes\\character\\id" })}
-              </div>
-              <Input
-                invalid={!validateInt(true, expertise, undefined, 0)}
-                onChange={(text) => {
-                  if (validateInt(false, text)) {
-                    setExpertise(parseInt(text).toString());
-                  }
-                }}
-                style={{
-                  additionalClass: "w-full",
-                  backgroundColorClass: "bg-loa-inactive",
-                  cornerRadius: "0.9375rem",
-                  fontSize: "0.75rem",
-                  fontWeight: "500",
-                  inactiveTextColorClass: "text-loa-grey",
-                  invalid: {
-                    outlineColorClass: "outline-loa-red",
-                    outlineWidth: "0.15rem",
-                  },
-                  lineHeight: "1.25rem",
-                  px: "0.625rem",
-                  py: "0.3125rem",
-                  textColorClass: "text-loa-white",
-                }}
-                text={expertise}
-                type="number"
-              />
-            </div>
-          </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("basicInfo", { ns: "routes\\character\\id" })}
         </div>
-        <div className="col-span-1 flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
-          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-            {t("miscInfo", { ns: "routes\\character\\id" })}
+        <div
+          style={{
+            columnGap: "1rem",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+          }}
+        >
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "max-content auto",
+              rowGap: "0.9375rem",
+            }}
+          >
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("rosterLevel", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateInt(true, rosterLevel, undefined, 1)}
+              onChange={(text) => {
+                if (validateInt(false, text)) {
+                  setRosterLevel(parseInt(text).toString());
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={rosterLevel}
+              type="number"
+            />
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("combatLevel", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateInt(true, combatLevel, undefined, 1)}
+              onChange={(text) => {
+                if (validateInt(false, text)) {
+                  setCombatLevel(parseInt(text).toString());
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={combatLevel}
+              type="number"
+            />
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("itemLevel", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateFloat(true, itemLevel, undefined, 0)}
+              onChange={(text) => {
+                if (validateFloat(false, text)) {
+                  setItemLevel(parseFloat(text).toString());
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={itemLevel}
+              type="number"
+            />
           </div>
           <div
             style={{
@@ -1026,27 +846,256 @@ export default function CharacterIdEditPage() {
             }}
           >
             <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-              {t("region", { ns: "routes\\character\\id" })}
+              {t("guild", { ns: "routes\\character\\id" })}
             </div>
-            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-              {data.regions.find((r) => r.id === region?.id)?.shortName}
-            </div>
+            <Input
+              invalid={!validateText(false, guild, 20)}
+              onChange={(text) => {
+                if (validateText(false, text, 20)) {
+                  setGuild(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={guild}
+              type="text"
+            />
             <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-              {t("server", { ns: "routes\\character\\id" })}
-            </div>
-            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
-              {server?.text ? server.text[data.locale] : ""}
-            </div>
-            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
-              {t("language", { ns: "routes\\character\\id" })}
+              {t("pvp", { ns: "routes\\character\\id" })}
             </div>
             <div></div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("stronghold", { ns: "routes\\character\\id" })}
+            </div>
+            <Input
+              invalid={!validateText(false, stronghold, 20)}
+              onChange={(text) => {
+                if (validateText(false, text, 20)) {
+                  setStronghold(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-full",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                invalid: {
+                  outlineColorClass: "outline-loa-red",
+                  outlineWidth: "0.15rem",
+                },
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={stronghold}
+              type="text"
+            />
           </div>
-          <hr className="border-loa-button" />
-          <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
-            {t("comment", { ns: "routes\\character\\id" })}
+        </div>
+      </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("combatStats", { ns: "routes\\character\\id" })}
+        </div>
+        <div
+          style={{
+            columnGap: "2.8125rem",
+            display: "grid",
+            gridTemplateColumns: "max-content auto max-content auto",
+            rowGap: "0.9375rem",
+          }}
+        >
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("crit", { ns: "routes\\character\\id" })}
           </div>
-          <div className="flex-grow"></div>
+          <Input
+            invalid={!validateInt(true, crit, undefined, 0)}
+            onChange={(text) => {
+              if (validateInt(false, crit)) {
+                setCrit(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={crit}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("specialization", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, specialization, undefined, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text)) {
+                setSpecialization(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={specialization}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("domination", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, domination, undefined, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text)) {
+                setDomination(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={domination}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("swiftness", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, swiftness, undefined, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text)) {
+                setSwiftness(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={swiftness}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("endurance", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, endurance, undefined, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text)) {
+                setEndurance(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={endurance}
+            type="number"
+          />
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("expertise", { ns: "routes\\character\\id" })}
+          </div>
+          <Input
+            invalid={!validateInt(true, expertise, undefined, 0)}
+            onChange={(text) => {
+              if (validateInt(false, text)) {
+                setExpertise(parseInt(text).toString());
+              }
+            }}
+            style={{
+              additionalClass: "w-full",
+              backgroundColorClass: "bg-loa-inactive",
+              cornerRadius: "0.9375rem",
+              fontSize: "0.75rem",
+              fontWeight: "500",
+              inactiveTextColorClass: "text-loa-grey",
+              invalid: {
+                outlineColorClass: "outline-loa-red",
+                outlineWidth: "0.15rem",
+              },
+              lineHeight: "1.25rem",
+              px: "0.625rem",
+              py: "0.3125rem",
+              textColorClass: "text-loa-white",
+            }}
+            text={expertise}
+            type="number"
+          />
         </div>
       </div>
       <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
@@ -1191,6 +1240,313 @@ export default function CharacterIdEditPage() {
           })}
         </div>
       </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("relicGear", { ns: "routes\\character\\id" })}
+        </div>
+        <div
+          style={{
+            columnGap: "3.375rem",
+            display: "grid",
+            gridTemplateColumns: "max-content auto",
+            rowGap: "0.9375rem",
+          }}
+        >
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("firstSet", { ns: "routes\\character\\id" })}
+          </div>
+          <div className="flex items-center gap-[1rem] text-[1rem] font-[700] leading-[1.25rem]">
+            <Dropdown
+              items={relics}
+              locale={data.locale}
+              onChange={(item) => {
+                if (item && item.id === "NONE") {
+                  setFirstRelicNumber("");
+                }
+
+                setFirstRelic(item);
+              }}
+              placeholder={""}
+              selected={firstRelic}
+              style={{
+                panel: {
+                  alignment: "center",
+                  anchor: "center",
+                  backgroundColorClass: "bg-loa-panel",
+                  borderColorClass: "border-loa-button",
+                  borderWidth: "0.075rem",
+                  cornerRadius: "0.9375rem",
+                  item: {
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.625rem",
+                    py: "0.3125rem",
+                    separator: {
+                      colorClass: "border-loa-button",
+                      margin: "0.3125rem",
+                    },
+                  },
+                  margin: 0.25,
+                  maxHeight: 15,
+                },
+                selectButton: {
+                  backgroundColorClass: "bg-loa-inactive",
+                  cornerRadius: "0.9375rem",
+                  fontSize: "0.75rem",
+                  fontWeight: "500",
+                  gap: "0.625rem",
+                  inactiveTextColorClass: "text-loa-grey",
+                  invalid: {
+                    outlineColorClass: "outline-loa-red",
+                    outlineWidth: "0.15rem",
+                  },
+                  lineHeight: "1.25rem",
+                  px: "0.625rem",
+                  py: "0.3125rem",
+                },
+              }}
+            />
+            <Input
+              disabled={!firstRelic || (firstRelic && firstRelic.id === "NONE")}
+              onChange={(text) => {
+                let parsed = parseInt(text);
+
+                if (parsed > 0 && parsed <= 6) {
+                  setFirstRelicNumber(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-[3rem]",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={firstRelicNumber}
+              type="number"
+            />
+          </div>
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("secondSet", { ns: "routes\\character\\id" })}
+          </div>
+          <div className="flex items-center gap-[1rem] text-[1rem] font-[700] leading-[1.25rem]">
+            <Dropdown
+              items={relics}
+              locale={data.locale}
+              onChange={(item) => {
+                if (item && item.id === "NONE") {
+                  setSecondRelicNumber("");
+                }
+
+                setSecondRelic(item);
+              }}
+              placeholder={""}
+              selected={secondRelic}
+              style={{
+                panel: {
+                  alignment: "center",
+                  anchor: "center",
+                  backgroundColorClass: "bg-loa-panel",
+                  borderColorClass: "border-loa-button",
+                  borderWidth: "0.075rem",
+                  cornerRadius: "0.9375rem",
+                  item: {
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.625rem",
+                    py: "0.3125rem",
+                    separator: {
+                      colorClass: "border-loa-button",
+                      margin: "0.3125rem",
+                    },
+                  },
+                  margin: 0.25,
+                  maxHeight: 15,
+                },
+                selectButton: {
+                  backgroundColorClass: "bg-loa-inactive",
+                  cornerRadius: "0.9375rem",
+                  fontSize: "0.75rem",
+                  fontWeight: "500",
+                  gap: "0.625rem",
+                  inactiveTextColorClass: "text-loa-grey",
+                  invalid: {
+                    outlineColorClass: "outline-loa-red",
+                    outlineWidth: "0.15rem",
+                  },
+                  lineHeight: "1.25rem",
+                  px: "0.625rem",
+                  py: "0.3125rem",
+                },
+              }}
+            />
+            <Input
+              disabled={
+                !secondRelic || (secondRelic && secondRelic.id === "NONE")
+              }
+              onChange={(text) => {
+                let parsed = parseInt(text);
+
+                if (parsed > 0 && parsed <= 6) {
+                  setSecondRelicNumber(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-[3rem]",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={secondRelicNumber}
+              type="number"
+            />
+          </div>
+          <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+            {t("thirdSet", { ns: "routes\\character\\id" })}
+          </div>
+          <div className="flex items-center gap-[1rem] text-[1rem] font-[700] leading-[1.25rem]">
+            <Dropdown
+              items={relics}
+              locale={data.locale}
+              onChange={(item) => {
+                if (item && item.id === "NONE") {
+                  setThirdRelicNumber("");
+                }
+
+                setThirdRelic(item);
+              }}
+              placeholder={""}
+              selected={thirdRelic}
+              style={{
+                panel: {
+                  alignment: "center",
+                  anchor: "center",
+                  backgroundColorClass: "bg-loa-panel",
+                  borderColorClass: "border-loa-button",
+                  borderWidth: "0.075rem",
+                  cornerRadius: "0.9375rem",
+                  item: {
+                    fontSize: "0.75rem",
+                    fontWeight: "500",
+                    lineHeight: "1.25rem",
+                    px: "0.625rem",
+                    py: "0.3125rem",
+                    separator: {
+                      colorClass: "border-loa-button",
+                      margin: "0.3125rem",
+                    },
+                  },
+                  margin: 0.25,
+                  maxHeight: 15,
+                },
+                selectButton: {
+                  backgroundColorClass: "bg-loa-inactive",
+                  cornerRadius: "0.9375rem",
+                  fontSize: "0.75rem",
+                  fontWeight: "500",
+                  gap: "0.625rem",
+                  inactiveTextColorClass: "text-loa-grey",
+                  invalid: {
+                    outlineColorClass: "outline-loa-red",
+                    outlineWidth: "0.15rem",
+                  },
+                  lineHeight: "1.25rem",
+                  px: "0.625rem",
+                  py: "0.3125rem",
+                },
+              }}
+            />
+            <Input
+              disabled={!thirdRelic || (thirdRelic && thirdRelic.id === "NONE")}
+              onChange={(text) => {
+                let parsed = parseInt(text);
+
+                if (parsed > 0 && parsed <= 6) {
+                  setThirdRelicNumber(text);
+                }
+              }}
+              style={{
+                additionalClass: "w-[3rem]",
+                backgroundColorClass: "bg-loa-inactive",
+                cornerRadius: "0.9375rem",
+                fontSize: "0.75rem",
+                fontWeight: "500",
+                inactiveTextColorClass: "text-loa-grey",
+                lineHeight: "1.25rem",
+                px: "0.625rem",
+                py: "0.3125rem",
+                textColorClass: "text-loa-white",
+              }}
+              text={thirdRelicNumber}
+              type="number"
+            />
+          </div>
+        </div>
+      </div>
+      <div className="mt-[1.25rem] flex flex-col gap-[1.25rem] rounded-[0.9375rem] bg-loa-panel p-[1.25rem]">
+        <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+          {t("miscInfo", { ns: "routes\\character\\id" })}
+        </div>
+        <div
+          style={{
+            columnGap: "2.8125rem",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+          }}
+        >
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "max-content auto",
+              rowGap: "0.9375rem",
+            }}
+          >
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("region", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+              {data.regions.find((r) => r.id === region?.id)?.shortName}
+            </div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("server", { ns: "routes\\character\\id" })}
+            </div>
+            <div className="flex items-center text-[1rem] font-[700] leading-[1.25rem]">
+              {server?.text ? server.text[data.locale] : ""}
+            </div>
+            <div className="flex items-center text-[1rem] font-[400] leading-[1.25rem]">
+              {t("language", { ns: "routes\\character\\id" })}
+            </div>
+            <div></div>
+          </div>
+          <div
+            style={{
+              columnGap: "2.8125rem",
+              display: "grid",
+              gridTemplateColumns: "max-content auto",
+              rowGap: "0.9375rem",
+            }}
+          >
+            <div className="text-[1.25rem] font-[700] leading-[1.5625rem]">
+              {t("comment", { ns: "routes\\character\\id" })}
+            </div>
+            <div></div>
+          </div>
+        </div>
+      </div>
       <div className="mt-[1.25rem]">
         <Button
           disabled={!validateForm() || loading}
@@ -1216,6 +1572,7 @@ export default function CharacterIdEditPage() {
                 swiftness: parseInt(swiftness),
                 endurance: parseInt(endurance),
                 expertise: parseInt(expertise),
+                relics: createRelicArray(),
                 engravings: engravingPanel
                   .map((e) => {
                     if (e.engraving && parseInt(e.level) > 0) {

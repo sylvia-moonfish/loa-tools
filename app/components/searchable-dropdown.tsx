@@ -223,7 +223,7 @@ export default function SearchableDropdown(props: {
               ? `translate(0, ${props.style.panel.margin}rem)`
               : `translate(0, -100%) translate(0, -${props.style.panel.margin}rem)`
           } ${isOpened ? "scale(1)" : "scale(1, 0)"}`,
-          top: `${isBottom ? "" : "0"}`,
+          top: `${isBottom ? undefined : "0"}`,
           transformOrigin: isBottom ? "top" : "bottom",
         }}
       >
