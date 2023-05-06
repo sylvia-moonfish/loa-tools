@@ -6,6 +6,11 @@ import { requireUser } from "~/session.server";
 
 export type ActionBody = { characterId: string; userId: string };
 
+export type ActionData = {
+  success: boolean;
+  errorMessage?: string;
+};
+
 export const action: ActionFunction = async ({ params, request }) => {
   const user = await requireUser(request);
   const actionBody: ActionBody = await request.json();
@@ -27,10 +32,11 @@ export const action: ActionFunction = async ({ params, request }) => {
       });
 
       // Validate: Check if the character exists.
-      if (!characterDb) return json({});
+      if (!characterDb) return json<ActionData>({ success: false });
 
       // Validate: Check if the owner of this character is the user who is making this request.
-      if (characterDb.roster.userId !== user.id) return json({});
+      if (characterDb.roster.userId !== user.id)
+        return json<ActionData>({ success: false });
 
       // Find all posts this user created with this character.
       const partyFindPostsDb = await prisma.partyFindPost.findMany({
@@ -59,7 +65,10 @@ export const action: ActionFunction = async ({ params, request }) => {
             ).includes(partyFindPostDb.state)
         )
       )
-        return json({});
+        return json<ActionData>({
+          success: false,
+          errorMessage: "characterHasOpenPost",
+        });
 
       // Validate: Check the apply states this character made.
       // If there's a post that this character got accepted into,
@@ -76,7 +85,11 @@ export const action: ActionFunction = async ({ params, request }) => {
           },
         },
       });
-      if (acceptedPostsDb.length > 0) return json({});
+      if (acceptedPostsDb.length > 0)
+        return json<ActionData>({
+          success: false,
+          errorMessage: "characterHasAcceptedPost",
+        });
 
       // Delete all engraving slots for this character.
       await prisma.engravingSlot.deleteMany({
@@ -121,6 +134,11 @@ export const action: ActionFunction = async ({ params, request }) => {
         });
       }
 
+      // Delete all relic pieces.
+      await prisma.relicPiece.deleteMany({
+        where: { characterId: characterDb.id },
+      });
+
       // Delete this character.
       await prisma.character.delete({ where: { id: characterDb.id } });
     } catch (e) {
@@ -128,5 +146,5 @@ export const action: ActionFunction = async ({ params, request }) => {
     }
   }
 
-  return json({});
+  return json<ActionData>({ success: true });
 };

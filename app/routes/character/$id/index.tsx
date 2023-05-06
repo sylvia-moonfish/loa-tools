@@ -117,6 +117,11 @@ export default function CharacterIdIndexPage() {
   const [isConfirmDeleteEnabled, setIsConfirmDeleteEnabled] =
     React.useState(true);
 
+  const [isCharacterHasOpenPostOpened, setIsCharacterHasOpenPostOpened] =
+    React.useState(false);
+  const [isCharacterHasAcceptedPostOpend, setIsCharacterHasAcceptedPostOpened] =
+    React.useState(false);
+
   if (data.character) {
     const iconPath = generateJobIconPath(data.character.job);
     const updatedAtTime = new Date(data.character.updatedAt);
@@ -298,10 +303,32 @@ export default function CharacterIdIndexPage() {
                               body: JSON.stringify(actionBody),
                             }
                           )
-                            .catch(() => {})
-                            .finally(() => {
-                              navigate("/my-roster");
-                            });
+                            .then((data) => {
+                              return data.json();
+                            })
+                            .then((data) => {
+                              if (!data.success && data.errorMessage) {
+                                if (
+                                  data.errorMessage === "characterHasOpenPost"
+                                ) {
+                                  setIsDeleteWarningOpened(false);
+                                  _isConfirmDeleteEnabled = true;
+                                  setIsConfirmDeleteEnabled(true);
+                                  setIsCharacterHasOpenPostOpened(true);
+                                } else if (
+                                  data.errorMessage ===
+                                  "characterHasAcceptedPost"
+                                ) {
+                                  setIsDeleteWarningOpened(false);
+                                  _isConfirmDeleteEnabled = true;
+                                  setIsConfirmDeleteEnabled(true);
+                                  setIsCharacterHasAcceptedPostOpened(true);
+                                }
+                              } else {
+                                navigate("/my-roster");
+                              }
+                            })
+                            .catch(() => {});
                         }
                       }}
                       style={{
@@ -319,6 +346,78 @@ export default function CharacterIdIndexPage() {
                       }}
                       text={t("delete", { ns: "routes\\character\\id" })}
                     />
+                  </div>
+                </div>
+              </Modal>
+              <Modal
+                closeWhenClickedOutside={true}
+                isOpened={isCharacterHasOpenPostOpened}
+                setIsOpened={setIsCharacterHasOpenPostOpened}
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+              >
+                <div className="flex w-[36.25rem] flex-col gap-[3.125rem] rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
+                  <div>
+                    <div className="float-right">
+                      <div
+                        className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
+                        onClick={() => setIsCharacterHasOpenPostOpened(false)}
+                      >
+                        close
+                      </div>
+                    </div>
+                    <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
+                      {t("warningTitle", { ns: "routes\\character\\id" })}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[1.5625rem]">
+                    <div className="flex items-center justify-center gap-[0.3125rem] truncate text-[1.5rem] font-[700] leading-[1.875rem]">
+                      <div className="text-loa-party-leader-star">
+                        {t(data.character.job, { ns: "dictionary\\job" })}
+                      </div>
+                      <span>{data.character.name}</span>
+                    </div>
+                    <div className="w-full whitespace-normal text-[1.25rem] font-[400] leading-[1.875rem]">
+                      {t("characterHasOpenPostWarningMessage", {
+                        ns: "routes\\character\\id",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </Modal>
+              <Modal
+                closeWhenClickedOutside={true}
+                isOpened={isCharacterHasAcceptedPostOpend}
+                setIsOpened={setIsCharacterHasAcceptedPostOpened}
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+              >
+                <div className="flex w-[36.25rem] flex-col gap-[3.125rem] rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
+                  <div>
+                    <div className="float-right">
+                      <div
+                        className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
+                        onClick={() =>
+                          setIsCharacterHasAcceptedPostOpened(false)
+                        }
+                      >
+                        close
+                      </div>
+                    </div>
+                    <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
+                      {t("warningTitle", { ns: "routes\\character\\id" })}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-[1.5625rem]">
+                    <div className="flex items-center justify-center gap-[0.3125rem] truncate text-[1.5rem] font-[700] leading-[1.875rem]">
+                      <div className="text-loa-party-leader-star">
+                        {t(data.character.job, { ns: "dictionary\\job" })}
+                      </div>
+                      <span>{data.character.name}</span>
+                    </div>
+                    <div className="w-full whitespace-normal text-[1.25rem] font-[400] leading-[1.875rem]">
+                      {t("characterHasAcceptedPostWarningMessage", {
+                        ns: "routes\\character\\id",
+                      })}
+                    </div>
                   </div>
                 </div>
               </Modal>
