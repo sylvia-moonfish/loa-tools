@@ -134,6 +134,11 @@ export const action: ActionFunction = async ({ params, request }) => {
         });
       }
 
+      // Delete all relic pieces.
+      await prisma.relicPiece.deleteMany({
+        where: { characterId: characterDb.id },
+      });
+
       // Delete this character.
       await prisma.character.delete({ where: { id: characterDb.id } });
     } catch (e) {
