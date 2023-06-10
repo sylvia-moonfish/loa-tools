@@ -1,6 +1,7 @@
 import type { ActionFunction } from "@remix-run/node";
 import {
   AlarmMessageType,
+  ContentType,
   JobType,
   PartyFindApplyStateValue,
   PartyFindPostState,
@@ -14,6 +15,11 @@ export type ActionBody = {
   characterId: string;
   partyFindPostId: string;
   userId: string;
+};
+
+export type ActionData = {
+  success: boolean;
+  errorMessage?: string;
 };
 
 export const action: ActionFunction = async ({ params, request }) => {
@@ -50,17 +56,19 @@ export const action: ActionFunction = async ({ params, request }) => {
 
       // Validate: Check if the character exists.
       if (!characterDb || characterDb.roster.userId !== user.id)
-        return json({});
+        return json<ActionData>({ success: false });
 
       // Get the post the character is applying for.
       const partyFindPostDb = await prisma.partyFindPost.findFirst({
         where: { id: params.id },
         select: {
           id: true,
+          contentType: true,
           state: true,
           startTime: true,
           authorId: true,
           server: { select: { id: true, regionId: true } },
+          contentStage: { select: { id: true } },
           partyFindSlots: {
             select: {
               id: true,
@@ -84,7 +92,7 @@ export const action: ActionFunction = async ({ params, request }) => {
       });
 
       // Validate: Check if the post exists.
-      if (!partyFindPostDb) return json({});
+      if (!partyFindPostDb) return json<ActionData>({ success: false });
 
       // Validate: Check if the post start time has not expired. Update state and exit if the time is expired.
       if (
@@ -98,11 +106,12 @@ export const action: ActionFunction = async ({ params, request }) => {
           where: { partyFindPostId: partyFindPostDb.id },
           data: { state: PartyFindApplyStateValue.EXPIRED },
         });
-        return json({});
+        return json<ActionData>({ success: false });
       }
 
       // Validate: You cannot apply to your own post.
-      if (partyFindPostDb.authorId === user.id) return json({});
+      if (partyFindPostDb.authorId === user.id)
+        return json<ActionData>({ success: false });
 
       // Validate: Check if the post is recruiting.
       if (
@@ -111,7 +120,7 @@ export const action: ActionFunction = async ({ params, request }) => {
           PartyFindPostState.RERECRUITING.toString(),
         ].includes(partyFindPostDb.state)
       )
-        return json({});
+        return json<ActionData>({ success: false });
 
       // Validate: See if this user has already applied/accepted for this post.
       if (
@@ -124,14 +133,14 @@ export const action: ActionFunction = async ({ params, request }) => {
             ].includes(a.state.toString())
         )
       ) {
-        return json({});
+        return json<ActionData>({ success: false });
       }
 
       // Validate: Check if the applying character is in the same region as the post.
       if (
         partyFindPostDb.server.regionId !== characterDb.roster.server.regionId
       )
-        return json({});
+        return json<ActionData>({ success: false });
 
       // Validate: Check if there is an appliable slot for this character.
       if (
@@ -142,7 +151,69 @@ export const action: ActionFunction = async ({ params, request }) => {
             ) && !(s.partyFindApplyState && s.partyFindApplyState.id)
         )
       )
-        return json({});
+        return json<ActionData>({ success: false });
+
+      // Validate: Check if this character is already approved to any other post
+      // for the same weekly content.
+      // First check if this content is weekly restricted.
+      if (
+        partyFindPostDb.contentType === ContentType.ABYSSAL_DUNGEON ||
+        partyFindPostDb.contentType === ContentType.ABYSS_RAID ||
+        partyFindPostDb.contentType === ContentType.LEGION_RAID
+      ) {
+        // Make the Date instance from start time of the post.
+        const startDate = new Date(partyFindPostDb.startTime);
+
+        // This will be the cloest Wed from the start time. (day = 3)
+        const refDate = new Date(partyFindPostDb.startTime);
+        refDate.setUTCMinutes(0);
+        refDate.setUTCSeconds(0);
+        refDate.setUTCMilliseconds(0);
+        refDate.setUTCHours(7);
+        refDate.setUTCDate(
+          refDate.getUTCDate() + ((10 - refDate.getUTCDay()) % 7)
+        );
+
+        // Next weekly reset is closest Wed.
+        const nextMaintenance = new Date(refDate.getTime());
+
+        // If start time on Wed (after reset), then closest Wed is the same date as the start time
+        // so we have to go to the next reset day (next week Wed)
+        while (nextMaintenance <= startDate)
+          nextMaintenance.setDate(nextMaintenance.getDate() + 7);
+
+        // Calculate the last weekly reset day. First start from closest Wed.
+        const prevMaintenance = new Date(refDate.getTime());
+
+        // Go back week by week until the reset day is smaller than start day.
+        while (prevMaintenance > startDate)
+          prevMaintenance.setDate(prevMaintenance.getDate() - 7);
+
+        // See if there are any post that:
+        // 1. Is for the same content / content tab type AND
+        // 2. Is in the same weekly reset week AND
+        // 3. Has this character as approved.
+        const _existingApplyState = await prisma.partyFindApplyState.findFirst({
+          where: {
+            characterId: characterDb.id,
+            state: PartyFindApplyStateValue.ACCEPTED,
+            partyFindPost: {
+              contentStageId: partyFindPostDb.contentStage.id,
+              startTime: { lt: nextMaintenance, gte: prevMaintenance },
+              contentType: partyFindPostDb.contentType,
+            },
+          },
+        });
+
+        // If any apply state that corresponds to the above condition is found,
+        // return an error.
+        if (_existingApplyState) {
+          return json<ActionData>({
+            success: false,
+            errorMessage: "alreadyAcceptedCharacter",
+          });
+        }
+      }
 
       // If all validations passed, upsert the apply state for this character!
       await prisma.partyFindApplyState.upsert({
@@ -174,8 +245,11 @@ export const action: ActionFunction = async ({ params, request }) => {
       });
     } catch (e) {
       console.log(e);
+      return json<ActionData>({ success: false });
     }
+
+    return json<ActionData>({ success: true });
   }
 
-  return json({});
+  return json<ActionData>({ success: false });
 };
