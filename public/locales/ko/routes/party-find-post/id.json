@@ -41,5 +41,7 @@
   "characterSelectMessage": "신청하고 싶은 캐릭터를 선택하세요.",
   "characterSelectRegionMessage": "(신청하는 파티와 같은 지역의 캐릭터만 보여줍니다.)",
   "leaveTitle": "파티 탈퇴",
-  "leaveMessage": "해당 파티에서 정말 탈퇴하시겠습니까?"
+  "leaveMessage": "해당 파티에서 정말 탈퇴하시겠습니까?",
+  "warning": "주의",
+  "alreadyAcceptedThisWeek": "위의 캐릭터는 이미 같은 기간에 수락된 파티가 있습니다. 해당 파티에 신청을 원하실 경우, 이미 수락된 파티를 탈퇴 후 신청해 주세요."
 }

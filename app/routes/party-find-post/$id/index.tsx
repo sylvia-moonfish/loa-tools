@@ -4,7 +4,7 @@ import type { ActionBody as ApplyActionBody } from "~/routes/api/party-find-post
 import type { ActionBody as DeleteActionBody } from "~/routes/api/party-find-post/$id/delete";
 import type { ActionBody as LeaveActionBody } from "~/routes/api/party-find-post/$id/leave";
 import type { LocaleType } from "~/i18n";
-import { JobType, PartyFindApplyStateValue } from "@prisma/client";
+import { Job, JobType, PartyFindApplyStateValue } from "@prisma/client";
 import { json, redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import * as React from "react";
@@ -201,6 +201,11 @@ export default function PartyFindPostIdPage() {
   const [isApplyModalButtonEnabled, setIsApplyModalButtonEnabled] =
     React.useState(true);
   let _isApplyModalButtonEnabled = true;
+
+  const [isAlreadyAcceptedPopupOpen, setIsAlreadyAcceptedPopupOpen] =
+    React.useState(false);
+  const [alreadyAcceptedCharacter, setAlreadyAcceptedCharacter] =
+    React.useState<{ name: string; job: Job } | undefined>(undefined);
 
   if (data.partyFindPost) {
     const authorJob = data.partyFindPost.partyFindSlots.find(
@@ -831,7 +836,7 @@ export default function PartyFindPostIdPage() {
                 }}
                 text={t(applyText, { ns: "routes\\party-find-post\\id" })}
               />,
-              applyText === "apply" && (
+              applyText === "apply" && [
                 <Modal
                   closeWhenClickedOutside={allowApplyModalToClose}
                   isOpened={applyText === "apply" && isApplyModalOpen}
@@ -903,7 +908,7 @@ export default function PartyFindPostIdPage() {
                             cornerRadius: "0.9375rem",
                             fontSize: "0.875rem",
                             fontWeight: "500",
-                            gap: "",
+                            gap: undefined,
                             inactiveTextColorClass: "text-loa-grey",
                             invalid: {
                               outlineColorClass: "outline-loa-red",
@@ -944,21 +949,47 @@ export default function PartyFindPostIdPage() {
                                 body: JSON.stringify(actionBody),
                               }
                             )
-                              .catch(() => {})
-                              .finally(() => {
-                                setIsApplyModalOpen(false);
-                                _isApplyModalButtonEnabled = true;
-                                setIsApplyModalButtonEnabled(true);
-                                setAllowApplyModalToClose(true);
+                              .then((data) => {
+                                return data.json();
+                              })
+                              .then((data) => {
+                                if (!data.success && data.errorMessage) {
+                                  if (
+                                    data.errorMessage ===
+                                    "alreadyAcceptedCharacter"
+                                  ) {
+                                    setIsApplyModalOpen(false);
+                                    _isApplyModalButtonEnabled = true;
+                                    setAllowApplyModalToClose(true);
 
-                                if (data.partyFindPost) {
-                                  navigate(
-                                    `/party-find-post/${data.partyFindPost.id}`
-                                  );
+                                    const _char = _characters.find(
+                                      (c) => c.id === character.id
+                                    );
+
+                                    if (_char) {
+                                      setAlreadyAcceptedCharacter({
+                                        name: _char.name,
+                                        job: _char.job,
+                                      });
+                                      setIsAlreadyAcceptedPopupOpen(true);
+                                    }
+                                  }
                                 } else {
-                                  navigate("/");
+                                  setIsApplyModalOpen(false);
+                                  _isApplyModalButtonEnabled = true;
+                                  setIsApplyModalButtonEnabled(true);
+                                  setAllowApplyModalToClose(true);
+
+                                  if (data.partyFindPost) {
+                                    navigate(
+                                      `/party-find-post/${data.partyFindPost.id}`
+                                    );
+                                  } else {
+                                    navigate("/");
+                                  }
                                 }
-                              });
+                              })
+                              .catch(() => {});
                           }
                         }}
                         style={{
@@ -978,15 +1009,63 @@ export default function PartyFindPostIdPage() {
                       />
                     </div>
                   </div>
-                </Modal>
-              ),
+                </Modal>,
+                <Modal
+                  closeWhenClickedOutside={true}
+                  isOpened={isAlreadyAcceptedPopupOpen}
+                  key={3}
+                  setIsOpened={setIsAlreadyAcceptedPopupOpen}
+                  style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                >
+                  <div className="flex w-[36.25rem] flex-col gap-[3.125rem] rounded-[1.25rem] bg-loa-panel-border py-[1.875rem] px-[2.1875rem]">
+                    <div>
+                      <div className="float-right">
+                        <div
+                          className="material-symbols-outlined flex h-[1.25rem] w-[1.25rem] cursor-pointer items-center justify-center"
+                          onClick={() => {
+                            setIsAlreadyAcceptedPopupOpen(false);
+                          }}
+                        >
+                          close
+                        </div>
+                      </div>
+                      <div className="text-center text-[1.25rem] font-[700] leading-[1.25rem]">
+                        {t("warning", {
+                          ns: "routes\\party-find-post\\id",
+                        })}
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-[1.5625rem]">
+                      <div className="flex items-center justify-center gap-[0.3125rem] truncate text-[1.5rem] font-[700] leading-[1.875rem]">
+                        <div className="text-loa-party-leader-star">
+                          {alreadyAcceptedCharacter
+                            ? t(alreadyAcceptedCharacter.job, {
+                                ns: "dictionary\\job",
+                              })
+                            : ""}
+                        </div>
+                        <span>
+                          {alreadyAcceptedCharacter
+                            ? alreadyAcceptedCharacter.name
+                            : ""}
+                        </span>
+                      </div>
+                      <div className="w-full whitespace-normal text-[1.25rem] font-[400] leading-[1.875rem]">
+                        {t("alreadyAcceptedThisWeek", {
+                          ns: "routes\\party-find-post\\id",
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </Modal>,
+              ],
               applyText === "leave" &&
                 userApplyState &&
                 userApplyState.state === PartyFindApplyStateValue.ACCEPTED && (
                   <Modal
                     closeWhenClickedOutside={allowApplyModalToClose}
                     isOpened={applyText === "leave" && isApplyModalOpen}
-                    key={3}
+                    key={4}
                     setIsOpened={setIsApplyModalOpen}
                     style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
                   >

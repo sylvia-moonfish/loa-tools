@@ -41,5 +41,7 @@
   "characterSelectMessage": "Select your character to apply to this post.",
   "characterSelectRegionMessage": "(Only the characters in the same region as the post are shown.)",
   "leaveTitle": "Leave Party",
-  "leaveMessage": "Do you really want to leave this party?"
+  "leaveMessage": "Do you really want to leave this party?",
+  "warning": "Warning",
+  "alreadyAcceptedThisWeek": "This character is already accepted to a party this week. If you want to apply for this party, please leave the accepted party."
 }
